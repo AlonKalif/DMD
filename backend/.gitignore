@@ -1,0 +1,19 @@
+# Compiled Go binaries
+# This assumes our output binary will be named 'server'
+server
+*.out
+*.exe
+
+# IDE and editor-specific files
+.vscode/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Local environment variables and config files
+.env
+*.local
+
+# Go build cache and test coverage files
+coverage.out
