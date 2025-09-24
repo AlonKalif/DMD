@@ -2,9 +2,9 @@ package routes
 
 import (
     "dmd/backend/internal/api/common"
-    "dmd/backend/internal/api/handlers/abilities"
     "dmd/backend/internal/api/handlers/audio"
     "dmd/backend/internal/api/handlers/display"
+    "dmd/backend/internal/api/handlers/gameplay/abilities"
     "dmd/backend/internal/api/handlers/gameplay/characters"
     "dmd/backend/internal/api/handlers/gameplay/combat"
     "dmd/backend/internal/api/handlers/gameplay/items"
