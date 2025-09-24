@@ -39,3 +39,20 @@ type NPCFilters struct {
     Page     int
     PageSize int
 }
+
+type ItemFilters struct {
+    Name     string
+    Type     string
+    Rarity   string
+    Page     int
+    PageSize int
+}
+
+type SpellFilters struct {
+    Name            string
+    Level           *int // Use a pointer to distinguish between 0 and not provided
+    School          string
+    IsConcentration *bool // Use a pointer for boolean filtering
+    Page            int
+    PageSize        int
+}

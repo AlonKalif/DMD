@@ -7,22 +7,18 @@ import "gorm.io/gorm"
 type Spell struct {
     gorm.Model
 
-    Name                   string `gorm:"not null;uniqueIndex"` // e.g., "Fireball"
-    Description            string `gorm:"type:text"`            // The main spell description.
-    HigherLevelDescription string `gorm:"type:text"`            // Description for casting at higher levels.
-
-    Level       uint   `gorm:"not null;default:0"` // 0 for cantrips, 1-9 for leveled spells.
-    CastingTime string `gorm:"not null"`           // e.g., "1 Action", "10 Minutes"
-    Range       string `gorm:"not null"`           // e.g., "Self", "60 feet"
-    Duration    string `gorm:"not null"`           // e.g., "Instantaneous", "1 Minute"
-    School      string `gorm:"not null"`           // e.g., "Evocation", "Illusion"
-
-    IsConcentration bool `gorm:"default:false"`
-    IsRitual        bool `gorm:"default:false"`
-
-    // Spell Components
-    ComponentV            bool `gorm:"default:false"` // Verbal
-    ComponentS            bool `gorm:"default:false"` // Somatic
-    ComponentM            bool `gorm:"default:false"` // Material
-    MaterialComponentDesc string
+    Name                   string `gorm:"not null;uniqueIndex" json:"name"`
+    Description            string `gorm:"type:text" json:"description"`
+    HigherLevelDescription string `gorm:"type:text" json:"higher_level_description"`
+    Level                  uint   `gorm:"not null;default:0;index" json:"level"`
+    CastingTime            string `gorm:"not null" json:"casting_time"`
+    Range                  string `gorm:"not null" json:"range"`
+    Duration               string `gorm:"not null" json:"duration"`
+    School                 string `gorm:"not null;index" json:"school"`
+    IsConcentration        bool   `gorm:"default:false" json:"is_concentration"`
+    IsRitual               bool   `gorm:"default:false" json:"is_ritual"`
+    ComponentV             bool   `gorm:"default:false" json:"component_v"`
+    ComponentS             bool   `gorm:"default:false" json:"component_s"`
+    ComponentM             bool   `gorm:"default:false" json:"component_m"`
+    MaterialComponentDesc  string `json:"material_component_desc"`
 }

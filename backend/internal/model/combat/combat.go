@@ -22,18 +22,14 @@ type Combat struct {
 type Combatant struct {
     gorm.Model
 
-    CombatID uint `gorm:"not null"` // Foreign key to the Combat
+    // Add JSON tags to all fields that are part of the API payload
+    CombatID      uint   `gorm:"not null;uniqueIndex:idx_combat_participant" json:"-"` // Usually set by the server, not the client
+    CombatantID   uint   `gorm:"not null;uniqueIndex:idx_combat_participant" json:"combatant_id"`
+    CombatantType string `gorm:"not null;uniqueIndex:idx_combat_participant" json:"combatant_type"`
 
-    // This is a polymorphic relationship.
-    // A Combatant can be either a Character or an NPC.
-    CombatantID   uint   `gorm:"not null"`
-    CombatantType string `gorm:"not null"` // Will be "characters" or "npcs"
-
-    Name       string `gorm:"not null"` // Copied for easy access
-    Initiative uint   `gorm:"not null"`
-    CurrentHP  uint
-    IsActive   bool `gorm:"default:true"`
-
-    // Flexible field for status effects like "Poisoned", "Prone", etc.
-    StatusEffects datatypes.JSON
+    Name          string         `gorm:"not null" json:"name"`
+    Initiative    uint           `gorm:"not null" json:"initiative"`
+    CurrentHP     uint           `json:"current_hp"`
+    IsActive      bool           `gorm:"default:true" json:"is_active"`
+    StatusEffects datatypes.JSON `json:"status_effects"`
 }

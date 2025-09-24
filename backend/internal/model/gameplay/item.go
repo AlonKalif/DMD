@@ -1,4 +1,4 @@
-// File: internal/model/item.go
+// File: /internal/model/gameplay/item.go
 package gameplay
 
 import (
@@ -6,24 +6,18 @@ import (
     "gorm.io/gorm"
 )
 
-// Item represents a single item's data, used as a reference.
 type Item struct {
     gorm.Model
 
-    Name        string `gorm:"not null;uniqueIndex"`
-    Description string `gorm:"type:text"`
+    Name        string `gorm:"not null;uniqueIndex" json:"name"`
+    Description string `gorm:"type:text" json:"description"`
 
-    // Categorization fields
-    Type   string `gorm:"index"` // e.g., "Weapon", "Armor", "Potion", "Wondrous Item"
-    Rarity string `gorm:"index"` // e.g., "Common", "Uncommon", "Rare"
+    Type   string `gorm:"index" json:"type"`
+    Rarity string `gorm:"index" json:"rarity"`
 
-    // Physical properties
-    Weight float64
-    Cost   string // e.g., "50 gp", "1,000 gp"
+    Weight float64 `json:"weight"`
+    Cost   string  `json:"cost"`
 
-    // Game mechanics
-    RequiresAttunement bool `gorm:"default:false"`
-
-    // Flexible field for properties like "Finesse", "Heavy", "Ammunition"
-    Properties datatypes.JSON
+    RequiresAttunement bool           `gorm:"default:false" json:"requires_attunement"`
+    Properties         datatypes.JSON `json:"properties"`
 }

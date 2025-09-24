@@ -2,23 +2,12 @@ package storage
 
 import (
     "dmd/backend/internal/model/character"
+    "dmd/backend/internal/platform/storage/common"
     "testing"
-
-    "gorm.io/driver/sqlite"
-    "gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
-    db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-    if err != nil {
-        t.Fatalf("failed to connect to in-memory database: %v", err)
-    }
-    db.AutoMigrate(&character.NPC{})
-    return db
-}
-
 func TestBulkCreateNPCs(t *testing.T) {
-    db := setupTestDB(t)
+    db := common.SetupTestDB(t, &character.NPC{})
     repo := NewNPCRepository(db)
 
     t.Run("Success_Case", func(t *testing.T) {

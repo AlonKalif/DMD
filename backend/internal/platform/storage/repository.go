@@ -30,18 +30,36 @@ type NPCRepository interface {
 
 type AbilityRepository interface {
     GetAbilityByID(id uint) (*character.Ability, error)
+    GetAbilitiesByCharacterID(characterID uint) ([]*character.Ability, error)
+    CreateAbility(ability *character.Ability) error
+    UpdateAbility(ability *character.Ability) error
+    DeleteAbility(id uint) error
+    AssignAbilitiesToCharacter(characterID uint, abilities []*character.Ability) error // Transactional
 }
 
 type CombatRepository interface {
+    CreateCombat(combat *combat.Combat) error // Transactional method
+    GetActiveCombat() (*combat.Combat, error)
     GetCombatByID(id uint) (*combat.Combat, error)
+    UpdateCombatant(combatant *combat.Combatant) error
 }
 
 type ItemRepository interface {
     GetItemByID(id uint) (*gameplay.Item, error)
+    GetAllItems(filters common.ItemFilters) ([]*gameplay.Item, error)
+    CreateItem(item *gameplay.Item) error
+    UpdateItem(item *gameplay.Item) error
+    DeleteItem(id uint) error
+    BulkCreateItems(items []*gameplay.Item) error // Transactional
 }
 
 type SpellRepository interface {
     GetSpellByID(id uint) (*gameplay.Spell, error)
+    GetAllSpells(filters common.SpellFilters) ([]*gameplay.Spell, error)
+    CreateSpell(spell *gameplay.Spell) error
+    UpdateSpell(spell *gameplay.Spell) error
+    DeleteSpell(id uint) error
+    BulkCreateSpells(spells []*gameplay.Spell) error // Transactional
 }
 
 type TrackRepository interface {

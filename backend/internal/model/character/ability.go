@@ -6,10 +6,10 @@ import "gorm.io/gorm"
 type Ability struct {
     gorm.Model
 
-    CharacterID uint   // The foreign key to link this ability to a character
-    Name        string `gorm:"not null"`
-    Description string
-    Type        string // e.g., "Passive", "Action", "Bonus Action", "Racial Trait"
-    Uses        uint   // Max number of uses, 0 for unlimited
-    Used        uint   // How many times it has been used
+    CharacterID uint   `json:"character_id" gorm:"uniqueIndex:idx_char_ability"`
+    Name        string `gorm:"not null;uniqueIndex:idx_char_ability" json:"name"`
+    Description string `json:"description"`
+    Type        string `json:"type"` // e.g., "Passive", "Action", "Bonus Action", "Racial Trait"
+    Uses        uint   `json:"uses"` // Max number of uses, 0 for unlimited
+    Used        uint   `json:"used"`
 }

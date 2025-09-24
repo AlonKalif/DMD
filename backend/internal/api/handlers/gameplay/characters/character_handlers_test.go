@@ -4,8 +4,6 @@ import (
     "dmd/backend/internal/api/common"
     "dmd/backend/internal/model/character"
     "encoding/json"
-    "io"
-    "log/slog"
     "net/http"
     "net/http/httptest"
     "strconv"
@@ -13,33 +11,32 @@ import (
     "testing"
 
     "github.com/gorilla/mux"
-    "gorm.io/driver/sqlite"
-    "gorm.io/gorm"
 )
 
 // setupTestHandler now also handles database migration.
-func setupTestHandler(t *testing.T) common.IHandler {
-    log := slog.New(slog.NewTextHandler(io.Discard, nil))
-    db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-    if err != nil {
-        t.Fatalf("failed to connect to in-memory database: %v", err)
-    }
-
-    // CRITICAL: Auto-migrate the schema to create the 'characters' table.
-    if err := db.AutoMigrate(&character.Character{}); err != nil {
-        t.Fatalf("failed to migrate database: %v", err)
-    }
-
-    routingServices := &common.RoutingServices{
-        Log:          log,
-        DbConnection: db,
-        WsManager:    nil,
-    }
-    return NewCharactersHandler(routingServices, "/gameplay/characters")
-}
+//func setupTestHandler(t *testing.T) common.IHandler {
+//    log := slog.New(slog.NewTextHandler(io.Discard, nil))
+//    db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+//    if err != nil {
+//        t.Fatalf("failed to connect to in-memory database: %v", err)
+//    }
+//
+//    // CRITICAL: Auto-migrate the schema to create the 'characters' table.
+//    if err := db.AutoMigrate(&character.Character{}); err != nil {
+//        t.Fatalf("failed to migrate database: %v", err)
+//    }
+//
+//    routingServices := &common.RoutingServices{
+//        Log:          log,
+//        DbConnection: db,
+//        WsManager:    nil,
+//    }
+//    return NewCharactersHandler(routingServices, "/gameplay/characters")
+//}
 
 func TestCharacterCRUD(t *testing.T) {
-    handler := setupTestHandler(t)
+    rs, _ := common.SetupTestEnvironment(t, &character.Character{})
+    handler := NewCharactersHandler(rs, "/gameplay/characters")
     var createdChar character.Character // To store the character between sub-tests
 
     // --- 1. Test CREATE ---
