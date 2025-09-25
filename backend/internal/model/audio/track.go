@@ -1,28 +1,24 @@
-// File: internal/model/track.go
 package audio
 
 import "gorm.io/gorm"
 
-// Define constants for track sources to ensure consistency.
 const (
     SourceLocal   = "local"
     SourceYouTube = "youtube"
     SourceSpotify = "spotify"
 )
 
-// Track represents a single audio track's metadata in the database.
 type Track struct {
     gorm.Model
 
-    Title    string `gorm:"not null"`
-    Artist   string
-    Duration uint // Duration in seconds
+    Title        string `gorm:"not null" json:"title"`
+    Artist       string `json:"artist"`
+    Duration     uint   `json:"duration"` // Duration in seconds
+    ThumbnailURL string `json:"thumbnail_url"`
 
-    // Source identifies where the track comes from.
-    Source string `gorm:"not null;index"` // "local", "youtube", "spotify"
+    // Composite key to ensure a SourceID is unique for its Source
+    Source   string `gorm:"not null;index;uniqueIndex:idx_source_id" json:"source"`
+    SourceID string `gorm:"not null;uniqueIndex:idx_source_id" json:"source_id"`
 
-    // SourceID is the unique identifier for the track on its platform.
-    SourceID string `gorm:"not null"` // e.g., File path, YouTube video ID, or Spotify track URI
-
-    ThumbnailURL string // Optional URL for a track/video thumbnail
+    Playlists []*Playlist `gorm:"many2many:playlist_tracks;" json:"-"`
 }

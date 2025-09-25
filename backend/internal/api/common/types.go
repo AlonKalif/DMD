@@ -56,3 +56,11 @@ type SpellFilters struct {
     Page            int
     PageSize        int
 }
+
+type TrackFilters struct {
+    Title    string
+    Artist   string
+    Source   string
+    Page     int
+    PageSize int
+}

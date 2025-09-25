@@ -36,6 +36,7 @@ var apiRoutes = []routeDetails{
     newRouteDetails("/gameplay/spells", spells.NewSpellsHandler),
     newRouteDetails("/gameplay/combat", combat.NewCombatHandler),
     newRouteDetails("/audio", audio.NewAudioHandler),
+    newRouteDetails("/audio/tracks", audio.NewTracksHandler),
     newRouteDetails("/display", display.NewDisplayHandler),
     newRouteDetails("/system", system.NewSystemHandler),
     newRouteDetails("/ws", websocket.NewWebsocketHandler),

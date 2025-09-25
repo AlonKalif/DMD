@@ -64,6 +64,11 @@ type SpellRepository interface {
 
 type TrackRepository interface {
     GetTrackByID(id uint) (*audio.Track, error)
+    GetAllTracks(filters common.TrackFilters) ([]*audio.Track, error)
+    CreateTrack(track *audio.Track) error
+    UpdateTrack(track *audio.Track) error
+    DeleteTrack(id uint) error
+    BulkCreateTracks(tracks []*audio.Track) error // Transactional
 }
 
 type PlaylistRepository interface {
