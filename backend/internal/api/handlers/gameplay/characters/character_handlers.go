@@ -44,11 +44,11 @@ func (h *CharactersHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *CharactersHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newChar character.Character
     if err := json.NewDecoder(r.Body).Decode(&newChar); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
     if err := h.repo.CreateCharacter(&newChar); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newChar)
@@ -57,19 +57,19 @@ func (h *CharactersHandler) Post(w http.ResponseWriter, r *http.Request) {
 func (h *CharactersHandler) Put(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
 
     var updatedChar character.Character
     if err := json.NewDecoder(r.Body).Decode(&updatedChar); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
     updatedChar.ID = id
 
     if err := h.repo.UpdateCharacter(&updatedChar); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, updatedChar)
@@ -78,11 +78,11 @@ func (h *CharactersHandler) Put(w http.ResponseWriter, r *http.Request) {
 func (h *CharactersHandler) Delete(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     if err := h.repo.DeleteCharacter(id); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     w.WriteHeader(http.StatusNoContent)
@@ -107,7 +107,7 @@ func (h *CharactersHandler) getAllCharacters(w http.ResponseWriter, r *http.Requ
     // Pass the filters to the repository
     chars, err := h.repo.GetAllCharacters(filters)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, chars)
@@ -116,16 +116,16 @@ func (h *CharactersHandler) getAllCharacters(w http.ResponseWriter, r *http.Requ
 func (h *CharactersHandler) getCharacterByID(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     char, err := h.repo.GetCharacterByID(id)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            common.HandleAPIError(w, h.log, common.NewNotFoundError("Character not found"))
+            common.RespondWithError(w, common.NewNotFoundError("Character not found"))
             return
         }
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, char)

@@ -7,11 +7,9 @@ import "gorm.io/gorm"
 type Playlist struct {
     gorm.Model
 
-    Name        string `gorm:"not null"`
-    Description string
-
-    // GORM will use the PlaylistTrack join table for this relationship.
-    Tracks []*Track `gorm:"many2many:playlist_tracks;"`
+    Name        string   `gorm:"not null;unique" json:"name"`
+    Description string   `json:"description"`
+    Tracks      []*Track `gorm:"many2many:playlist_tracks;" json:"tracks,omitempty"`
 }
 
 // PlaylistTrack is the explicit join table between playlists and tracks.

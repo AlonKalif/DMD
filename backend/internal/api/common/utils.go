@@ -5,15 +5,9 @@ import (
     "encoding/json"
     "errors"
     "github.com/gorilla/mux"
-    "log/slog"
     "net/http"
     "strconv"
 )
-
-// respondWithError sends a JSON error message.
-func RespondWithError(w http.ResponseWriter, code int, message string) {
-    RespondWithJSON(w, code, map[string]string{"error": message})
-}
 
 // respondWithJSON writes a JSON response.
 func RespondWithJSON(w http.ResponseWriter, code int, payload any) {
@@ -29,19 +23,14 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload any) {
     w.Write(response)
 }
 
-// HandleAPIError centralizes the logic for processing and responding to errors.
-func HandleAPIError(w http.ResponseWriter, log *slog.Logger, err error) {
-    var apiErr APIError
-    // Check if the error is our custom APIError type.
+// RespondWithError centralizes the logic for processing and responding to errors.
+func RespondWithError(w http.ResponseWriter, err error) {
+    var apiErr AppError
+    statusCode := http.StatusInternalServerError
     if errors.As(err, &apiErr) {
-        // It's a known, categorized error. Respond with its specific details.
-        RespondWithError(w, apiErr.StatusCode, apiErr.Message)
-    } else {
-        // It's an unexpected, internal error.
-        // Log the full error for debugging, but send a generic response to the client.
-        log.Error("Unhandled internal error", "error", err)
-        RespondWithError(w, http.StatusInternalServerError, "Internal Server Error")
+        statusCode = apiErr.StatusCode
     }
+    RespondWithJSON(w, statusCode, map[string]string{"error": err.Error()})
 }
 
 // Helper Functions
@@ -53,7 +42,7 @@ func GetIDFromRequest(r *http.Request) (uint, error) {
     }
     id, err := strconv.Atoi(idStr)
     if err != nil {
-        return 0, NewBadRequestError("Invalid character ID")
+        return 0, NewBadRequestError("Invalid character ID", err)
     }
     return uint(id), nil
 }

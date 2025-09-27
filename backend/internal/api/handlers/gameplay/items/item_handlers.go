@@ -44,11 +44,11 @@ func (h *ItemsHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *ItemsHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newItem gameplay.Item
     if err := json.NewDecoder(r.Body).Decode(&newItem); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
     if err := h.repo.CreateItem(&newItem); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newItem)
@@ -72,7 +72,7 @@ func (h *ItemsHandler) getAllItems(w http.ResponseWriter, r *http.Request) {
 
     items, err := h.repo.GetAllItems(filters)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, items)
@@ -81,16 +81,16 @@ func (h *ItemsHandler) getAllItems(w http.ResponseWriter, r *http.Request) {
 func (h *ItemsHandler) getItemByID(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r) // Assumes GetIDFromRequest is in common
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     item, err := h.repo.GetItemByID(id)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            common.HandleAPIError(w, h.log, common.NewNotFoundError("Item not found"))
+            common.RespondWithError(w, common.NewNotFoundError("Item not found"))
             return
         }
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, item)

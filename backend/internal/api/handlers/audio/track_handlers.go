@@ -5,20 +5,19 @@ import (
     "dmd/backend/internal/api/handlers"
     "dmd/backend/internal/model/audio"
     "dmd/backend/internal/platform/storage"
-    ws "dmd/backend/internal/services/websocket"
     "encoding/json"
     "errors"
     "github.com/gorilla/mux"
     "gorm.io/gorm"
     "log/slog"
     "net/http"
+    "strconv"
 )
 
 type TracksHandler struct {
     handlers.BaseHandler
-    repo      storage.TrackRepository
-    log       *slog.Logger
-    wsManager *ws.Manager
+    repo storage.TrackRepository
+    log  *slog.Logger
 }
 
 func NewTracksHandler(rs *common.RoutingServices, path string) common.IHandler {
@@ -26,7 +25,6 @@ func NewTracksHandler(rs *common.RoutingServices, path string) common.IHandler {
         BaseHandler: handlers.NewBaseHandler(path),
         repo:        storage.NewTrackRepository(rs.DbConnection),
         log:         rs.Log,
-        wsManager:   rs.WsManager,
     }
 }
 
@@ -41,35 +39,51 @@ func (h *TracksHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *TracksHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newTrack audio.Track
     if err := json.NewDecoder(r.Body).Decode(&newTrack); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body", err))
         return
     }
     if err := h.repo.CreateTrack(&newTrack); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, common.NewInternalError("Failed to create new track", err))
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newTrack)
 }
 
-// ... (PUT and DELETE methods would go here)
-
 // --- Private Helpers ---
 func (h *TracksHandler) getAllTracks(w http.ResponseWriter, r *http.Request) {
-    // ... (implementation is correct)
+    queryParams := r.URL.Query()
+    page, _ := strconv.Atoi(queryParams.Get("page"))
+    pageSize, _ := strconv.Atoi(queryParams.Get("pageSize"))
+
+    filters := common.TrackFilters{
+        Title:    queryParams.Get("title"),
+        Artist:   queryParams.Get("artist"),
+        Source:   queryParams.Get("source"),
+        Page:     page,
+        PageSize: pageSize,
+    }
+
+    tracks, err := h.repo.GetAllTracks(filters)
+    if err != nil {
+        common.RespondWithError(w, common.NewInternalError("Failed to fetch tracks from db", err))
+        return
+    }
+    common.RespondWithJSON(w, http.StatusOK, tracks)
 }
+
 func (h *TracksHandler) getTrackByID(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r) // Assumes GetIDFromRequest is in common
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     track, err := h.repo.GetTrackByID(id)
     if err != nil {
+        appErr := common.NewInternalError("Failed to get track by id", err)
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            common.HandleAPIError(w, h.log, common.NewNotFoundError("Track not found"))
-            return
+            appErr.StatusCode = http.StatusNotFound
         }
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, appErr)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, track)

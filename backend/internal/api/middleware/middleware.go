@@ -31,7 +31,7 @@ func Recovery(log *slog.Logger) func(http.Handler) http.Handler {
             defer func() {
                 if err := recover(); err != nil {
                     log.Error("Panic recovered", "error", err)
-                    common.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
+                    common.RespondWithError(w, common.NewInternalError("Something went wrong"))
                 }
             }()
             next.ServeHTTP(w, r)

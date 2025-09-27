@@ -42,11 +42,11 @@ func (h *NPCsHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *NPCsHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newNpc character.NPC
     if err := json.NewDecoder(r.Body).Decode(&newNpc); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
     if err := h.repo.CreateNPC(&newNpc); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newNpc)
@@ -78,7 +78,7 @@ func (h *NPCsHandler) getAllNPCs(w http.ResponseWriter, r *http.Request) {
 
     npcs, err := h.repo.GetAllNPCs(filters)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, npcs)
@@ -87,17 +87,17 @@ func (h *NPCsHandler) getAllNPCs(w http.ResponseWriter, r *http.Request) {
 func (h *NPCsHandler) getNPCByID(w http.ResponseWriter, r *http.Request) {
     id, err := common.GetIDFromRequest(r)
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
 
     npc, err := h.repo.GetNPCByID(id)
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            common.HandleAPIError(w, h.log, common.NewNotFoundError("NPC not found"))
+            common.RespondWithError(w, common.NewNotFoundError("NPC not found"))
             return
         }
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, npc)

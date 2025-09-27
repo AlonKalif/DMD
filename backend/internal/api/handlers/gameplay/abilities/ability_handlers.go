@@ -33,14 +33,14 @@ func NewAbilitiesHandler(rs *common.RoutingServices, path string) common.IHandle
 func (h *AbilitiesHandler) Get(w http.ResponseWriter, r *http.Request) {
     charIDStr := r.URL.Query().Get("character_id")
     if charIDStr == "" {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Missing 'character_id' query parameter"))
+        common.RespondWithError(w, common.NewBadRequestError("Missing 'character_id' query parameter"))
         return
     }
     charID, _ := strconv.Atoi(charIDStr)
 
     abilities, err := h.repo.GetAbilitiesByCharacterID(uint(charID))
     if err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, abilities)
@@ -50,15 +50,15 @@ func (h *AbilitiesHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *AbilitiesHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newAbility character.Ability
     if err := json.NewDecoder(r.Body).Decode(&newAbility); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
     if newAbility.CharacterID == 0 {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("'CharacterID' is required"))
+        common.RespondWithError(w, common.NewBadRequestError("'CharacterID' is required"))
         return
     }
     if err := h.repo.CreateAbility(&newAbility); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newAbility)

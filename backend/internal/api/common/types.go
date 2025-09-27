@@ -14,53 +14,10 @@ type IHandler interface {
     Delete(w http.ResponseWriter, r *http.Request)
     GetPath() string
 }
+type HandlerCreator func(rs *RoutingServices, path string) IHandler
 
 type RoutingServices struct {
     Log          *slog.Logger
     DbConnection *gorm.DB
     WsManager    *wsService.Manager
-}
-
-type HandlerCreator func(rs *RoutingServices, path string) IHandler
-
-// CharacterFilters defines the available query parameters for filtering characters.
-type CharacterFilters struct {
-    Name     string
-    Class    string
-    Page     int
-    PageSize int
-}
-
-// NPCFilters defines the available query parameters for filtering NPCs.
-type NPCFilters struct {
-    Name     string
-    Type     string
-    Race     string
-    Page     int
-    PageSize int
-}
-
-type ItemFilters struct {
-    Name     string
-    Type     string
-    Rarity   string
-    Page     int
-    PageSize int
-}
-
-type SpellFilters struct {
-    Name            string
-    Level           *int // Use a pointer to distinguish between 0 and not provided
-    School          string
-    IsConcentration *bool // Use a pointer for boolean filtering
-    Page            int
-    PageSize        int
-}
-
-type TrackFilters struct {
-    Title    string
-    Artist   string
-    Source   string
-    Page     int
-    PageSize int
 }

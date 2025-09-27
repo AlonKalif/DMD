@@ -13,12 +13,8 @@ const (
 type MediaAsset struct {
     gorm.Model
 
-    Name        string `gorm:"not null"`
-    Description string
-
-    // Type categorizes the asset.
-    Type string `gorm:"not null;index"` // "map" or "image"
-
-    // FilePath stores the relative path to the asset file.
-    FilePath string `gorm:"not null;unique"`
+    Name        string `gorm:"not null" json:"name"`
+    Description string `json:"description"`
+    Type        string `gorm:"not null;index" json:"type"`
+    FilePath    string `gorm:"not null;unique" json:"file_path"`
 }

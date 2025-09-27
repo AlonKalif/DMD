@@ -1,33 +1,51 @@
 // File: internal/apierror/errors.go
 package common
 
-import "net/http"
+import (
+    "net/http"
+    "strings"
+)
 
-// APIError represents a structured error response.
-type APIError struct {
+// AppError represents a structured error response.
+type AppError struct {
     StatusCode int    `json:"statusCode"`
-    Message    string `json:"message"`
+    ErrMsg     string `json:"errMsg"`
 }
 
-// Error makes APIError conform to the standard error interface.
-func (e APIError) Error() string {
-    return e.Message
+// Error makes AppError conform to the standard error interface.
+func (e AppError) Error() string {
+    return e.ErrMsg
 }
 
-// NewAPIError creates a new APIError.
-func NewAPIError(statusCode int, message string) APIError {
-    return APIError{StatusCode: statusCode, Message: message}
+// NewAppError creates a new AppError with message and aggregated errors
+func NewAppError(statusCode int, message string, errs ...error) AppError {
+    var errorMessages []string
+
+    errorMessages = append(errorMessages, message)
+
+    for _, err := range errs {
+        if err != nil {
+            errorMessages = append(errorMessages, err.Error())
+        }
+    }
+
+    aggregatedMsg := strings.Join(errorMessages, ": ")
+
+    return AppError{
+        StatusCode: statusCode,
+        ErrMsg:     aggregatedMsg,
+    }
 }
 
 // Helper functions for common error types
-func NewNotFoundError(message string) APIError {
-    return NewAPIError(http.StatusNotFound, message)
+func NewNotFoundError(message string, errs ...error) AppError {
+    return NewAppError(http.StatusNotFound, message, errs...)
 }
 
-func NewBadRequestError(message string) APIError {
-    return NewAPIError(http.StatusBadRequest, message)
+func NewBadRequestError(message string, errs ...error) AppError {
+    return NewAppError(http.StatusBadRequest, message, errs...)
 }
 
-func NewInternalServerError() APIError {
-    return NewAPIError(http.StatusInternalServerError, "An unexpected error occurred")
+func NewInternalError(message string, errs ...error) AppError {
+    return NewAppError(http.StatusInternalServerError, message, errs...)
 }

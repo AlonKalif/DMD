@@ -73,8 +73,16 @@ type TrackRepository interface {
 
 type PlaylistRepository interface {
     GetPlaylistByID(id uint) (*audio.Playlist, error)
+    GetAllPlaylists(filters common.PlaylistFilters) ([]*audio.Playlist, error)
+    CreatePlaylist(playlist *audio.Playlist, trackIDs []uint) (*audio.Playlist, error) // Transactional
 }
 
 type MediaAssetRepository interface {
     GetMediaAssetByID(id uint) (*media.MediaAsset, error)
+    GetAllMediaAssets(filters common.MediaAssetFilters) ([]*media.MediaAsset, error)
+    CreateMediaAsset(asset *media.MediaAsset) error
+    UpdateMediaAsset(asset *media.MediaAsset) error
+    DeleteMediaAsset(id uint) error
+    GetMediaAssetByPath(path string) (*media.MediaAsset, error)
+    BulkCreateMediaAssets(assets []*media.MediaAsset) error // Transactional
 }

@@ -2,6 +2,11 @@
 package storage
 
 import (
+    "dmd/backend/internal/model/audio"
+    "dmd/backend/internal/model/character"
+    "dmd/backend/internal/model/combat"
+    "dmd/backend/internal/model/gameplay"
+    "dmd/backend/internal/model/media"
     "log/slog"
     "time"
 
@@ -30,4 +35,20 @@ func NewConnection(log *slog.Logger, dbPath string) (*gorm.DB, error) {
 
     log.Info("Database connection pool established")
     return db, nil
+}
+
+func AutoMigrate(db *gorm.DB) error {
+    return db.AutoMigrate(
+        &character.Character{},
+        &character.NPC{},
+        &character.Ability{},
+        &combat.Combat{},
+        &combat.Combatant{},
+        &gameplay.Spell{},
+        &gameplay.Item{},
+        &audio.Track{},
+        &audio.Playlist{},
+        &audio.PlaylistTrack{},
+        &media.MediaAsset{},
+    )
 }

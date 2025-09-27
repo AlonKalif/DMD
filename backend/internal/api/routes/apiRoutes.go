@@ -2,6 +2,7 @@ package routes
 
 import (
     "dmd/backend/internal/api/common"
+    "dmd/backend/internal/api/handlers/assets"
     "dmd/backend/internal/api/handlers/audio"
     "dmd/backend/internal/api/handlers/display"
     "dmd/backend/internal/api/handlers/gameplay/abilities"
@@ -37,7 +38,9 @@ var apiRoutes = []routeDetails{
     newRouteDetails("/gameplay/combat", combat.NewCombatHandler),
     newRouteDetails("/audio", audio.NewAudioHandler),
     newRouteDetails("/audio/tracks", audio.NewTracksHandler),
+    newRouteDetails("/audio/playlists", audio.NewPlaylistsHandler),
     newRouteDetails("/display", display.NewDisplayHandler),
+    newRouteDetails("/assets/media", assets.NewMediaAssetsHandler),
     newRouteDetails("/system", system.NewSystemHandler),
     newRouteDetails("/ws", websocket.NewWebsocketHandler),
 }

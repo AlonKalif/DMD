@@ -37,7 +37,7 @@ func (ws *WebsocketHandler) Get(w http.ResponseWriter, r *http.Request) {
     newConn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
         ws.log.Error("Failed to upgrade to ws connection", "error", err)
-        common.RespondWithError(w, http.StatusInternalServerError, err.Error())
+        common.RespondWithError(w, common.NewInternalError(err.Error()))
         return
     }
     newClient := wsService.NewClient(newConn, ws.manager)

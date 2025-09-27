@@ -45,7 +45,6 @@ func TestTrackFiltering(t *testing.T) {
     db.Create(&audio.Track{Title: "Village Market", Artist: "Nature SFX", Source: audio.SourceLocal, SourceID: "audio/market.mp3"})
 
     t.Run("Filter_By_Artist", func(t *testing.T) {
-        // Use the core http.NewRequest instead of the httptest wrapper.
         req, err := http.NewRequest(http.MethodGet, handler.GetPath()+"?artist=Composer A", nil)
         if err != nil {
             t.Fatalf("Failed to create request: %v", err)

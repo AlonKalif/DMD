@@ -15,6 +15,8 @@ func NewRouter(rs *common.RoutingServices) *mux.Router {
     applyMiddleware(newRouter, rs.Log)
 
     apiV1 := newRouter.PathPrefix("/api/v1").Subrouter()
+    fs := http.FileServer(http.Dir("./public/"))
+    apiV1.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
     registerRoutes(apiV1, rs)
 

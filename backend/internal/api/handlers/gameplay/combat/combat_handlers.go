@@ -32,10 +32,10 @@ func (h *CombatHandler) Get(w http.ResponseWriter, r *http.Request) {
     activeCombat, err := h.repo.GetActiveCombat()
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
-            common.HandleAPIError(w, h.log, common.NewNotFoundError("No active combat found"))
+            common.RespondWithError(w, common.NewNotFoundError("No active combat found"))
             return
         }
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusOK, activeCombat)
@@ -45,12 +45,12 @@ func (h *CombatHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *CombatHandler) Post(w http.ResponseWriter, r *http.Request) {
     var newCombat combat.Combat
     if err := json.NewDecoder(r.Body).Decode(&newCombat); err != nil {
-        common.HandleAPIError(w, h.log, common.NewBadRequestError("Invalid request body"))
+        common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
         return
     }
 
     if err := h.repo.CreateCombat(&newCombat); err != nil {
-        common.HandleAPIError(w, h.log, err)
+        common.RespondWithError(w, err)
         return
     }
     common.RespondWithJSON(w, http.StatusCreated, newCombat)
