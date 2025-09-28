@@ -4,6 +4,7 @@ import (
     "dmd/backend/internal/api/common"
     "dmd/backend/internal/model/media"
     "gorm.io/gorm"
+    "github.com/davecgh/go-spew/spew"
 )
 
 type mediaAssetRepo struct {
@@ -49,6 +50,8 @@ func (r *mediaAssetRepo) GetAllMediaAssets(filters common.MediaAssetFilters) ([]
     if err := query.Find(&assets).Error; err != nil {
         return nil, err
     }
+
+    spew.Dump(assets)
     return assets, nil
 }
 

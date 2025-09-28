@@ -21,6 +21,7 @@ export default function ScreenMirroringPage() {
     const [assets, setAssets] = useState<MediaAsset[]>([]);
     const channel = useBroadcastChannel('dmd-channel', () => {});
 
+
     useEffect(() => {
         return () => {
             if (preview.url) URL.revokeObjectURL(preview.url);

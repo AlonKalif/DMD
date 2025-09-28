@@ -7,8 +7,6 @@ interface AssetSelectionBarProps {
     onAssetSelect: (asset: MediaAsset) => void;
 }
 
-const API_BASE_URL = 'http://localhost:8080';
-
 export function AssetSelectionBar({ assets, onAssetSelect }: AssetSelectionBarProps) {
     if (assets.length === 0) {
         return (
@@ -23,7 +21,7 @@ export function AssetSelectionBar({ assets, onAssetSelect }: AssetSelectionBarPr
             {assets.map((asset) => (
                 <button key={asset.ID} onClick={() => onAssetSelect(asset)} className="group flex-shrink-0">
                     <img
-                        src={`${API_BASE_URL}/static/${asset.file_path}`}
+                        src={`${asset.file_path}`}
                         alt={asset.name}
                         className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-blue-500"
                     />
