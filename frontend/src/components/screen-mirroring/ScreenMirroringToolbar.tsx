@@ -18,41 +18,52 @@ export function ScreenMirroringToolbar({
                                        }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
-    const isShowDisabled = previewStatus !== 'staged';
-    const isHideDisabled = previewStatus !== 'live';
-    // This effect hook handles the lifecycle of the player window
-    useEffect(() => {
-        // If there's no window, there's nothing to check.
-        if (!playerWindow) return;
 
-        // Set up an interval to check if the window has been closed.
+    // This effect hook for lifecycle remains the same.
+    useEffect(() => {
+        if (!playerWindow) return;
         const intervalId = setInterval(() => {
             if (playerWindow.closed) {
-                setPlayerWindow(null); // Clear the window reference
-                clearInterval(intervalId); // Stop checking
+                setPlayerWindow(null);
+                clearInterval(intervalId);
             }
-        }, 1000); // Check every second
-
-        // Cleanup function to clear the interval when the component unmounts.
-        return () => {
-            clearInterval(intervalId);
-        };
+        }, 1000);
+        return () => clearInterval(intervalId);
     }, [playerWindow]);
 
-    const handleOpenPlayerWindow = () => {
+    const openOrFocusPlayerWindow = () => {
         if (isPlayerWindowOpen) {
             playerWindow?.focus();
-            return;
+            return; // Window was already open
         }
         const newWindow = window.open('/player', 'dmdPlayerWindow', 'popup,width=1280,height=720');
         setPlayerWindow(newWindow);
     };
 
+    // New handler for the "Show to Players" button.
+    const handleShowClick = () => {
+        const wasOpen = isPlayerWindowOpen;
+
+        // Step 1: Ensure the window is open or focused.
+        openOrFocusPlayerWindow();
+
+        // Step 2: Call the passed-in function to send the content.
+        if (wasOpen) {
+            // If window was already open, send immediately.
+            onShowToPlayersClick();
+        } else {
+            // If we just opened it, wait a moment for it to initialize.
+            setTimeout(onShowToPlayersClick, 200);
+        }
+    };
+
+    const isShowDisabled = previewStatus !== 'staged';
+    const isHideDisabled = previewStatus !== 'live';
+// handle case: player window open, image shown, player window closes, Hide from player is clicked.
     return (
         <div className="flex w-full items-center gap-4 border-b border-gray-700 bg-gray-800 p-2">
-            {/* ==================================== Open player window button ===================================== */}
             <button
-                onClick={handleOpenPlayerWindow}
+                onClick={openOrFocusPlayerWindow}
                 className={clsx(
                     'rounded px-4 py-2 font-bold text-white',
                     isPlayerWindowOpen
@@ -64,7 +75,6 @@ export function ScreenMirroringToolbar({
             </button>
 
             <div className="ml-auto flex gap-4">
-            {/* ========================================== Browse button =========================================== */}
                 <button
                     onClick={onBrowseClick}
                     className="rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700"
@@ -72,23 +82,23 @@ export function ScreenMirroringToolbar({
                     Browse...
                 </button>
 
-            {/* ====================================== Show to players button ====================================== */}
-                <button
-                    onClick={onShowToPlayersClick}
-                    disabled={isShowDisabled}
-                    className={clsx('rounded bg-green-600 px-4 py-2 font-bold text-white', isShowDisabled && 'cursor-not-allowed opacity-50')}
-                >
-                    Show to Players
-                </button>
-
-                {/* =================================== Hide from players button =================================== */}
-                <button
-                    onClick={onHideFromPlayersClick}
-                    disabled={isHideDisabled}
-                    className={clsx('rounded bg-red-600 px-4 py-2 font-bold text-white', isHideDisabled && 'cursor-not-allowed opacity-50')}
-                >
-                    Hide from Players
-                </button>
+                {previewStatus !== 'live' ? (
+                    <button
+                        onClick={handleShowClick} // <-- Use the new handler here
+                        disabled={isShowDisabled}
+                        className={clsx('rounded bg-green-600 px-4 py-2 font-bold text-white', isShowDisabled && 'cursor-not-allowed opacity-50')}
+                    >
+                        Show to Players
+                    </button>
+                ) : (
+                    <button
+                        onClick={onHideFromPlayersClick}
+                        disabled={isHideDisabled}
+                        className={clsx('rounded bg-red-600 px-4 py-2 font-bold text-white', isHideDisabled && 'cursor-not-allowed opacity-50')}
+                    >
+                        Hide from Players
+                    </button>
+                )}
             </div>
         </div>
     );

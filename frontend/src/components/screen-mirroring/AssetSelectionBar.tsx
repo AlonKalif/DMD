@@ -18,9 +18,9 @@ export function AssetSelectionBar({ assets, onAssetSelect }: AssetSelectionBarPr
     }
 
     return (
-        <div className="flex space-x-2 overflow-x-auto border-y border-gray-700 bg-gray-800 p-2">
+        <div className="flex flex-shrink-0 space-x-2 overflow-x-auto border-y border-gray-700 bg-gray-800 p-2">
             {assets.map((asset) => (
-                
+
                 <button key={asset.ID} onClick={() => onAssetSelect(asset)} className="group flex-shrink-0">
                     <img
                         src={`${API_BASE_URL}/static/${asset.file_path.replace(/^public\//, '')}`}
