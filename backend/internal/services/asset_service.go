@@ -2,66 +2,77 @@
 package assets
 
 import (
-    "dmd/backend/internal/model/media"
-    "dmd/backend/internal/platform/storage"
-    "errors"
-    "gorm.io/gorm"
-    "log/slog"
-    "os"
-    "path/filepath"
-    "strings"
+	"dmd/backend/internal/api/common"
+	"dmd/backend/internal/model/media"
+	"dmd/backend/internal/platform/storage"
+	"log/slog"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
-type AssetService struct {
-    repo storage.MediaAssetRepository
-    log  *slog.Logger
+type Service struct {
+	repo storage.MediaAssetRepository
+	log  *slog.Logger
 }
 
-func NewService(repo storage.MediaAssetRepository, log *slog.Logger) *AssetService {
-    return &AssetService{repo: repo, log: log}
+func NewService(repo storage.MediaAssetRepository, log *slog.Logger) *Service {
+	return &Service{repo: repo, log: log}
 }
 
-// SyncAssetsWithDatabase scans the public/images directory and creates DB records for new files.
-func (s *AssetService) SyncAssetsWithDatabase() {
-    const imagesDir = "public/images"
-    s.log.Info("Starting asset sync with database...", "directory", imagesDir)
+// SyncAssetsWithDatabase performs a two-way sync between the filesystem and the database.
+func (s *Service) SyncAssetsWithDatabase() {
+	const imagesDir = "public/images"
 
-    files, err := os.ReadDir(imagesDir)
-    if err != nil {
-        s.log.Error("Failed to read assets directory", "error", err)
-        return
-    }
+	// --- Pass 1: Get all file paths from the disk ---
+	diskFiles := make(map[string]bool)
+	files, err := os.ReadDir(imagesDir)
+	if err != nil {
+		s.log.Error("Failed to read assets directory", "error", err)
+		return
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			diskFiles[filepath.Join("images", file.Name())] = true
+		}
+	}
 
-    for _, file := range files {
-        if file.IsDir() {
-            continue // Skip subdirectories for now
-        }
+	// --- Pass 2: Get all asset records from the database ---
+	dbAssets, err := s.repo.GetAllMediaAssets(common.MediaAssetFilters{})
+	if err != nil {
+		s.log.Error("Failed to fetch media assets from DB", "error", err)
+		return
+	}
 
-        // img.png -> images/img.png
-        filePath := filepath.Join(imagesDir, file.Name())
+	// --- Pass 3: Find and remove orphan records from the DB ---
+	dbFilePaths := make(map[string]uint)
+	for _, asset := range dbAssets {
+		dbFilePaths[asset.FilePath] = asset.ID
+		if _, foundOnDisk := diskFiles[asset.FilePath]; !foundOnDisk {
+			if err := s.repo.DeleteMediaAsset(asset.ID); err != nil {
+				s.log.Error("Failed to delete orphan asset record", "path", asset.FilePath, "error", err)
+			} else {
+				s.log.Info("Removed orphan asset record from database", "path", asset.FilePath)
+			}
+		}
+	}
 
-        // Check if asset already exists in the DB
-        _, err := s.repo.GetMediaAssetByPath(filePath)
-        if err == nil {
-            continue // Asset already exists, skip.
-        }
+	// --- Pass 4: Find and add new files to the DB ---
+	for path := range diskFiles {
+		if _, foundInDb := dbFilePaths[path]; !foundInDb {
+			fileName := filepath.Base(path)
+			asset := &media.MediaAsset{
+				Name:     strings.TrimSuffix(fileName, filepath.Ext(fileName)),
+				Type:     media.AssetTypeImage,
+				FilePath: path,
+			}
+			if err := s.repo.CreateMediaAsset(asset); err != nil {
+				s.log.Error("Failed to create media asset record", "file", fileName, "error", err)
+			} else {
+				s.log.Info("New asset discovered and added to database", "file", fileName)
+			}
+		}
+	}
 
-        if errors.Is(err, gorm.ErrRecordNotFound) {
-            // Asset does not exist, so create it.
-            asset := &media.MediaAsset{
-                Name:     strings.TrimSuffix(file.Name(), filepath.Ext(file.Name())),
-                Type:     media.AssetTypeImage, // Assuming all are images for now
-                FilePath: filePath,
-            }
-            if err := s.repo.CreateMediaAsset(asset); err != nil {
-                s.log.Error("Failed to create media asset record", "file", file.Name(), "error", err)
-            } else {
-                s.log.Info("New asset discovered and added to database", "file", file.Name())
-            }
-        } else {
-            // Handle other database errors
-            s.log.Error("Database error while checking for existing asset", "file", file.Name(), "error", err)
-        }
-    }
-    s.log.Info("Asset sync finished.")
+	s.log.Info("Asset sync finished.")
 }

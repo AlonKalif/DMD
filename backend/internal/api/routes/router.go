@@ -11,13 +11,14 @@ import (
 
 func NewRouter(rs *common.RoutingServices) *mux.Router {
     newRouter := mux.NewRouter()
-
     applyMiddleware(newRouter, rs.Log)
 
-    apiV1 := newRouter.PathPrefix("/api/v1").Subrouter()
+    // Register the static file server on the MAIN router.
     fs := http.FileServer(http.Dir("./public/"))
-    apiV1.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
+    newRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
+    // Register the API subrouter.
+    apiV1 := newRouter.PathPrefix("/api/v1").Subrouter()
     registerRoutes(apiV1, rs)
 
     return newRouter

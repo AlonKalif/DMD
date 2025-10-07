@@ -5,6 +5,7 @@ import { useBroadcastChannel } from 'hooks/useBroadcastChannel';
 import { MediaAsset } from 'types/api';
 import axios from 'axios';
 import clsx from 'clsx';
+import { API_BASE_URL } from 'config';
 
 type PreviewStatus = 'empty' | 'staged' | 'live';
 
@@ -12,8 +13,6 @@ interface PreviewState {
     status: PreviewStatus;
     url: string | null;
 }
-
-const API_BASE_URL = 'http://localhost:8080';
 
 export default function ScreenMirroringPage() {
     const [preview, setPreview] = useState<PreviewState>({ status: 'empty', url: null });
@@ -41,6 +40,7 @@ export default function ScreenMirroringPage() {
         axios.get<MediaAsset[]>(`${API_BASE_URL}/api/v1/assets/media`)
             .then(response => {
                 setAssets(response.data);
+                console.log(response.data)
             })
             .catch(error => {
                 console.error("Failed to fetch media assets:", error);
