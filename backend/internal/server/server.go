@@ -1,3 +1,4 @@
+// File: /internal/server/server.go
 package server
 
 import (
@@ -6,6 +7,7 @@ import (
 	"dmd/backend/internal/platform/logger"
 	"dmd/backend/internal/platform/storage"
 	"dmd/backend/internal/services/assets"
+	"dmd/backend/internal/services/watcher"
 	"dmd/backend/internal/services/websocket"
 	"log/slog"
 	"net/http"
@@ -18,74 +20,100 @@ import (
 	"gorm.io/gorm"
 )
 
-type environmentVariables struct {
-	serverPort string
-	dbPath     string
-}
-
 type Server struct {
-	log              *slog.Logger
-	dbConnection     *gorm.DB
-	websocketManager *websocket.Manager
-	router           *mux.Router
-	server           *http.Server
-	envVars          *environmentVariables
+	log            *slog.Logger
+	server         *http.Server
+	wsManager      *websocket.Manager
+	watcherService *watcher.Service
 }
 
+// New is the main constructor for our server. It orchestrates the setup.
 func New() *Server {
-	s := &Server{}
-	s.log = logger.New()
-	s.envVars = &environmentVariables{}
-	loadEnvVars(s.log, s.envVars)
-	var err error
-	if s.dbConnection, err = storage.NewConnection(s.log, s.envVars.dbPath); err != nil {
-		s.log.Error("Failed to init db connection. Error: ", err)
-		os.Exit(1)
-	}
+	log := logger.New()
+	env := loadEnvVars(log)
+	db := initDB(log, env.dbPath)
 
-	mediaAssetRepo := storage.NewMediaAssetRepository(s.dbConnection)
-	assetService := assets.NewService(mediaAssetRepo, s.log)
-	assetService.SyncAssetsWithDatabase()
+	// Run database migrations on every startup.
+	runMigrations(log, db)
 
-	s.websocketManager = websocket.NewManager(s.log)
+	// Initialize services.
+	wsManager := websocket.NewManager(log)
+	assetService := initAssetService(log, db, env.assetsPath)
+	watcherSvc := watcher.NewService(log, assetService, wsManager, env.assetsPath)
 
-	s.router = routes.NewRouter(&common.RoutingServices{
-		Log:          s.log,
-		DbConnection: s.dbConnection,
-		WsManager:    s.websocketManager,
+	// Initialize router
+	router := routes.NewRouter(&common.RoutingServices{
+		Log:          log,
+		DbConnection: db,
+		WsManager:    wsManager,
 		AssetService: assetService})
 
-	s.server = newHttpServer(s.router, ":"+s.envVars.serverPort)
+	// Initialize server
+	httpServer := newHttpServer(router, ":"+env.serverPort)
 
-	return s
+	return &Server{
+		log:       log,
+		server:    httpServer,
+		wsManager: wsManager,
+	}
 }
 
+// RunServer starts all background services and the main HTTP server.
 func (s *Server) RunServer() {
-	go s.websocketManager.Run()
-	s.log.Info("Starting server", "addr", s.server.Addr)
+	go s.wsManager.Run()
 
+	s.log.Info("Starting server", "addr", s.server.Addr)
 	if err := s.server.ListenAndServe(); err != nil {
 		s.log.Error("Server failed to start", "error", err)
 		os.Exit(1)
 	}
 }
 
-func loadEnvVars(log *slog.Logger, envVars *environmentVariables) {
+// --- Helper Functions for Initialization ---
+
+func loadEnvVars(log *slog.Logger) *environmentVariables {
 	if err := godotenv.Load(); err != nil {
 		log.Warn("No .env file found, using default environment")
 	}
 
-	envVars.dbPath = os.Getenv("DB_PATH")
-	if envVars.dbPath == "" {
-		log.Warn("DB_PATH not defined in .env file. Using default 'dmd.db'.")
-		envVars.dbPath = "dmd.db"
+	env := &environmentVariables{}
+	env.dbPath = os.Getenv("DB_PATH")
+	if env.dbPath == "" {
+		env.dbPath = "dmd.db"
 	}
+	env.serverPort = os.Getenv("SERVER_PORT")
+	if env.serverPort == "" {
+		env.serverPort = "8080"
+	}
+	env.assetsPath = os.Getenv("ASSETS_PATH")
+	if env.assetsPath == "" {
+		env.assetsPath = "public" // Default to "public"
+	}
+	return env
+}
 
-	envVars.serverPort = os.Getenv("SERVER_PORT")
-	if envVars.serverPort == "" {
-		log.Warn("SERVER_PORT not defined in .env file. Using default '8080'")
-		envVars.serverPort = "8080"
+func initDB(log *slog.Logger, dbPath string) *gorm.DB {
+	db, err := storage.NewConnection(log, dbPath)
+	if err != nil {
+		log.Error("Failed to init db connection", "error", err)
+		os.Exit(1)
 	}
+	return db
+}
+
+func runMigrations(log *slog.Logger, db *gorm.DB) {
+	if err := storage.AutoMigrate(db); err != nil {
+		log.Error("Failed to migrate database", "error", err)
+		os.Exit(1)
+	}
+	log.Info("Database migration completed successfully")
+}
+
+func initAssetService(log *slog.Logger, db *gorm.DB) *assets.Service {
+	mediaAssetRepo := storage.NewMediaAssetRepository(db)
+	assetService := assets.NewService(mediaAssetRepo, log)
+	assetService.SyncAssetsWithDatabase() // Perform initial sync.
+	return assetService
 }
 
 func newHttpServer(router *mux.Router, port string) *http.Server {
@@ -101,4 +129,11 @@ func newHttpServer(router *mux.Router, port string) *http.Server {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
+}
+
+// environmentVariables struct can also be defined here.
+type environmentVariables struct {
+	serverPort string
+	dbPath     string
+	assetsPath string
 }

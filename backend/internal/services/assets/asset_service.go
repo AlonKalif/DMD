@@ -12,12 +12,13 @@ import (
 )
 
 type Service struct {
-	repo storage.MediaAssetRepository
-	log  *slog.Logger
+	repo       storage.MediaAssetRepository
+	log        *slog.Logger
+	assetsPath string
 }
 
-func NewService(repo storage.MediaAssetRepository, log *slog.Logger) *Service {
-	return &Service{repo: repo, log: log}
+func NewService(repo storage.MediaAssetRepository, log *slog.Logger, assetsPath string) *Service {
+	return &Service{repo: repo, log: log, assetsPath: assetsPath}
 }
 
 // SyncAssetsWithDatabase performs a two-way sync between the filesystem and the database.

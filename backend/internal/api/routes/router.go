@@ -13,7 +13,7 @@ func NewRouter(rs *common.RoutingServices) *mux.Router {
 	newRouter := mux.NewRouter()
 	applyMiddleware(newRouter, rs.Log)
 
-	// Register the static file server on the MAIN router.
+	// Register the static file server on the main router.
 	fs := http.FileServer(http.Dir("./public/"))
 	newRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
