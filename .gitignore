@@ -1,19 +1,42 @@
-*
-!*/
-!*.go
-!*.mod
-!*.sum
-!*.gitignore
-!*.tsx
-!*.ts
-!*.js
-!*.md
-!*.css
-!*.html
-!*.prettierrc
-!*.json
-!*.db
-!*.png
-!*.jpg
-!*.env
+# ## Dependencies ##
+# Ignore node_modules directory
+node_modules/
 
+# ## Environment ##
+# Ignore environment variables, which are secret and machine-specific
+# NOTE: If your .npmrc file contains secrets, you should add it back here.
+.npmrc
+.env
+*.env
+.env.*
+
+# ## IDE & Editor Directories ##
+# Ignore IDE-specific settings folders (GoLand, VSCode, etc.)
+.idea/
+.vscode/
+
+# ## Go Specific ##
+# Ignore compiled executables and binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/bin
+
+# ## Build output ##
+# NOTE: We are commenting out '/public/' so your images in 'backend/public/images' get tracked.
+# If you have other build outputs you want to ignore, add them here specifically.
+/build/
+/dist/
+# /public/
+
+# ## Logs ##
+# Ignore log files
+*.log
+logs/
+
+# ## System Files ##
+# Ignore macOS and Windows system files
+.DS_Store
+Thumbs.db
