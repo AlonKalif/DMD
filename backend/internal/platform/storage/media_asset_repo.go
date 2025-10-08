@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"dmd/backend/internal/api/common"
+	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/media"
 
 	"gorm.io/gorm"
@@ -31,7 +31,7 @@ func (r *mediaAssetRepo) GetMediaAssetByID(id uint) (*media.MediaAsset, error) {
 	return &asset, nil
 }
 
-func (r *mediaAssetRepo) GetAllMediaAssets(filters common.MediaAssetFilters) ([]*media.MediaAsset, error) {
+func (r *mediaAssetRepo) GetAllMediaAssets(filters filters.MediaAssetFilters) ([]*media.MediaAsset, error) {
 	var assets []*media.MediaAsset
 	query := r.db.Model(&media.MediaAsset{})
 

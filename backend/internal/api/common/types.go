@@ -1,6 +1,7 @@
 package common
 
 import (
+	assetsService "dmd/backend/internal/services/assets"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
 	"net/http"
@@ -15,10 +16,12 @@ type IHandler interface {
 	Delete(w http.ResponseWriter, r *http.Request)
 	GetPath() string
 }
+
 type HandlerCreator func(rs *RoutingServices, path string) IHandler
 
 type RoutingServices struct {
 	Log          *slog.Logger
 	DbConnection *gorm.DB
 	WsManager    *wsService.Manager
+	AssetService *assetsService.Service
 }

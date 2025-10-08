@@ -1,66 +1,66 @@
 package storage
 
 import (
-    "dmd/backend/internal/api/common"
-    "dmd/backend/internal/model/combat"
-    "testing"
+	"dmd/backend/internal/api/common/utils"
+	"dmd/backend/internal/model/combat"
+	"testing"
 )
 
 func TestCreateCombat_Success(t *testing.T) {
-    // Setup a clean DB specifically for this test.
-    rs, db := common.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
-    repo := NewCombatRepository(rs.DbConnection)
+	// Setup a clean DB specifically for this test.
+	rs, db := utils.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
+	repo := NewCombatRepository(rs.DbConnection)
 
-    combatToCreate := &combat.Combat{
-        IsActive: true,
-        Combatants: []combat.Combatant{
-            {Name: "Hero", Initiative: 20, CombatantID: 1, CombatantType: "characters"},
-            {Name: "Villain", Initiative: 10, CombatantID: 1, CombatantType: "npcs"},
-        },
-    }
+	combatToCreate := &combat.Combat{
+		IsActive: true,
+		Combatants: []combat.Combatant{
+			{Name: "Hero", Initiative: 20, CombatantID: 1, CombatantType: "characters"},
+			{Name: "Villain", Initiative: 10, CombatantID: 1, CombatantType: "npcs"},
+		},
+	}
 
-    err := repo.CreateCombat(combatToCreate)
-    if err != nil {
-        t.Fatalf("CreateCombat failed unexpectedly: %v", err)
-    }
+	err := repo.CreateCombat(combatToCreate)
+	if err != nil {
+		t.Fatalf("CreateCombat failed unexpectedly: %v", err)
+	}
 
-    var combatCount, combatantCount int64
-    db.Model(&combat.Combat{}).Count(&combatCount)
-    db.Model(&combat.Combatant{}).Count(&combatantCount)
+	var combatCount, combatantCount int64
+	db.Model(&combat.Combat{}).Count(&combatCount)
+	db.Model(&combat.Combatant{}).Count(&combatantCount)
 
-    if combatCount != 1 || combatantCount != 2 {
-        t.Errorf("expected 1 combat and 2 combatants, got %d and %d", combatCount, combatantCount)
-    }
+	if combatCount != 1 || combatantCount != 2 {
+		t.Errorf("expected 1 combat and 2 combatants, got %d and %d", combatCount, combatantCount)
+	}
 }
 
 func TestCreateCombat_Rollback(t *testing.T) {
-    // Setup a separate, clean DB for this test.
-    rs, db := common.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
-    repo := NewCombatRepository(rs.DbConnection)
+	// Setup a separate, clean DB for this test.
+	rs, db := utils.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
+	repo := NewCombatRepository(rs.DbConnection)
 
-    // This combat is invalid because it contains duplicate participants.
-    duplicateCombatant := combat.Combatant{
-        Name: "Duplicate Hero", Initiative: 15, CombatantID: 1, CombatantType: "characters",
-    }
-    invalidCombat := &combat.Combat{
-        IsActive: true,
-        Combatants: []combat.Combatant{
-            duplicateCombatant,
-            duplicateCombatant,
-        },
-    }
+	// This combat is invalid because it contains duplicate participants.
+	duplicateCombatant := combat.Combatant{
+		Name: "Duplicate Hero", Initiative: 15, CombatantID: 1, CombatantType: "characters",
+	}
+	invalidCombat := &combat.Combat{
+		IsActive: true,
+		Combatants: []combat.Combatant{
+			duplicateCombatant,
+			duplicateCombatant,
+		},
+	}
 
-    err := repo.CreateCombat(invalidCombat)
-    if err == nil {
-        t.Fatal("CreateCombat was expected to fail but did not")
-    }
+	err := repo.CreateCombat(invalidCombat)
+	if err == nil {
+		t.Fatal("CreateCombat was expected to fail but did not")
+	}
 
-    var combatCount, combatantCount int64
-    db.Model(&combat.Combat{}).Count(&combatCount)
-    db.Model(&combat.Combatant{}).Count(&combatantCount)
+	var combatCount, combatantCount int64
+	db.Model(&combat.Combat{}).Count(&combatCount)
+	db.Model(&combat.Combatant{}).Count(&combatantCount)
 
-    // Since this test started with an empty DB, the count after rollback should be 0.
-    if combatCount != 0 || combatantCount != 0 {
-        t.Errorf("expected counts to be 0 after rollback, got %d and %d", combatCount, combatantCount)
-    }
+	// Since this test started with an empty DB, the count after rollback should be 0.
+	if combatCount != 0 || combatantCount != 0 {
+		t.Errorf("expected counts to be 0 after rollback, got %d and %d", combatCount, combatantCount)
+	}
 }

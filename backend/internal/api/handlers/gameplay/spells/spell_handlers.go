@@ -2,6 +2,9 @@ package spells
 
 import (
 	"dmd/backend/internal/api/common"
+	errors2 "dmd/backend/internal/api/common/errors"
+	"dmd/backend/internal/api/common/filters"
+	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/gameplay"
 	"dmd/backend/internal/platform/storage"
@@ -43,43 +46,43 @@ func (h *SpellsHandler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *SpellsHandler) Post(w http.ResponseWriter, r *http.Request) {
 	var newSpell gameplay.Spell
 	if err := json.NewDecoder(r.Body).Decode(&newSpell); err != nil {
-		common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
+		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid request body"))
 		return
 	}
 	if err := h.repo.CreateSpell(&newSpell); err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
-	common.RespondWithJSON(w, http.StatusCreated, newSpell)
+	utils.RespondWithJSON(w, http.StatusCreated, newSpell)
 }
 
 func (h *SpellsHandler) Put(w http.ResponseWriter, r *http.Request) {
-	id, err := common.GetIDFromRequest(r)
+	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
 	var updatedSpell gameplay.Spell
 	if err := json.NewDecoder(r.Body).Decode(&updatedSpell); err != nil {
-		common.RespondWithError(w, common.NewBadRequestError("Invalid request body"))
+		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid request body"))
 		return
 	}
 	updatedSpell.ID = id
 	if err := h.repo.UpdateSpell(&updatedSpell); err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
-	common.RespondWithJSON(w, http.StatusOK, updatedSpell)
+	utils.RespondWithJSON(w, http.StatusOK, updatedSpell)
 }
 
 func (h *SpellsHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id, err := common.GetIDFromRequest(r)
+	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
 	if err := h.repo.DeleteSpell(id); err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -88,7 +91,7 @@ func (h *SpellsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 // --- Private Helper Methods ---
 func (h *SpellsHandler) getAllSpells(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
-	filters := common.SpellFilters{
+	filters := filters.SpellFilters{
 		Name:   queryParams.Get("name"),
 		School: queryParams.Get("school"),
 	}
@@ -106,26 +109,26 @@ func (h *SpellsHandler) getAllSpells(w http.ResponseWriter, r *http.Request) {
 
 	spells, err := h.repo.GetAllSpells(filters)
 	if err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
-	common.RespondWithJSON(w, http.StatusOK, spells)
+	utils.RespondWithJSON(w, http.StatusOK, spells)
 }
 
 func (h *SpellsHandler) getSpellByID(w http.ResponseWriter, r *http.Request) {
-	id, err := common.GetIDFromRequest(r)
+	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
 	spell, err := h.repo.GetSpellByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			common.RespondWithError(w, common.NewNotFoundError("Spell not found"))
+			utils.RespondWithError(w, errors2.NewNotFoundError("Spell not found"))
 			return
 		}
-		common.RespondWithError(w, err)
+		utils.RespondWithError(w, err)
 		return
 	}
-	common.RespondWithJSON(w, http.StatusOK, spell)
+	utils.RespondWithJSON(w, http.StatusOK, spell)
 }
