@@ -4,6 +4,7 @@ import { useWebSocket } from 'hooks/useWebSocket';
 import { useAppDispatch } from 'app/hooks';
 import { fetchImages } from 'features/images/imageSlice';
 import { useEffect } from 'react';
+import {API_BASE_URL} from "config";
 
 export default function DmLayout() {
     const dispatch = useAppDispatch();
@@ -21,7 +22,7 @@ export default function DmLayout() {
         }
     };
 
-    useWebSocket('ws://localhost:8080/ws', handleWebSocketMessage);
+    useWebSocket(`${API_BASE_URL}/api/v1/ws`, handleWebSocketMessage);
 
     return (
         <div className="pb-16">

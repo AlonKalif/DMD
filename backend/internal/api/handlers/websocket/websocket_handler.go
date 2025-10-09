@@ -47,5 +47,5 @@ func (ws *WebsocketHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ws.manager.RegisterClient(newClient)
 
-	utils.RespondWithJSON(w, http.StatusOK, "websocket connection started")
+	// Not responding because connection is now 'hijacked' (upgraded)
 }

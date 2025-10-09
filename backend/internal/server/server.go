@@ -29,7 +29,7 @@ type Server struct {
 // New is the main constructor for our server. It orchestrates the setup.
 func New() *Server {
 	log := logger.New()
-	configs := loadConfiguration(log, "server_config.json")
+	configs := loadConfiguration(log, "./internal/server/server_config.json")
 	db := initDB(log, configs.DBPath)
 
 	// Run database migrations on every startup.
