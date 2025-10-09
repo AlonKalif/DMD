@@ -1,7 +1,7 @@
 package common
 
 import (
-	assetsService "dmd/backend/internal/services/assets"
+	assetsService "dmd/backend/internal/services/images"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
 	"net/http"

@@ -2,7 +2,7 @@ package assets
 
 import (
 	"dmd/backend/internal/api/common/utils"
-	"dmd/backend/internal/model/media"
+	"dmd/backend/internal/model/images"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,13 +11,13 @@ import (
 )
 
 func TestMediaAssetCRUD(t *testing.T) {
-	rs, _ := utils.SetupTestEnvironment(t, &media.MediaAsset{})
-	handler := NewMediaAssetsHandler(rs, "/assets/media")
+	rs, _ := utils.SetupTestEnvironment(t, &images.ImageEntry{})
+	handler := NewMediaAssetsHandler(rs, "/images/images")
 
 	// Test CREATE
-	var createdAsset media.MediaAsset
+	var createdAsset images.ImageEntry
 	t.Run("POST_Create", func(t *testing.T) {
-		assetJSON := `{"name":"Town Map", "type":"map", "file_path":"assets/maps/town.jpg"}`
+		assetJSON := `{"name":"Town Map", "type":"map", "file_path":"images/maps/town.jpg"}`
 		req := httptest.NewRequest(http.MethodPost, handler.GetPath(), strings.NewReader(assetJSON))
 		req.Header.Set("Content-Type", "application/json")
 		rr := httptest.NewRecorder()
@@ -36,24 +36,24 @@ func TestMediaAssetCRUD(t *testing.T) {
 }
 
 func TestMediaAssetFiltering(t *testing.T) {
-	rs, db := utils.SetupTestEnvironment(t, &media.MediaAsset{})
-	handler := NewMediaAssetsHandler(rs, "/assets/media")
+	rs, db := utils.SetupTestEnvironment(t, &images.ImageEntry{})
+	handler := NewMediaAssetsHandler(rs, "/images/images")
 
 	// Seed Data
-	db.Create(&media.MediaAsset{Name: "World Map", Type: media.AssetTypeMap, FilePath: "maps/world.png"})
-	db.Create(&media.MediaAsset{Name: "Ogre Portrait", Type: media.AssetTypeImage, FilePath: "images/ogre.png"})
-	db.Create(&media.MediaAsset{Name: "Dungeon Map", Type: media.AssetTypeMap, FilePath: "maps/dungeon.png"})
+	db.Create(&images.ImageEntry{Name: "World Map", Type: images.ImageTypeMap, FilePath: "maps/world.png"})
+	db.Create(&images.ImageEntry{Name: "Ogre Portrait", Type: images.ImageTypeImage, FilePath: "images/ogre.png"})
+	db.Create(&images.ImageEntry{Name: "Dungeon Map", Type: images.ImageTypeMap, FilePath: "maps/dungeon.png"})
 
 	t.Run("Filter_By_Type", func(t *testing.T) {
 		req, _ := http.NewRequest(http.MethodGet, handler.GetPath()+"?type=map", nil)
 		rr := httptest.NewRecorder()
 		handler.Get(rr, req)
 
-		var results []*media.MediaAsset
+		var results []*images.ImageEntry
 		json.NewDecoder(rr.Body).Decode(&results)
 
 		if len(results) != 2 {
-			t.Errorf("expected 2 map assets, got %d", len(results))
+			t.Errorf("expected 2 map images, got %d", len(results))
 		}
 	})
 }

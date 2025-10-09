@@ -35,7 +35,7 @@ export default function ScreenMirroringPage() {
         }
     };
 
-    // Fetch the list of media assets from the backend when the component mounts.
+    // Fetch the list of images images from the backend when the component mounts.
     useEffect(() => {
         axios.get<MediaAsset[]>(`${API_BASE_URL}/api/v1/assets/media`)
             .then(response => {
@@ -43,7 +43,7 @@ export default function ScreenMirroringPage() {
                 console.log(response.data)
             })
             .catch(error => {
-                console.error("Failed to fetch media assets:", error);
+                console.error("Failed to fetch images images:", error);
             });
     }, []);
 

@@ -6,9 +6,9 @@ import (
 	"dmd/backend/internal/api/routes"
 	"dmd/backend/internal/platform/logger"
 	"dmd/backend/internal/platform/storage"
-	"dmd/backend/internal/services/assets"
-	"dmd/backend/internal/services/watcher"
+	"dmd/backend/internal/services/images"
 	"dmd/backend/internal/services/websocket"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"os"
@@ -16,40 +16,37 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"gorm.io/gorm"
 )
 
 type Server struct {
-	log            *slog.Logger
-	server         *http.Server
-	wsManager      *websocket.Manager
-	watcherService *watcher.Service
+	log       *slog.Logger
+	server    *http.Server
+	wsManager *websocket.Manager
 }
 
 // New is the main constructor for our server. It orchestrates the setup.
 func New() *Server {
 	log := logger.New()
-	env := loadEnvVars(log)
-	db := initDB(log, env.dbPath)
+	configs := loadConfiguration(log, "server_config.json")
+	db := initDB(log, configs.DBPath)
 
 	// Run database migrations on every startup.
 	runMigrations(log, db)
 
 	// Initialize services.
 	wsManager := websocket.NewManager(log)
-	assetService := initAssetService(log, db, env.assetsPath)
-	watcherSvc := watcher.NewService(log, assetService, wsManager, env.assetsPath)
+	imgService := initImagesService(log, db, wsManager, configs.ImagesPath)
 
 	// Initialize router
 	router := routes.NewRouter(&common.RoutingServices{
 		Log:          log,
 		DbConnection: db,
 		WsManager:    wsManager,
-		AssetService: assetService})
+		AssetService: imgService})
 
 	// Initialize server
-	httpServer := newHttpServer(router, ":"+env.serverPort)
+	httpServer := newHttpServer(router, ":"+configs.ServerPort)
 
 	return &Server{
 		log:       log,
@@ -71,27 +68,6 @@ func (s *Server) RunServer() {
 
 // --- Helper Functions for Initialization ---
 
-func loadEnvVars(log *slog.Logger) *environmentVariables {
-	if err := godotenv.Load(); err != nil {
-		log.Warn("No .env file found, using default environment")
-	}
-
-	env := &environmentVariables{}
-	env.dbPath = os.Getenv("DB_PATH")
-	if env.dbPath == "" {
-		env.dbPath = "dmd.db"
-	}
-	env.serverPort = os.Getenv("SERVER_PORT")
-	if env.serverPort == "" {
-		env.serverPort = "8080"
-	}
-	env.assetsPath = os.Getenv("ASSETS_PATH")
-	if env.assetsPath == "" {
-		env.assetsPath = "public" // Default to "public"
-	}
-	return env
-}
-
 func initDB(log *slog.Logger, dbPath string) *gorm.DB {
 	db, err := storage.NewConnection(log, dbPath)
 	if err != nil {
@@ -109,11 +85,10 @@ func runMigrations(log *slog.Logger, db *gorm.DB) {
 	log.Info("Database migration completed successfully")
 }
 
-func initAssetService(log *slog.Logger, db *gorm.DB) *assets.Service {
-	mediaAssetRepo := storage.NewMediaAssetRepository(db)
-	assetService := assets.NewService(mediaAssetRepo, log)
-	assetService.SyncAssetsWithDatabase() // Perform initial sync.
-	return assetService
+func initImagesService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manager, imagesPath string) *images.Service {
+	imgRepo := storage.NewImagesRepository(db)
+	imgService := images.NewService(log, imgRepo, wsManager, imagesPath)
+	return imgService
 }
 
 func newHttpServer(router *mux.Router, port string) *http.Server {
@@ -131,9 +106,40 @@ func newHttpServer(router *mux.Router, port string) *http.Server {
 	}
 }
 
-// environmentVariables struct can also be defined here.
-type environmentVariables struct {
-	serverPort string
-	dbPath     string
-	assetsPath string
+func loadConfiguration(log *slog.Logger, filename string) ServerConfig {
+	var config ServerConfig
+
+	configFile, err := os.Open(filename)
+	if err != nil {
+		log.Error("Failed to open configuration file. Using default configurations.", "filename", filename, "error", err)
+		return newDefaultConfigs()
+	}
+	defer configFile.Close()
+
+	jsonParser := json.NewDecoder(configFile)
+	err = jsonParser.Decode(&config)
+	if err != nil {
+		log.Error("Failed to decode configuration file. Using default configurations.", "filename", filename, "error", err)
+		return newDefaultConfigs()
+	}
+
+	return config
+}
+
+func newDefaultConfigs() ServerConfig {
+	return ServerConfig{
+		ServerPort: 8080,
+		DBPath:     "dmd.db",
+		AssetsPath: "public",
+		ImagesPath: "public/images",
+		AudioPath:  "public/audio",
+	}
+}
+
+type ServerConfig struct {
+	ServerPort int    `json:"server_port"`
+	DBPath     string `json:"db_path"`
+	AssetsPath string `json:"assets_path"`
+	ImagesPath string `json:"images_path"`
+	AudioPath  string `json:"audios_path"`
 }

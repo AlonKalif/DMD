@@ -6,7 +6,7 @@ import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
-	"dmd/backend/internal/model/media"
+	"dmd/backend/internal/model/images"
 	"dmd/backend/internal/platform/storage"
 	"encoding/json"
 	"errors"
@@ -21,14 +21,14 @@ import (
 
 type MediaAssetsHandler struct {
 	handlers.BaseHandler
-	repo storage.MediaAssetRepository
+	repo storage.ImagesRepository
 	log  *slog.Logger
 }
 
 func NewMediaAssetsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &MediaAssetsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewMediaAssetRepository(rs.DbConnection),
+		repo:        storage.NewImagesRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }
@@ -42,13 +42,13 @@ func (h *MediaAssetsHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *MediaAssetsHandler) Post(w http.ResponseWriter, r *http.Request) {
-	var newAsset media.MediaAsset
+	var newAsset images.ImageEntry
 	if err := json.NewDecoder(r.Body).Decode(&newAsset); err != nil {
 		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid request body", err))
 		return
 	}
-	if err := h.repo.CreateMediaAsset(&newAsset); err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to create media asset", err))
+	if err := h.repo.CreateImageEntry(&newAsset); err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to create images asset", err))
 		return
 	}
 	utils.RespondWithJSON(w, http.StatusCreated, newAsset)
@@ -60,14 +60,14 @@ func (h *MediaAssetsHandler) Put(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, err)
 		return
 	}
-	var updatedAsset media.MediaAsset
+	var updatedAsset images.ImageEntry
 	if err = json.NewDecoder(r.Body).Decode(&updatedAsset); err != nil {
 		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid request body", err))
 		return
 	}
 	updatedAsset.ID = id
-	if err = h.repo.UpdateMediaAsset(&updatedAsset); err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to update media asset", err))
+	if err = h.repo.UpdateImageEntry(&updatedAsset); err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to update images asset", err))
 		return
 	}
 	utils.RespondWithJSON(w, http.StatusOK, updatedAsset)
@@ -79,8 +79,8 @@ func (h *MediaAssetsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, err)
 		return
 	}
-	if err = h.repo.DeleteMediaAsset(id); err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete media asset", err))
+	if err = h.repo.DeleteImage(id); err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete images asset", err))
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -91,15 +91,15 @@ func (h *MediaAssetsHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Re
 	queryParams := r.URL.Query()
 	page, _ := strconv.Atoi(queryParams.Get("page"))
 	pageSize, _ := strconv.Atoi(queryParams.Get("pageSize"))
-	filters := filters.MediaAssetFilters{
+	filters := filters.ImagesFilters{
 		Name:     queryParams.Get("name"),
 		Type:     queryParams.Get("type"),
 		Page:     page,
 		PageSize: pageSize,
 	}
-	assets, err := h.repo.GetAllMediaAssets(filters)
+	assets, err := h.repo.GetAllImages(filters)
 	if err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to get media assets", err))
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to get images images", err))
 		return
 	}
 	utils.RespondWithJSON(w, http.StatusOK, assets)
@@ -111,7 +111,7 @@ func (h *MediaAssetsHandler) getMediaAssetByID(w http.ResponseWriter, r *http.Re
 		utils.RespondWithError(w, err)
 		return
 	}
-	asset, err := h.repo.GetMediaAssetByID(id)
+	asset, err := h.repo.GetImageByID(id)
 	if err != nil {
 		appErr := errors2.NewInternalError("Failed to get asset by id", err)
 		if errors.Is(err, gorm.ErrRecordNotFound) {

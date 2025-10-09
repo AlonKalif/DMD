@@ -7,7 +7,7 @@ import (
 	"dmd/backend/internal/model/character"
 	"dmd/backend/internal/model/combat"
 	"dmd/backend/internal/model/gameplay"
-	"dmd/backend/internal/model/media"
+	"dmd/backend/internal/model/images"
 )
 
 type CharacterRepository interface {
@@ -77,12 +77,12 @@ type PlaylistRepository interface {
 	CreatePlaylist(playlist *audio.Playlist, trackIDs []uint) (*audio.Playlist, error) // Transactional
 }
 
-type MediaAssetRepository interface {
-	GetMediaAssetByID(id uint) (*media.MediaAsset, error)
-	GetAllMediaAssets(filters filters.MediaAssetFilters) ([]*media.MediaAsset, error)
-	CreateMediaAsset(asset *media.MediaAsset) error
-	UpdateMediaAsset(asset *media.MediaAsset) error
-	DeleteMediaAsset(id uint) error
-	GetMediaAssetByPath(path string) (*media.MediaAsset, error)
-	BulkCreateMediaAssets(assets []*media.MediaAsset) error // Transactional
+type ImagesRepository interface {
+	GetImageByID(id uint) (*images.ImageEntry, error)
+	GetAllImages(filters filters.ImagesFilters) ([]*images.ImageEntry, error)
+	CreateImageEntry(asset *images.ImageEntry) error
+	UpdateImageEntry(asset *images.ImageEntry) error
+	DeleteImage(id uint) error
+	GetImageByPath(path string) (*images.ImageEntry, error)
+	BulkCreateImageEntries(assets []*images.ImageEntry) error // Transactional
 }

@@ -47,7 +47,7 @@ type PlaylistFilters struct {
 	PageSize int
 }
 
-type MediaAssetFilters struct {
+type ImagesFilters struct {
 	Name     string
 	Type     string
 	Page     int

@@ -6,9 +6,9 @@ node_modules/
 # Ignore environment variables, which are secret and machine-specific
 # NOTE: If your .npmrc file contains secrets, you should add it back here.
 .npmrc
-.env
-*.env
-.env.*
+.configs
+*.configs
+.configs.*
 
 # ## IDE & Editor Directories ##
 # Ignore IDE-specific settings folders (GoLand, VSCode, etc.)

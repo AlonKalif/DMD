@@ -1,0 +1,7 @@
+{
+  "server_port": 8080,
+  "db_path": "dmd.db",
+  "assets_path": "public",
+  "images_path": "public/images",
+  "audios_path": "public/audio"
+}

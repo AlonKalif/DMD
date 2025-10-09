@@ -4,7 +4,7 @@ import (
 	"dmd/backend/internal/api/common"
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
-	assetsService "dmd/backend/internal/services/assets"
+	assetsService "dmd/backend/internal/services/images"
 	"net/http"
 )
 
@@ -21,6 +21,6 @@ func NewSyncMediaAssetsHandler(rs *common.RoutingServices, path string) common.I
 }
 
 func (sh *SyncMediaAssetsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sh.assetService.SyncAssetsWithDatabase()
+	sh.assetService.SyncImageEntriesWithDatabase()
 	utils.RespondWithJSON(w, http.StatusOK, nil)
 }
