@@ -1,15 +1,15 @@
 package storage
 
 import (
-	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/model/combat"
+	"dmd/backend/internal/platform/storage/common"
 	"testing"
 )
 
 func TestCreateCombat_Success(t *testing.T) {
 	// Setup a clean DB specifically for this test.
-	rs, db := utils.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
-	repo := NewCombatRepository(rs.DbConnection)
+	db := common.SetupTestDB(t, &combat.Combat{}, &combat.Combatant{})
+	repo := NewCombatRepository(db)
 
 	combatToCreate := &combat.Combat{
 		IsActive: true,
@@ -35,8 +35,8 @@ func TestCreateCombat_Success(t *testing.T) {
 
 func TestCreateCombat_Rollback(t *testing.T) {
 	// Setup a separate, clean DB for this test.
-	rs, db := utils.SetupTestEnvironment(t, &combat.Combat{}, &combat.Combatant{})
-	repo := NewCombatRepository(rs.DbConnection)
+	db := common.SetupTestDB(t, &combat.Combat{}, &combat.Combatant{})
+	repo := NewCombatRepository(db)
 
 	// This combat is invalid because it contains duplicate participants.
 	duplicateCombatant := combat.Combatant{

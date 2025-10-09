@@ -38,7 +38,7 @@ func SetupTestEnvironment(t *testing.T, models ...any) (*common.RoutingServices,
 		Log:          log,
 		DbConnection: db,
 		WsManager:    nil, // WsManager can be nil for most handler tests.
-		AssetService: nil,
+		ImageService: nil,
 	}
 
 	return routingServices, db

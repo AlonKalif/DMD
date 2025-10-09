@@ -20,9 +20,10 @@ import (
 )
 
 type Server struct {
-	log       *slog.Logger
-	server    *http.Server
-	wsManager *websocket.Manager
+	log        *slog.Logger
+	server     *http.Server
+	wsManager  *websocket.Manager
+	imgService *images.Service
 }
 
 // New is the main constructor for our server. It orchestrates the setup.
@@ -43,21 +44,23 @@ func New() *Server {
 		Log:          log,
 		DbConnection: db,
 		WsManager:    wsManager,
-		AssetService: imgService})
+		ImageService: imgService}, configs.AssetsPath)
 
 	// Initialize server
 	httpServer := newHttpServer(router, ":"+configs.ServerPort)
 
 	return &Server{
-		log:       log,
-		server:    httpServer,
-		wsManager: wsManager,
+		log:        log,
+		server:     httpServer,
+		wsManager:  wsManager,
+		imgService: imgService,
 	}
 }
 
 // RunServer starts all background services and the main HTTP server.
 func (s *Server) RunServer() {
 	go s.wsManager.Run()
+	s.imgService.RunImagesDirWatcher()
 
 	s.log.Info("Starting server", "addr", s.server.Addr)
 	if err := s.server.ListenAndServe(); err != nil {
@@ -128,7 +131,7 @@ func loadConfiguration(log *slog.Logger, filename string) ServerConfig {
 
 func newDefaultConfigs() ServerConfig {
 	return ServerConfig{
-		ServerPort: 8080,
+		ServerPort: "8080",
 		DBPath:     "dmd.db",
 		AssetsPath: "public",
 		ImagesPath: "public/images",
@@ -137,7 +140,7 @@ func newDefaultConfigs() ServerConfig {
 }
 
 type ServerConfig struct {
-	ServerPort int    `json:"server_port"`
+	ServerPort string `json:"server_port"`
 	DBPath     string `json:"db_path"`
 	AssetsPath string `json:"assets_path"`
 	ImagesPath string `json:"images_path"`

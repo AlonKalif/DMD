@@ -16,7 +16,7 @@ type SyncMediaAssetsHandler struct {
 func NewSyncMediaAssetsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &SyncMediaAssetsHandler{
 		BaseHandler:  handlers.NewBaseHandler(path),
-		assetService: rs.AssetService,
+		assetService: rs.ImageService,
 	}
 }
 

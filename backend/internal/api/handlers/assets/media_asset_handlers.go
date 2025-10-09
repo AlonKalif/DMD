@@ -25,6 +25,7 @@ type MediaAssetsHandler struct {
 	log  *slog.Logger
 }
 
+// Refactor. Handler should use the image service instead of image repo
 func NewMediaAssetsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &MediaAssetsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),

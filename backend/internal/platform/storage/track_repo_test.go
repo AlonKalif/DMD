@@ -1,14 +1,14 @@
 package storage
 
 import (
-	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/model/audio"
+	"dmd/backend/internal/platform/storage/common"
 	"testing"
 )
 
 func TestBulkCreateTracks(t *testing.T) {
-	rs, db := utils.SetupTestEnvironment(t, &audio.Track{})
-	repo := NewTrackRepository(rs.DbConnection)
+	db := common.SetupTestDB(t, &audio.Track{})
+	repo := NewTrackRepository(db)
 
 	t.Run("Success_Case", func(t *testing.T) {
 		tracksToCreate := []*audio.Track{

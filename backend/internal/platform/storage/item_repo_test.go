@@ -1,14 +1,14 @@
 package storage
 
 import (
-	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/model/gameplay"
+	"dmd/backend/internal/platform/storage/common"
 	"testing"
 )
 
 func TestBulkCreateItems(t *testing.T) {
-	rs, db := utils.SetupTestEnvironment(t, &gameplay.Item{})
-	repo := NewItemRepository(rs.DbConnection)
+	db := common.SetupTestDB(t, &gameplay.Item{})
+	repo := NewItemRepository(db)
 
 	t.Run("Success_Case", func(t *testing.T) {
 		itemsToCreate := []*gameplay.Item{

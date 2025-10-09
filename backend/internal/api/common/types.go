@@ -23,5 +23,5 @@ type RoutingServices struct {
 	Log          *slog.Logger
 	DbConnection *gorm.DB
 	WsManager    *wsService.Manager
-	AssetService *assetsService.Service
+	ImageService *assetsService.Service
 }

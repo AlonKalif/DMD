@@ -9,12 +9,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter(rs *common.RoutingServices) *mux.Router {
+func NewRouter(rs *common.RoutingServices, staticAssetsPath string) *mux.Router {
 	newRouter := mux.NewRouter()
 	applyMiddleware(newRouter, rs.Log)
 
 	// Register the static file server on the main router.
-	fs := http.FileServer(http.Dir("./public/"))
+	fs := http.FileServer(http.Dir(staticAssetsPath))
 	newRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// Register the API subrouter.

@@ -1,14 +1,14 @@
 package storage
 
 import (
-	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/model/audio"
+	"dmd/backend/internal/platform/storage/common"
 	"testing"
 )
 
 func TestCreatePlaylistTransaction(t *testing.T) {
-	rs, db := utils.SetupTestEnvironment(t, &audio.Playlist{}, &audio.Track{}, &audio.PlaylistTrack{})
-	repo := NewPlaylistRepository(rs.DbConnection)
+	db := common.SetupTestDB(t, &audio.Playlist{}, &audio.Track{}, &audio.PlaylistTrack{})
+	repo := NewPlaylistRepository(db)
 
 	t.Run("Success_Case", func(t *testing.T) {
 		playlistToCreate := &audio.Playlist{Name: "Combat Music"}

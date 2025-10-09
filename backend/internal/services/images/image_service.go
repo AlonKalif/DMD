@@ -128,7 +128,7 @@ func (s *Service) addNewImages(diskFiles map[string]bool, dbImages map[string]ui
 			if err := s.repo.CreateImageEntry(img); err != nil {
 				s.log.Error("Failed to create image record", "file", fileName, "error", err)
 			} else {
-				s.log.Info("New image discovered and added to database", "file", fileName)
+				s.log.Info("New image found and added to database", "file", fileName)
 			}
 		}
 	}
