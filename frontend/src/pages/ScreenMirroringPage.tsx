@@ -3,9 +3,9 @@ import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirror
 import { AssetSelectionBar } from 'components/screen-mirroring/AssetSelectionBar';
 import { useBroadcastChannel } from 'hooks/useBroadcastChannel';
 import { MediaAsset } from 'types/api';
-import axios from 'axios';
 import clsx from 'clsx';
 import { API_BASE_URL } from 'config';
+import { useAppSelector } from 'app/hooks'; // Import the Redux selector hook
 
 type PreviewStatus = 'empty' | 'staged' | 'live';
 
@@ -17,38 +17,34 @@ interface PreviewState {
 export default function ScreenMirroringPage() {
     const [preview, setPreview] = useState<PreviewState>({ status: 'empty', url: null });
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [assets, setAssets] = useState<MediaAsset[]>([]);
+
+    // Get the image list directly from the Redux store.
+    const assets = useAppSelector((state) => state.images.items);
+
     const channel = useBroadcastChannel('dmd-channel', () => {});
 
-
+    // This useEffect for cleaning up object URLs remains.
     useEffect(() => {
         return () => {
-            if (preview.url) URL.revokeObjectURL(preview.url);
+            if (preview.url?.startsWith('blob:')) {
+                URL.revokeObjectURL(preview.url);
+            }
         };
     }, [preview.url]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (preview.url) URL.revokeObjectURL(preview.url);
+        if (preview.url?.startsWith('blob:')) {
+            URL.revokeObjectURL(preview.url);
+        }
         const file = event.target.files?.[0];
         if (file) {
             setPreview({ status: 'staged', url: URL.createObjectURL(file) });
         }
     };
 
-    // Fetch the list of images images from the backend when the component mounts.
-    useEffect(() => {
-        axios.get<MediaAsset[]>(`${API_BASE_URL}/api/v1/assets/media`)
-            .then(response => {
-                setAssets(response.data);
-                console.log(response.data)
-            })
-            .catch(error => {
-                console.error("Failed to fetch images images:", error);
-            });
-    }, []);
+    // The useEffect for fetching data is now removed from this component.
 
     const handleAssetSelect = (asset: MediaAsset) => {
-        // When a thumbnail is clicked, stage it for preview.
         const assetUrl = `${API_BASE_URL}/static/${asset.file_path}`;
         setPreview({ status: 'staged', url: assetUrl });
     };

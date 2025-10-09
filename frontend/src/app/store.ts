@@ -7,6 +7,7 @@ import npcsReducer from 'features/characterManager/npcsSlice';
 import combatReducer from 'features/combatTracker/combatSlice';
 import uiReducer from 'features/ui/uiSlice';
 import displayReducer from '../features/display/displaySlice';
+import imagesReducer from '../features/images/imageSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     npcs: npcsReducer,
     audio: audioReducer,
     display: displayReducer,
+    images: imagesReducer,
   },
 });
 
