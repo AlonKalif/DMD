@@ -13,7 +13,6 @@ import (
 	"dmd/backend/internal/api/handlers/gameplay/spells"
 	"dmd/backend/internal/api/handlers/healthChecker"
 	"dmd/backend/internal/api/handlers/system"
-	"dmd/backend/internal/api/handlers/websocket"
 )
 
 type routeDetails struct {
@@ -43,5 +42,4 @@ var apiRoutes = []routeDetails{
 	newRouteDetails("/images/images", assets.NewMediaAssetsHandler),
 	newRouteDetails("/images/sync", assets.NewSyncMediaAssetsHandler),
 	newRouteDetails("/system", system.NewSystemHandler),
-	newRouteDetails("/ws", websocket.NewWebsocketHandler),
 }

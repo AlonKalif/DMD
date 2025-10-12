@@ -4,7 +4,6 @@ package websocket
 import (
 	websocket2 "dmd/backend/internal/model/websocket"
 	"encoding/json"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -22,23 +21,21 @@ func NewClient(conn *websocket.Conn, manager *Manager) *Client {
 		manager: manager,
 		send:    make(chan []byte, 256),
 	}
-	// Start the read and write pumps in separate goroutines.
-	go client.readPump()
-	go client.writePump()
+
 	return client
 }
 
-// readPump pumps messages from the WebSocket connection to the manager.
-func (c *Client) readPump() {
+// ReadPump pumps messages from the WebSocket connection to the manager.
+func (c *Client) ReadPump() {
 	defer func() {
 		c.manager.unregister <- c
 		c.conn.Close()
 	}()
-	time.Sleep(1 * time.Second)
+
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
-			c.manager.log.Error("ReadPump error", "error", err)
+			c.manager.log.Error("ReadPump error", "error", err, "msg", string(messageBytes))
 			break
 		}
 
@@ -57,8 +54,8 @@ func (c *Client) readPump() {
 	}
 }
 
-// writePump pumps messages from the manager to the WebSocket connection.
-func (c *Client) writePump() {
+// WritePump pumps messages from the manager to the WebSocket connection.
+func (c *Client) WritePump() {
 	defer c.conn.Close()
 	for message := range c.send {
 		if err := c.conn.WriteMessage(websocket.TextMessage, message); err != nil {

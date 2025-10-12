@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useWebSocket } from 'hooks/useWebSocket';
 import { useAppDispatch } from 'app/hooks';
 import { fetchImages } from 'features/images/imageSlice';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import {API_BASE_URL} from "config";
 
 export default function DmLayout() {
@@ -15,14 +15,16 @@ export default function DmLayout() {
     }, [dispatch]);
 
     // Handle incoming WebSocket messages
-    const handleWebSocketMessage = (message: any) => {
+    // Memoize this function with useCallback
+    const handleWebSocketMessage = useCallback((message: any) => {
         if (message.type === 'images_updated') {
             console.log('Image library updated via WebSocket, re-fetching...');
             dispatch(fetchImages());
         }
-    };
+    }, [dispatch]); // Add dispatch as a dependency
 
-    useWebSocket(`${API_BASE_URL}/api/v1/ws`, handleWebSocketMessage);
+    // Now, the onMessage function is stable between re-renders
+    useWebSocket(`${API_BASE_URL}/ws`, handleWebSocketMessage);
 
     return (
         <div className="pb-16">

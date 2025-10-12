@@ -1,14 +1,12 @@
+// File: /internal/api/handlers/websocket/websocket_handler.go
 package websocket
 
 import (
-	"dmd/backend/internal/api/common"
-	"dmd/backend/internal/api/common/errors"
-	"dmd/backend/internal/api/common/utils"
-	"dmd/backend/internal/api/handlers"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,37 +14,39 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// return r.Header.Get("Origin") == "http://localhost:3000"
 		return true // Allow all origins for development
 	},
 }
 
-type WebsocketHandler struct {
-	handlers.BaseHandler
-	log     *slog.Logger
-	manager *wsService.Manager
+// RegisterWebsocketRoutes sets up the dedicated WebSocket endpoint on the main router.
+func RegisterWebsocketRoutes(router *mux.Router, log *slog.Logger, manager *wsService.Manager) {
+	router.HandleFunc("/ws", serveWs(log, manager))
+	log.Debug("/ws route registered")
 }
 
-func NewWebsocketHandler(rs *common.RoutingServices, path string) common.IHandler {
-	return &WebsocketHandler{
-		BaseHandler: handlers.NewBaseHandler(path),
-		log:         rs.Log,
-		manager:     rs.WsManager,
-	}
-}
+// serveWs returns a standard http.HandlerFunc that handles the WebSocket upgrade.
+func serveWs(log *slog.Logger, manager *wsService.Manager) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Debug("Websocket handler called")
+		// Upgrade the HTTP connection to a WebSocket connection.
+		conn, err := upgrader.Upgrade(w, r, nil)
+		log.Debug("Websocket upgrader connected")
+		if err != nil {
+			// The upgrader automatically sends an HTTP error response,
+			// so we just need to log the error and return.
+			log.Error("Failed to upgrade connection", "error", err)
+			return
+		}
 
-// Get Upgrades connection, creates new client, register to manager
-func (ws *WebsocketHandler) Get(w http.ResponseWriter, r *http.Request) {
-	newConn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		ws.log.Error("Failed to upgrade to ws connection", "error", err)
-		utils.RespondWithError(w, errors.NewInternalError(err.Error()))
-		return
-	}
-	newClient := wsService.NewClient(newConn, ws.manager)
-	ws.log.Debug("New client created", "client", newClient)
-	ws.manager.RegisterClient(newClient)
-	ws.log.Debug("New client registered", "client", newClient)
+		// Create a new client and register it with the manager.
+		client := wsService.NewClient(conn, manager)
+		log.Debug("Websocket client created")
+		manager.RegisterClient(client)
+		log.Debug("Websocket client connected")
 
-	// Not responding because connection is now 'hijacked' (upgraded)
+		// Start the goroutines to handle reading and writing for this client.
+		go client.WritePump()
+		go client.ReadPump()
+
+	}
 }

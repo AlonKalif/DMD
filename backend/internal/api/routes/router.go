@@ -2,6 +2,7 @@ package routes
 
 import (
 	"dmd/backend/internal/api/common"
+	"dmd/backend/internal/api/handlers/websocket"
 	"dmd/backend/internal/api/middleware"
 	"log/slog"
 	"net/http"
@@ -13,12 +14,17 @@ func NewRouter(rs *common.RoutingServices, staticAssetsPath string) *mux.Router 
 	newRouter := mux.NewRouter()
 	applyMiddleware(newRouter, rs.Log)
 
-	// Register the static file server on the main router.
+	// Register the static file server on the main router
 	fs := http.FileServer(http.Dir(staticAssetsPath))
 	newRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
-	// Register the API subrouter.
+	// Register the WebSocket handler directly on the main router
+	websocket.RegisterWebsocketRoutes(newRouter, rs.Log, rs.WsManager)
+
+	// Register the API sub-router
 	apiV1 := newRouter.PathPrefix("/api/v1").Subrouter()
+
+	// Register API routes on the sub-router
 	registerRoutes(apiV1, rs)
 
 	return newRouter
