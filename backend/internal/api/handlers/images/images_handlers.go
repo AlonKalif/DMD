@@ -1,4 +1,4 @@
-package assets
+package images
 
 import (
 	"dmd/backend/internal/api/common"
@@ -20,22 +20,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type MediaAssetsHandler struct {
+type ImagesHandler struct {
 	handlers.BaseHandler
 	repo repos.ImagesRepository
 	log  *slog.Logger
 }
 
 // Refactor. Handler should use the image service instead of image repo
-func NewMediaAssetsHandler(rs *common.RoutingServices, path string) common.IHandler {
-	return &MediaAssetsHandler{
+func NewImagesHandler(rs *common.RoutingServices, path string) common.IHandler {
+	return &ImagesHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
 		repo:        images_repo.NewImagesRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }
 
-func (h *MediaAssetsHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if _, ok := mux.Vars(r)["id"]; ok {
 		h.getMediaAssetByID(w, r)
 	} else {
@@ -43,7 +43,7 @@ func (h *MediaAssetsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MediaAssetsHandler) Post(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	var newAsset images.ImageEntry
 	if err := json.NewDecoder(r.Body).Decode(&newAsset); err != nil {
 		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid request body", err))
@@ -56,7 +56,7 @@ func (h *MediaAssetsHandler) Post(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusCreated, newAsset)
 }
 
-func (h *MediaAssetsHandler) Put(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) Put(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.RespondWithError(w, err)
@@ -75,7 +75,7 @@ func (h *MediaAssetsHandler) Put(w http.ResponseWriter, r *http.Request) {
 	utils.RespondWithJSON(w, http.StatusOK, updatedAsset)
 }
 
-func (h *MediaAssetsHandler) Delete(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.RespondWithError(w, err)
@@ -89,7 +89,7 @@ func (h *MediaAssetsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper Methods
-func (h *MediaAssetsHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	page, _ := strconv.Atoi(queryParams.Get("page"))
 	pageSize, _ := strconv.Atoi(queryParams.Get("pageSize"))
@@ -107,7 +107,7 @@ func (h *MediaAssetsHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Re
 	utils.RespondWithJSON(w, http.StatusOK, assets)
 }
 
-func (h *MediaAssetsHandler) getMediaAssetByID(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) getMediaAssetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.RespondWithError(w, err)

@@ -1,4 +1,4 @@
-package assets
+package images
 
 import (
 	"dmd/backend/internal/api/common/utils"
@@ -12,7 +12,7 @@ import (
 
 func TestMediaAssetCRUD(t *testing.T) {
 	rs, _ := utils.SetupTestEnvironment(t, &images.ImageEntry{})
-	handler := NewMediaAssetsHandler(rs, "/images/images")
+	handler := NewImagesHandler(rs, "/images/images")
 
 	// Test CREATE
 	var createdAsset images.ImageEntry
@@ -37,7 +37,7 @@ func TestMediaAssetCRUD(t *testing.T) {
 
 func TestMediaAssetFiltering(t *testing.T) {
 	rs, db := utils.SetupTestEnvironment(t, &images.ImageEntry{})
-	handler := NewMediaAssetsHandler(rs, "/images/images")
+	handler := NewImagesHandler(rs, "/images/images")
 
 	// Seed Data
 	db.Create(&images.ImageEntry{Name: "World Map", Type: images.ImageTypeMap, FilePath: "maps/world.png"})
