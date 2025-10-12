@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/character"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/character_repo"
 	ws "dmd/backend/internal/services/websocket"
 	"encoding/json"
 	"errors"
@@ -22,7 +23,7 @@ import (
 
 type CharactersHandler struct {
 	handlers.BaseHandler
-	repo      storage.CharacterRepository
+	repo      repos.CharacterRepository
 	log       *slog.Logger
 	wsManager *ws.Manager
 }
@@ -30,7 +31,7 @@ type CharactersHandler struct {
 func NewCharactersHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &CharactersHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewCharacterRepository(rs.DbConnection),
+		repo:        character_repo.NewCharacterRepository(rs.DbConnection),
 		log:         rs.Log,
 		wsManager:   rs.WsManager,
 	}

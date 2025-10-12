@@ -1,8 +1,8 @@
-package storage
+package playlist_repo
 
 import (
 	"dmd/backend/internal/model/audio"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

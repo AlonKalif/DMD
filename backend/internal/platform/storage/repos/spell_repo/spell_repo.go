@@ -1,8 +1,9 @@
-package storage
+package spell_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/gameplay"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +12,7 @@ type spellRepo struct {
 	db *gorm.DB
 }
 
-func NewSpellRepository(db *gorm.DB) SpellRepository {
+func NewSpellRepository(db *gorm.DB) repos.SpellRepository {
 	return &spellRepo{db: db}
 }
 

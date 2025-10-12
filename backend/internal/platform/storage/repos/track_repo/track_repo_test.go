@@ -1,8 +1,8 @@
-package storage
+package track_repo
 
 import (
 	"dmd/backend/internal/model/audio"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

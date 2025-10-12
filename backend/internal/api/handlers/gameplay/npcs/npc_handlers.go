@@ -8,7 +8,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/character"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/npc_repo"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -22,14 +23,14 @@ import (
 
 type NPCsHandler struct {
 	handlers.BaseHandler
-	repo storage.NPCRepository
+	repo repos.NPCRepository
 	log  *slog.Logger
 }
 
 func NewNPCsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &NPCsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewNPCRepository(rs.DbConnection),
+		repo:        npc_repo.NewNPCRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

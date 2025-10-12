@@ -6,6 +6,7 @@ import (
 	"dmd/backend/internal/api/routes"
 	"dmd/backend/internal/platform/logger"
 	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos/images_repo"
 	"dmd/backend/internal/services/images"
 	"dmd/backend/internal/services/websocket"
 	"encoding/json"
@@ -89,7 +90,7 @@ func runMigrations(log *slog.Logger, db *gorm.DB) {
 }
 
 func initImagesService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manager, imagesPath string) *images.Service {
-	imgRepo := storage.NewImagesRepository(db)
+	imgRepo := images_repo.NewImagesRepository(db)
 	imgService := images.NewService(log, imgRepo, wsManager, imagesPath)
 	return imgService
 }

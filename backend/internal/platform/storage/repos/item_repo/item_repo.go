@@ -1,9 +1,10 @@
 // File: /internal/platform/storage/item_repo.go
-package storage
+package item_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/gameplay"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ type itemRepo struct {
 	db *gorm.DB
 }
 
-func NewItemRepository(db *gorm.DB) ItemRepository {
+func NewItemRepository(db *gorm.DB) repos.ItemRepository {
 	return &itemRepo{db: db}
 }
 

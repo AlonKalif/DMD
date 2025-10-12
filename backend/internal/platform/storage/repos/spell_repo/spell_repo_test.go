@@ -1,8 +1,8 @@
-package storage
+package spell_repo
 
 import (
 	"dmd/backend/internal/model/gameplay"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

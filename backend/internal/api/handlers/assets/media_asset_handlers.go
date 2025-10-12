@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/images"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/images_repo"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -21,7 +22,7 @@ import (
 
 type MediaAssetsHandler struct {
 	handlers.BaseHandler
-	repo storage.ImagesRepository
+	repo repos.ImagesRepository
 	log  *slog.Logger
 }
 
@@ -29,7 +30,7 @@ type MediaAssetsHandler struct {
 func NewMediaAssetsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &MediaAssetsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewImagesRepository(rs.DbConnection),
+		repo:        images_repo.NewImagesRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

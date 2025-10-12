@@ -1,9 +1,10 @@
 // File: /internal/platform/storage/playlist_repo.go
-package storage
+package playlist_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/audio"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ type playlistRepo struct {
 	db *gorm.DB
 }
 
-func NewPlaylistRepository(db *gorm.DB) PlaylistRepository {
+func NewPlaylistRepository(db *gorm.DB) repos.PlaylistRepository {
 	return &playlistRepo{db: db}
 }
 

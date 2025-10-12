@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/gameplay"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/spell_repo"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -21,14 +22,14 @@ import (
 
 type SpellsHandler struct {
 	handlers.BaseHandler
-	repo storage.SpellRepository
+	repo repos.SpellRepository
 	log  *slog.Logger
 }
 
 func NewSpellsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &SpellsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewSpellRepository(rs.DbConnection),
+		repo:        spell_repo.NewSpellRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

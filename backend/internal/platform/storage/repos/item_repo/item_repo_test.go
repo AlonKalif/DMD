@@ -1,8 +1,8 @@
-package storage
+package item_repo
 
 import (
 	"dmd/backend/internal/model/gameplay"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

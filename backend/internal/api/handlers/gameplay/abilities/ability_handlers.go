@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/character"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/ability_repo"
 	ws "dmd/backend/internal/services/websocket"
 	"encoding/json"
 	"log/slog"
@@ -17,7 +18,7 @@ import (
 
 type AbilitiesHandler struct {
 	handlers.BaseHandler
-	repo      storage.AbilityRepository
+	repo      repos.AbilityRepository
 	log       *slog.Logger
 	wsManager *ws.Manager
 }
@@ -25,7 +26,7 @@ type AbilitiesHandler struct {
 func NewAbilitiesHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &AbilitiesHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewAbilityRepository(rs.DbConnection),
+		repo:        ability_repo.NewAbilityRepository(rs.DbConnection),
 		log:         rs.Log,
 		wsManager:   rs.WsManager,
 	}

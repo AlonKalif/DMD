@@ -1,9 +1,10 @@
 // File: /internal/platform/storage/npc_repo.go
-package storage
+package npc_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/character"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ type npcRepo struct {
 	db *gorm.DB
 }
 
-func NewNPCRepository(db *gorm.DB) NPCRepository {
+func NewNPCRepository(db *gorm.DB) repos.NPCRepository {
 	return &npcRepo{db: db}
 }
 

@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/combat"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/combat_repo"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -18,14 +19,14 @@ import (
 
 type CombatHandler struct {
 	handlers.BaseHandler
-	repo storage.CombatRepository
+	repo repos.CombatRepository
 	log  *slog.Logger
 }
 
 func NewCombatHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &CombatHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewCombatRepository(rs.DbConnection),
+		repo:        combat_repo.NewCombatRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

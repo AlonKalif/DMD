@@ -1,8 +1,8 @@
-package storage
+package images_repo
 
 import (
 	"dmd/backend/internal/model/images"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

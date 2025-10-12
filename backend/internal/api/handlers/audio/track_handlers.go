@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/audio"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/track_repo"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -20,14 +21,14 @@ import (
 
 type TracksHandler struct {
 	handlers.BaseHandler
-	repo storage.TrackRepository
+	repo repos.TrackRepository
 	log  *slog.Logger
 }
 
 func NewTracksHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &TracksHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewTrackRepository(rs.DbConnection),
+		repo:        track_repo.NewTrackRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

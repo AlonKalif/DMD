@@ -1,5 +1,5 @@
 // File: /internal/platform/storage/repository.go
-package storage
+package repos
 
 import (
 	"dmd/backend/internal/api/common/filters"

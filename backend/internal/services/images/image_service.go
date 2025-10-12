@@ -5,7 +5,7 @@ import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/images"
 	"dmd/backend/internal/model/websocket"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
 	"dmd/backend/internal/services/watcher"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
@@ -18,13 +18,13 @@ import (
 
 type Service struct {
 	log        *slog.Logger
-	repo       storage.ImagesRepository
+	repo       repos.ImagesRepository
 	wsManager  *wsService.Manager
 	dirWatcher *watcher.Service
 	imagesPath string
 }
 
-func NewService(log *slog.Logger, repo storage.ImagesRepository, wsManager *wsService.Manager, imagesPath string) *Service {
+func NewService(log *slog.Logger, repo repos.ImagesRepository, wsManager *wsService.Manager, imagesPath string) *Service {
 	newImgSvc := &Service{}
 	newImgSvc.log = log
 	newImgSvc.repo = repo

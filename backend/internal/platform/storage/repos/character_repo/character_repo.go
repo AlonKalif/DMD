@@ -1,9 +1,10 @@
 // File: /internal/platform/storage/character_repo.go
-package storage
+package character_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/character"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -16,7 +17,7 @@ type characterRepo struct {
 
 // NewCharacterRepository now returns the interface type.
 // This hides the concrete implementation from the rest of the application.
-func NewCharacterRepository(db *gorm.DB) CharacterRepository {
+func NewCharacterRepository(db *gorm.DB) repos.CharacterRepository {
 	return &characterRepo{db: db}
 }
 

@@ -1,9 +1,10 @@
 // File: /internal/platform/storage/track_repo.go
-package storage
+package track_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/audio"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -12,7 +13,7 @@ type trackRepo struct {
 	db *gorm.DB
 }
 
-func NewTrackRepository(db *gorm.DB) TrackRepository {
+func NewTrackRepository(db *gorm.DB) repos.TrackRepository {
 	return &trackRepo{db: db}
 }
 

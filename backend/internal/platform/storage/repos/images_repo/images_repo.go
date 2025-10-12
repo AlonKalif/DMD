@@ -1,8 +1,9 @@
-package storage
+package images_repo
 
 import (
 	"dmd/backend/internal/api/common/filters"
 	"dmd/backend/internal/model/images"
+	"dmd/backend/internal/platform/storage/repos"
 
 	"gorm.io/gorm"
 )
@@ -11,7 +12,7 @@ type imagesRepo struct {
 	db *gorm.DB
 }
 
-func NewImagesRepository(db *gorm.DB) ImagesRepository {
+func NewImagesRepository(db *gorm.DB) repos.ImagesRepository {
 	return &imagesRepo{db: db}
 }
 

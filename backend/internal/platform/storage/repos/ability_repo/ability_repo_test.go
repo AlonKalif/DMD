@@ -1,8 +1,8 @@
-package storage
+package ability_repo
 
 import (
 	"dmd/backend/internal/model/character"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 

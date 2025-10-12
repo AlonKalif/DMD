@@ -8,7 +8,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/gameplay"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/item_repo"
 	ws "dmd/backend/internal/services/websocket"
 	"encoding/json"
 	"errors"
@@ -23,7 +24,7 @@ import (
 
 type ItemsHandler struct {
 	handlers.BaseHandler
-	repo      storage.ItemRepository
+	repo      repos.ItemRepository
 	log       *slog.Logger
 	wsManager *ws.Manager
 }
@@ -31,7 +32,7 @@ type ItemsHandler struct {
 func NewItemsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &ItemsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewItemRepository(rs.DbConnection),
+		repo:        item_repo.NewItemRepository(rs.DbConnection),
 		log:         rs.Log,
 		wsManager:   rs.WsManager,
 	}

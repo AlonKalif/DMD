@@ -7,7 +7,8 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/model/audio"
-	"dmd/backend/internal/platform/storage"
+	"dmd/backend/internal/platform/storage/repos"
+	"dmd/backend/internal/platform/storage/repos/playlist_repo"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -15,14 +16,14 @@ import (
 
 type PlaylistsHandler struct {
 	handlers.BaseHandler
-	repo storage.PlaylistRepository
+	repo repos.PlaylistRepository
 	log  *slog.Logger
 }
 
 func NewPlaylistsHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &PlaylistsHandler{
 		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        storage.NewPlaylistRepository(rs.DbConnection),
+		repo:        playlist_repo.NewPlaylistRepository(rs.DbConnection),
 		log:         rs.Log,
 	}
 }

@@ -1,8 +1,8 @@
-package storage
+package combat_repo
 
 import (
 	"dmd/backend/internal/model/combat"
-	"dmd/backend/internal/platform/storage/common"
+	"dmd/backend/internal/platform/storage/repos/common"
 	"testing"
 )
 
