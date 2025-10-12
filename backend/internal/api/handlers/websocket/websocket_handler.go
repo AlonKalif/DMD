@@ -21,16 +21,13 @@ var upgrader = websocket.Upgrader{
 // RegisterWebsocketRoutes sets up the dedicated WebSocket endpoint on the main router.
 func RegisterWebsocketRoutes(router *mux.Router, log *slog.Logger, manager *wsService.Manager) {
 	router.HandleFunc("/ws", serveWs(log, manager))
-	log.Debug("/ws route registered")
 }
 
 // serveWs returns a standard http.HandlerFunc that handles the WebSocket upgrade.
 func serveWs(log *slog.Logger, manager *wsService.Manager) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Debug("Websocket handler called")
 		// Upgrade the HTTP connection to a WebSocket connection.
 		conn, err := upgrader.Upgrade(w, r, nil)
-		log.Debug("Websocket upgrader connected")
 		if err != nil {
 			// The upgrader automatically sends an HTTP error response,
 			// so we just need to log the error and return.
@@ -40,9 +37,7 @@ func serveWs(log *slog.Logger, manager *wsService.Manager) http.HandlerFunc {
 
 		// Create a new client and register it with the manager.
 		client := wsService.NewClient(conn, manager)
-		log.Debug("Websocket client created")
 		manager.RegisterClient(client)
-		log.Debug("Websocket client connected")
 
 		// Start the goroutines to handle reading and writing for this client.
 		go client.WritePump()
