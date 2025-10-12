@@ -44,8 +44,9 @@ func (ws *WebsocketHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	newClient := wsService.NewClient(newConn, ws.manager)
-
+	ws.log.Debug("New client created", "client", newClient)
 	ws.manager.RegisterClient(newClient)
+	ws.log.Debug("New client registered", "client", newClient)
 
 	// Not responding because connection is now 'hijacked' (upgraded)
 }

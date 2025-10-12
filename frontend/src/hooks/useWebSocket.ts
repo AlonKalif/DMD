@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 export function useWebSocket(url: string, onMessage: (message: any) => void) {
     useEffect(() => {
         const ws = new WebSocket(url);
-
+        console.log("websocket reated", ws)
         ws.onopen = () => console.log('WebSocket connected');
         ws.onclose = () => console.log('WebSocket disconnected');
         ws.onerror = (error) => console.error('WebSocket error:', error);

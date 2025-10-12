@@ -38,7 +38,7 @@ func (c *Client) readPump() {
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
-			c.manager.log.Warn("ReadPump error", "error", err)
+			c.manager.log.Error("ReadPump error", "error", err)
 			break
 		}
 
