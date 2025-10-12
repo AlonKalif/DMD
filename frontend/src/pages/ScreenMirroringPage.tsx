@@ -5,7 +5,7 @@ import { useBroadcastChannel } from 'hooks/useBroadcastChannel';
 import { MediaAsset } from 'types/api';
 import clsx from 'clsx';
 import { API_BASE_URL } from 'config';
-import { useAppSelector } from 'app/hooks'; // Import the Redux selector hook
+import { useAppSelector } from 'app/hooks';
 
 type PreviewStatus = 'empty' | 'staged' | 'live';
 
@@ -17,13 +17,9 @@ interface PreviewState {
 export default function ScreenMirroringPage() {
     const [preview, setPreview] = useState<PreviewState>({ status: 'empty', url: null });
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Get the image list directly from the Redux store.
     const assets = useAppSelector((state) => state.images.items);
-
     const channel = useBroadcastChannel('dmd-channel', () => {});
 
-    // This useEffect for cleaning up object URLs remains.
     useEffect(() => {
         return () => {
             if (preview.url?.startsWith('blob:')) {
@@ -41,8 +37,6 @@ export default function ScreenMirroringPage() {
             setPreview({ status: 'staged', url: URL.createObjectURL(file) });
         }
     };
-
-    // The useEffect for fetching data is now removed from this component.
 
     const handleAssetSelect = (asset: MediaAsset) => {
         const assetUrl = `${API_BASE_URL}/static/${asset.file_path}`;
@@ -68,15 +62,26 @@ export default function ScreenMirroringPage() {
         }
     };
 
+    // New handler to reset state if the player window is closed while an image is live.
+    const handlePlayerWindowClose = () => {
+        if (preview.status === 'live') {
+            setPreview({ ...preview, status: 'staged' });
+        }
+    };
+
     return (
         <div className="flex h-screen flex-col">
             <ScreenMirroringToolbar
                 previewStatus={preview.status}
-                onBrowseClick={() => fileInputRef.current?.click()}
                 onShowToPlayersClick={handleShowToPlayers}
                 onHideFromPlayersClick={handleHideFromPlayers}
+                onPlayerWindowClose={handlePlayerWindowClose}
             />
-            <AssetSelectionBar assets={assets} onAssetSelect={handleAssetSelect} />
+            <AssetSelectionBar
+                assets={assets}
+                onAssetSelect={handleAssetSelect}
+                onBrowseClick={() => fileInputRef.current?.click()}
+            />
             <main className="flex flex-1 items-center justify-center bg-gray-900 p-4">
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*,video/*" />
                 <div className={clsx(
