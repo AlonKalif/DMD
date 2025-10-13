@@ -1,5 +1,5 @@
 // File: /src/pages/PlayerDisplayPage.tsx
-import { useCallback } from 'react'; // Only need useEffect and useCallback
+import { useCallback } from 'react';
 import { useBroadcastChannel, BroadcastMessage} from '../hooks/useBroadcastChannel';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setCurrentContent, clearContent } from 'features/display/displaySlice';
@@ -9,7 +9,6 @@ export default function PlayerDisplayPage() {
     const dispatch = useAppDispatch();
     const currentContent = useAppSelector((state) => state.display.currentContent);
 
-    // --- Broadcast Channel Message Handler (Content Only) ---
     const handleBroadcastMessage = useCallback((message: BroadcastMessage) => {
         if (message.type === 'show_image') {
             dispatch(setCurrentContent({ type: 'image', payload: message.payload }));
@@ -19,13 +18,7 @@ export default function PlayerDisplayPage() {
         }
     }, [dispatch]);
 
-    // Use the Broadcast Channel for content synchronization
-    // We no longer need to report status back.
     useBroadcastChannel('dmd-channel', handleBroadcastMessage);
-
-
-    // All fullscreen-related states and effects (showPrompt, reportFullscreenStatus,
-    // and listeners for 'fullscreenchange' and 'window.postMessage') are removed.
 
     return (
         <div

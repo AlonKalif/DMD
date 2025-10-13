@@ -8,7 +8,6 @@ interface ScreenMirroringToolbarProps {
     onShowToPlayersClick: () => void;
     onHideFromPlayersClick: () => void;
     onPlayerWindowClose: () => void;
-    // isPlayerFullScreen prop removed
 }
 
 export function ScreenMirroringToolbar({
@@ -16,12 +15,11 @@ export function ScreenMirroringToolbar({
                                            onShowToPlayersClick,
                                            onHideFromPlayersClick,
                                            onPlayerWindowClose,
-                                           // isPlayerFullScreen removed
                                        }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
 
-    // Window lifecycle effect (unchanged)
+    // Window lifecycle effect
     useEffect(() => {
         if (!playerWindow) return;
         const intervalId = setInterval(() => {
@@ -34,7 +32,6 @@ export function ScreenMirroringToolbar({
         return () => clearInterval(intervalId);
     }, [playerWindow, onPlayerWindowClose]);
 
-    // Opens the player window (unchanged)
     const openPlayerWindow = () => {
         if (!isPlayerWindowOpen) {
             const newWindow = window.open('/player', 'dmdPlayerWindow', 'popup,width=1280,height=720');
@@ -42,7 +39,6 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    // Closes the player window (unchanged)
     const closePlayerWindow = () => {
         if (isPlayerWindowOpen) {
             playerWindow?.close();
@@ -50,7 +46,6 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    // Handler for Button 1 (Open/Close) (unchanged)
     const handleOpenCloseClick = () => {
         if (isPlayerWindowOpen) {
             closePlayerWindow();
@@ -59,7 +54,6 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    // Handler for Button 2 (Show/Hide) (unchanged)
     const handleShowHideClick = () => {
         if (previewStatus === 'live') {
             onHideFromPlayersClick();
@@ -68,18 +62,17 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    // Handler for NEW Button 3 (Focus)
     const handleFocusClick = () => {
         if (isPlayerWindowOpen && playerWindow) {
             playerWindow.focus();
         }
     };
 
-    // --- Button 1 (Open/Close) Logic ---
+    // Open / Close Button
     const openCloseText = isPlayerWindowOpen ? 'Close Players Window' : 'Open Players Window';
     const openCloseColor = isPlayerWindowOpen ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
 
-    // --- Button 2 (Show/Hide) Logic ---
+    // Show / Hide Button
     const showHideText = previewStatus === 'live' ? 'Hide From Players' : 'Show To Players';
     const isShowHideDisabled = !isPlayerWindowOpen || previewStatus === 'empty';
     const showHideColor = isShowHideDisabled
@@ -88,7 +81,7 @@ export function ScreenMirroringToolbar({
             ? 'bg-orange-600 hover:bg-orange-700'
             : 'bg-green-600 hover:bg-green-700';
 
-    // --- Button 3 (Focus) Logic ---
+    // Focus Button
     const focusText = 'Focus On Player Window';
     const isFocusDisabled = !isPlayerWindowOpen;
     const focusColor = isFocusDisabled

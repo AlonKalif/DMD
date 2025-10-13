@@ -1,12 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
 import { AssetSelectionBar } from 'components/screen-mirroring/AssetSelectionBar';
-// Assuming the types and hook structure for useBroadcastChannel and Redux are defined elsewhere
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
-import { MediaAsset } from 'types/api'; // Assuming this interface is defined
+import { MediaAsset } from 'types/api';
 import clsx from 'clsx';
-import { API_BASE_URL } from 'config'; // Assuming base URL is defined
-import { useAppSelector } from 'app/hooks'; // Assuming Redux selector hook is defined
+import { API_BASE_URL } from 'config';
+import { useAppSelector } from 'app/hooks';
 
 type PreviewStatus = 'empty' | 'staged' | 'live';
 
@@ -21,8 +20,6 @@ export default function ScreenMirroringPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const assets = useAppSelector((state) => state.images.items);
 
-    // This handler must be correctly defined. It currently only logs messages
-    // as no two-way communication is needed besides player window status (which is gone).
     const handleChannelMessage = (message: BroadcastMessage) => {
         // Handle any future player-initiated messages here (e.g., player feedback).
         console.log(`Received message from player channel: ${message.type}`);
@@ -30,7 +27,7 @@ export default function ScreenMirroringPage() {
 
     const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
 
-    // Existing useEffect for cleaning up object URLs
+    // For cleaning up object URLs
     useEffect(() => {
         return () => {
             if (preview.url?.startsWith('blob:')) {
