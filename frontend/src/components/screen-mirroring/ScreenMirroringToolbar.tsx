@@ -8,6 +8,7 @@ interface ScreenMirroringToolbarProps {
     onShowToPlayersClick: () => void;
     onHideFromPlayersClick: () => void;
     onPlayerWindowClose: () => void;
+    // isPlayerFullScreen prop removed
 }
 
 export function ScreenMirroringToolbar({
@@ -15,10 +16,12 @@ export function ScreenMirroringToolbar({
                                            onShowToPlayersClick,
                                            onHideFromPlayersClick,
                                            onPlayerWindowClose,
+                                           // isPlayerFullScreen removed
                                        }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
 
+    // Window lifecycle effect (unchanged)
     useEffect(() => {
         if (!playerWindow) return;
         const intervalId = setInterval(() => {
@@ -31,52 +34,96 @@ export function ScreenMirroringToolbar({
         return () => clearInterval(intervalId);
     }, [playerWindow, onPlayerWindowClose]);
 
-    const openOrFocusPlayerWindow = () => {
+    // Opens the player window (unchanged)
+    const openPlayerWindow = () => {
+        if (!isPlayerWindowOpen) {
+            const newWindow = window.open('/player', 'dmdPlayerWindow', 'popup,width=1280,height=720');
+            setPlayerWindow(newWindow);
+        }
+    };
+
+    // Closes the player window (unchanged)
+    const closePlayerWindow = () => {
         if (isPlayerWindowOpen) {
-            playerWindow?.focus();
-            return;
+            playerWindow?.close();
+            setPlayerWindow(null);
         }
-        const newWindow = window.open('/player', 'dmdPlayerWindow', 'popup,width=1280,height=720');
-        setPlayerWindow(newWindow);
     };
 
-    const handlePrimaryActionClick = () => {
-        if (previewStatus === 'live' && isPlayerWindowOpen) {
+    // Handler for Button 1 (Open/Close) (unchanged)
+    const handleOpenCloseClick = () => {
+        if (isPlayerWindowOpen) {
+            closePlayerWindow();
+        } else {
+            openPlayerWindow();
+        }
+    };
+
+    // Handler for Button 2 (Show/Hide) (unchanged)
+    const handleShowHideClick = () => {
+        if (previewStatus === 'live') {
             onHideFromPlayersClick();
-            return;
-        }
-
-        if (previewStatus === 'staged') {
-            const wasOpen = isPlayerWindowOpen;
-            openOrFocusPlayerWindow();
-
-            if (wasOpen) {
-                onShowToPlayersClick();
-            } else {
-                setTimeout(onShowToPlayersClick, 200);
-            }
+        } else if (previewStatus === 'staged') {
+            onShowToPlayersClick();
         }
     };
 
-    const isShowingLive = previewStatus === 'live' && isPlayerWindowOpen;
-    const buttonText = isShowingLive ? 'Hide from Players' : 'Show to Players';
-    const isButtonDisabled = previewStatus === 'empty';
+    // Handler for NEW Button 3 (Focus)
+    const handleFocusClick = () => {
+        if (isPlayerWindowOpen && playerWindow) {
+            playerWindow.focus();
+        }
+    };
+
+    // --- Button 1 (Open/Close) Logic ---
+    const openCloseText = isPlayerWindowOpen ? 'Close Players Window' : 'Open Players Window';
+    const openCloseColor = isPlayerWindowOpen ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
+
+    // --- Button 2 (Show/Hide) Logic ---
+    const showHideText = previewStatus === 'live' ? 'Hide From Players' : 'Show To Players';
+    const isShowHideDisabled = !isPlayerWindowOpen || previewStatus === 'empty';
+    const showHideColor = isShowHideDisabled
+        ? 'bg-gray-500 cursor-not-allowed opacity-50'
+        : previewStatus === 'live'
+            ? 'bg-orange-600 hover:bg-orange-700'
+            : 'bg-green-600 hover:bg-green-700';
+
+    // --- Button 3 (Focus) Logic ---
+    const focusText = 'Focus On Player Window';
+    const isFocusDisabled = !isPlayerWindowOpen;
+    const focusColor = isFocusDisabled
+        ? 'bg-gray-500 cursor-not-allowed opacity-50'
+        : 'bg-purple-600 hover:bg-purple-700';
 
     return (
         <div className="flex w-full items-center gap-4 border-b border-gray-700 bg-gray-800 p-2">
+
+            {/* 1. Open/Close Button */}
             <button
-                onClick={handlePrimaryActionClick}
-                disabled={isButtonDisabled}
-                className={clsx(
-                    'rounded px-4 py-2 font-bold text-white',
-                    isShowingLive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700',
-                    isButtonDisabled && 'cursor-not-allowed opacity-50'
-                )}
+                onClick={handleOpenCloseClick}
+                className={clsx('rounded px-4 py-2 font-bold text-white', openCloseColor)}
             >
-                {buttonText}
+                {openCloseText}
             </button>
 
-            {/* The right side of the toolbar is now empty */}
+            {/* 2. Show/Hide Button */}
+            <button
+                onClick={handleShowHideClick}
+                disabled={isShowHideDisabled}
+                className={clsx('rounded px-4 py-2 font-bold text-white', showHideColor)}
+            >
+                {showHideText}
+            </button>
+
+            {/* 3. Focus Button */}
+            <button
+                onClick={handleFocusClick}
+                disabled={isFocusDisabled}
+                className={clsx('rounded px-4 py-2 font-bold text-white', focusColor)}
+            >
+                {focusText}
+            </button>
+
             <div className="ml-auto"></div>
         </div>
     );

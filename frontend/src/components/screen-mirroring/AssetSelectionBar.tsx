@@ -5,7 +5,7 @@ import { API_BASE_URL } from 'config';
 interface AssetSelectionBarProps {
     assets: MediaAsset[];
     onAssetSelect: (asset: MediaAsset) => void;
-    onBrowseClick: () => void; // New prop
+    onBrowseClick: () => void;
 }
 
 export function AssetSelectionBar({ assets, onAssetSelect, onBrowseClick }: AssetSelectionBarProps) {
@@ -29,7 +29,7 @@ export function AssetSelectionBar({ assets, onAssetSelect, onBrowseClick }: Asse
                 </div>
             )}
 
-            {/* New Browse Button pushed to the right */}
+            {/* Browse Button pushed to the right */}
             <div className="ml-auto flex-shrink-0 pl-2">
                 <button
                     onClick={onBrowseClick}

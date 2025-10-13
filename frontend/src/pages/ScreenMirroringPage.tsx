@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
 import { AssetSelectionBar } from 'components/screen-mirroring/AssetSelectionBar';
-import { useBroadcastChannel } from 'hooks/useBroadcastChannel';
-import { MediaAsset } from 'types/api';
+// Assuming the types and hook structure for useBroadcastChannel and Redux are defined elsewhere
+import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
+import { MediaAsset } from 'types/api'; // Assuming this interface is defined
 import clsx from 'clsx';
-import { API_BASE_URL } from 'config';
-import { useAppSelector } from 'app/hooks';
+import { API_BASE_URL } from 'config'; // Assuming base URL is defined
+import { useAppSelector } from 'app/hooks'; // Assuming Redux selector hook is defined
 
 type PreviewStatus = 'empty' | 'staged' | 'live';
 
@@ -16,10 +17,20 @@ interface PreviewState {
 
 export default function ScreenMirroringPage() {
     const [preview, setPreview] = useState<PreviewState>({ status: 'empty', url: null });
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const assets = useAppSelector((state) => state.images.items);
-    const channel = useBroadcastChannel('dmd-channel', () => {});
 
+    // This handler must be correctly defined. It currently only logs messages
+    // as no two-way communication is needed besides player window status (which is gone).
+    const handleChannelMessage = (message: BroadcastMessage) => {
+        // Handle any future player-initiated messages here (e.g., player feedback).
+        console.log(`Received message from player channel: ${message.type}`);
+    };
+
+    const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
+
+    // Existing useEffect for cleaning up object URLs
     useEffect(() => {
         return () => {
             if (preview.url?.startsWith('blob:')) {
@@ -62,8 +73,8 @@ export default function ScreenMirroringPage() {
         }
     };
 
-    // New handler to reset state if the player window is closed while an image is live.
     const handlePlayerWindowClose = () => {
+        // Reset preview status if it was live when the window closed
         if (preview.status === 'live') {
             setPreview({ ...preview, status: 'staged' });
         }
@@ -77,6 +88,7 @@ export default function ScreenMirroringPage() {
                 onHideFromPlayersClick={handleHideFromPlayers}
                 onPlayerWindowClose={handlePlayerWindowClose}
             />
+            {/* AssetSelectionBar is a placeholder for the component that handles asset picking */}
             <AssetSelectionBar
                 assets={assets}
                 onAssetSelect={handleAssetSelect}
