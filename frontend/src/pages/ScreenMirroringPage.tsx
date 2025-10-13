@@ -16,13 +16,33 @@ interface PreviewState {
 
 export default function ScreenMirroringPage() {
     const [preview, setPreview] = useState<PreviewState>({ status: 'empty', url: null });
-
+    const [notification, setNotification] = useState<string | null>(null);
+    const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+    const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const assets = useAppSelector((state) => state.images.items);
 
     const handleChannelMessage = (message: BroadcastMessage) => {
-        // Handle any future player-initiated messages here (e.g., player feedback).
-        console.log(`Received message from player channel: ${message.type}`);
+        if (message.type === 'response_current_content' && message.payload) {
+            setPreview({
+                status: 'live',
+                url: message.payload.url,
+            });
+        }
+        if (message.type === 'response_is_empty') {
+            // Clear any existing timer to avoid overlaps
+            if (notificationTimerRef.current) {
+                clearTimeout(notificationTimerRef.current);
+            }
+
+            setNotification('Player window is clear. Nothing to Show.');
+            setIsNotificationVisible(true); // Make it visible (fade in)
+
+            // Set a timer to fade out and then remove the notification
+            notificationTimerRef.current = setTimeout(() => {
+                setIsNotificationVisible(false); // Fade out
+            }, 2500); // Start fading out after 2.5 seconds
+        }
     };
 
     const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
@@ -77,6 +97,10 @@ export default function ScreenMirroringPage() {
         }
     };
 
+    const handleSyncWithPlayer = () => {
+        channel.postMessage({ type: 'request_current_content' });
+    };
+
     return (
         <div className="flex h-screen flex-col">
             <ScreenMirroringToolbar
@@ -84,6 +108,7 @@ export default function ScreenMirroringPage() {
                 onShowToPlayersClick={handleShowToPlayers}
                 onHideFromPlayersClick={handleHideFromPlayers}
                 onPlayerWindowClose={handlePlayerWindowClose}
+                onSyncWithPlayerClick={handleSyncWithPlayer}
             />
             {/* AssetSelectionBar is a placeholder for the component that handles asset picking */}
             <AssetSelectionBar
@@ -99,6 +124,13 @@ export default function ScreenMirroringPage() {
                     preview.status === 'staged' && 'border-blue-500 border-solid',
                     preview.status === 'live' && 'border-green-500 border-solid',
                 )}>
+                    {/* Notification Banner */}
+                    <div className={clsx(
+                        'absolute top-0 left-0 right-0 bg-blue-800/95 p-2 text-center font-semibold text-white shadow-lg transition-opacity duration-300 ease-in-out',
+                        isNotificationVisible ? 'opacity-100' : 'opacity-0'
+                    )}>
+                        {notification}
+                    </div>
 
                     {preview.status !== 'empty' && (
                         <div className={clsx(

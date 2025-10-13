@@ -8,6 +8,7 @@ interface ScreenMirroringToolbarProps {
     onShowToPlayersClick: () => void;
     onHideFromPlayersClick: () => void;
     onPlayerWindowClose: () => void;
+    onSyncWithPlayerClick: () => void;
 }
 
 export function ScreenMirroringToolbar({
@@ -15,6 +16,7 @@ export function ScreenMirroringToolbar({
                                            onShowToPlayersClick,
                                            onHideFromPlayersClick,
                                            onPlayerWindowClose,
+                                           onSyncWithPlayerClick,
                                        }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
@@ -88,6 +90,13 @@ export function ScreenMirroringToolbar({
         ? 'bg-gray-500 cursor-not-allowed opacity-50'
         : 'bg-purple-600 hover:bg-purple-700';
 
+    // Sync Button
+    const syncText = 'Get Player View';
+    const isSyncDisabled = !isPlayerWindowOpen;
+    const syncColor = isSyncDisabled
+        ? 'bg-gray-500 cursor-not-allowed opacity-50'
+        : 'bg-purple-600 hover:bg-purple-700';
+
     return (
         <div className="flex w-full items-center gap-4 border-b border-gray-700 bg-gray-800 p-2">
 
@@ -108,7 +117,16 @@ export function ScreenMirroringToolbar({
                 {showHideText}
             </button>
 
-            {/* 3. Focus Button */}
+            {/* 3. Sync Button (New) */}
+            <button
+                onClick={onSyncWithPlayerClick}
+                disabled={isSyncDisabled}
+                className={clsx('rounded px-4 py-2 font-bold text-white', syncColor)}
+            >
+                {syncText}
+            </button>
+
+            {/* 4. Focus Button */}
             <button
                 onClick={handleFocusClick}
                 disabled={isFocusDisabled}
@@ -116,6 +134,7 @@ export function ScreenMirroringToolbar({
             >
                 {focusText}
             </button>
+
 
             <div className="ml-auto"></div>
         </div>
