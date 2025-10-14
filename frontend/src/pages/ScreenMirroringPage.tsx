@@ -57,6 +57,25 @@ export default function ScreenMirroringPage() {
         });
     };
 
+    const handleClearSlot = (slotId: number) => {
+        setLayoutState(prevState => {
+            // Create a new slots array with the target slot cleared
+            const newSlots = prevState.slots.map(s =>
+                s.slotId === slotId ? { ...s, url: null } : s
+            );
+
+            // Check if any slots are still filled
+            const isAnySlotStillFilled = newSlots.some(s => s.url !== null);
+
+            return {
+                ...prevState,
+                slots: newSlots,
+                // If no slots are filled, revert status to 'empty'
+                status: isAnySlotStillFilled ? 'staged' : 'empty',
+            };
+        });
+    };
+
     const handleShowToPlayers = () => {
         const isAnySlotFilled = layoutState.slots.some(slot => slot.url);
         if (layoutState.status === 'staged' && isAnySlotFilled) {
@@ -105,6 +124,7 @@ export default function ScreenMirroringPage() {
                     layoutState={layoutState}
                     onLayoutChange={handleLayoutChange}
                     onDropAsset={handleDropAsset}
+                    onClearSlot={handleClearSlot}
                     notification={notification}
                     isNotificationVisible={isNotificationVisible}
                 />
