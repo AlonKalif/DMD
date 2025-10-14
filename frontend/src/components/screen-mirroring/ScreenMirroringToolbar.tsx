@@ -20,6 +20,26 @@ export function ScreenMirroringToolbar({
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
 
+    // This effect runs only once on mount to find an existing player window.
+    useEffect(() => {
+        // Use window.open with an empty URL and the known window name.
+        // This will not open a new window but return a handle if one exists.
+        const existingWindow = window.open('', 'dmdPlayerWindow');
+
+        // If we get a handle and it has an "opener", it's our popup.
+        if (existingWindow && existingWindow.opener) {
+            // If it's somehow already closed, do nothing.
+            if (existingWindow.closed) {
+                return;
+            }
+            // Otherwise, set it in our state to "re-connect" to it.
+            setPlayerWindow(existingWindow);
+        } else if (existingWindow) {
+            // If we got a handle but no opener, we likely created a blank window. Close it.
+            existingWindow.close();
+        }
+    }, []); // The empty array ensures this runs only on component mount.
+
     // Window lifecycle effect
     useEffect(() => {
         if (!playerWindow) return;
@@ -40,10 +60,17 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    const handleOpenCloseClick = () => {
+    const closePlayerWindow = () => {
         if (isPlayerWindowOpen) {
             playerWindow?.close();
             setPlayerWindow(null);
+            onPlayerWindowClose(); // Call this immediately for the button click
+        }
+    };
+
+    const handleOpenCloseClick = () => {
+        if (isPlayerWindowOpen) {
+            closePlayerWindow();
         } else {
             openPlayerWindow();
         }

@@ -13,11 +13,12 @@ interface StagingAreaProps {
     onDropAsset: (slotId: number, item: DropItem) => void;
     onClearSlot: (slotId: number) => void;
     onZoomChange: (slotId: number, direction: 'in' | 'out' | 'reset') => void;
+    onMoveAsset: (sourceSlotId: number, targetSlotId: number) => void;
     notification: string | null;
     isNotificationVisible: boolean;
 }
 
-export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, notification, isNotificationVisible  }: StagingAreaProps) {
+export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onMoveAsset, notification, isNotificationVisible  }: StagingAreaProps) {
     const { layout, status, slots } = layoutState;
 
     // Dynamic grid classes based on the layout
@@ -36,7 +37,7 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
         )}>
             {/* Notification Banner */}
             <div className={clsx(
-                'absolute top-0 left-0 right-0 bg-blue-800/95 p-2 text-center font-semibold text-white shadow-lg transition-opacity duration-300 ease-in-out z-20',
+                'absolute top-0 left-1/4 right-1/4 bg-blue-800/95 p-2 text-center font-semibold text-white shadow-lg transition-opacity duration-300 ease-in-out z-20 rounded-b-lg',
                 isNotificationVisible ? 'opacity-97' : 'opacity-0'
             )}>
                 {notification}
@@ -66,6 +67,7 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
                         onDropAsset={onDropAsset}
                         onClearSlot={onClearSlot}
                         onZoomChange={onZoomChange}
+                        onMoveAsset={onMoveAsset}
                     />
                 ))}
             </div>

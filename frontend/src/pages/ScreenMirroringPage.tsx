@@ -32,9 +32,9 @@ export default function ScreenMirroringPage() {
     const handleChannelMessage = (message: BroadcastMessage) => {
         if (message.type === 'response_current_content' && message.payload) {
             setLayoutState(message.payload as LayoutState);
-        } else if (message.type === 'response_current_content' && !message.payload) { // Handles case where player window is open but empty
+        } else if(message.type === 'response_is_empty') { // Handles case where player window is open but empty
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
-            setNotification('Player window is clear. Nothing to sync.');
+            setNotification('No Images Shown On Players Window.');
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
         }
@@ -131,6 +131,36 @@ export default function ScreenMirroringPage() {
         });
     };
 
+    const handleMoveAsset = (sourceSlotId: number, targetSlotId: number) => {
+        // Prevent dropping an item onto itself
+        if (sourceSlotId === targetSlotId) return;
+
+        setLayoutState(prevState => {
+            const newSlots = [...prevState.slots];
+            const sourceSlot = newSlots.find(s => s.slotId === sourceSlotId);
+            const targetSlot = newSlots.find(s => s.slotId === targetSlotId);
+
+            if (sourceSlot && targetSlot) {
+                // Swap the content (URL and zoom level) between the two slots
+                const sourceContent = { url: sourceSlot.url, zoom: sourceSlot.zoom };
+                const targetContent = { url: targetSlot.url, zoom: targetSlot.zoom };
+
+                sourceSlot.url = targetContent.url;
+                sourceSlot.zoom = targetContent.zoom;
+                targetSlot.url = sourceContent.url;
+                targetSlot.zoom = sourceContent.zoom;
+            }
+
+            // If the layout is live, send an update to the player window immediately
+            if (prevState.status === 'live') {
+                const liveState = { ...prevState, slots: newSlots };
+                channel.postMessage({ type: 'show_layout', payload: liveState });
+            }
+
+            return { ...prevState, slots: newSlots };
+        });
+    };
+
     return (
         <div className="flex h-screen flex-col">
             <ScreenMirroringToolbar
@@ -152,6 +182,7 @@ export default function ScreenMirroringPage() {
                     onDropAsset={handleDropAsset}
                     onClearSlot={handleClearSlot}
                     onZoomChange={handleZoomChange}
+                    onMoveAsset={handleMoveAsset}
                     notification={notification}
                     isNotificationVisible={isNotificationVisible}
                 />

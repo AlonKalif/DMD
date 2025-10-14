@@ -7,6 +7,7 @@ import { useDrag } from 'react-dnd';
 // Define a type for our draggable items
 export const ItemTypes = {
     ASSET: 'asset',
+    SLOT: 'slot',
 };
 
 // A new component for a single draggable asset
@@ -36,7 +37,6 @@ function DraggableAsset({ asset }: { asset: MediaAsset }) {
         </button>
     );
 }
-
 
 // The main component now uses DraggableAsset
 export function AssetSelectionBar({ assets, onBrowseClick }: { assets: MediaAsset[], onBrowseClick: () => void }) {
