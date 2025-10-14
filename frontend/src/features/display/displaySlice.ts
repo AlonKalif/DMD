@@ -1,31 +1,30 @@
-// File: /src/features/display/displaySlice.ts
+// /src/features/display/displaySlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface DisplayContent {
-    type: 'image' | 'map' | 'text';
-    payload: any;
-}
+import { LayoutState } from 'pages/ScreenMirroringPage'; // Assuming types are exported from here
 
 interface DisplayState {
-    currentContent: DisplayContent | null;
+    currentLayout: LayoutState | null;
 }
 
 const initialState: DisplayState = {
-    currentContent: null,
+    currentLayout: null,
 };
 
 const displaySlice = createSlice({
     name: 'display',
     initialState,
     reducers: {
-        setCurrentContent: (state, action: PayloadAction<DisplayContent>) => {
-            state.currentContent = action.payload;
+        // Sets the entire layout state for the player window
+        setCurrentLayout(state, action: PayloadAction<LayoutState>) {
+            state.currentLayout = action.payload;
         },
-        clearContent: (state) => {
-            state.currentContent = null;
+        // Clears the layout, returning to the default view
+        clearLayout(state) {
+            state.currentLayout = null;
         },
     },
 });
 
-export const { setCurrentContent, clearContent } = displaySlice.actions;
+export const { setCurrentLayout, clearLayout } = displaySlice.actions;
+
 export default displaySlice.reducer;

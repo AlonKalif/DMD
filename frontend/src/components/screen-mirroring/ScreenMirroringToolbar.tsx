@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import clsx from 'clsx';
-
-type PreviewStatus = 'empty' | 'staged' | 'live';
+import { LayoutStatus } from 'pages/ScreenMirroringPage';
 
 interface ScreenMirroringToolbarProps {
-    previewStatus: PreviewStatus;
+    previewStatus: LayoutStatus;
     onShowToPlayersClick: () => void;
     onHideFromPlayersClick: () => void;
     onPlayerWindowClose: () => void;
@@ -12,12 +11,12 @@ interface ScreenMirroringToolbarProps {
 }
 
 export function ScreenMirroringToolbar({
-                                           previewStatus,
-                                           onShowToPlayersClick,
-                                           onHideFromPlayersClick,
-                                           onPlayerWindowClose,
-                                           onSyncWithPlayerClick,
-                                       }: ScreenMirroringToolbarProps) {
+       previewStatus,
+       onShowToPlayersClick,
+       onHideFromPlayersClick,
+       onPlayerWindowClose,
+       onSyncWithPlayerClick,
+    }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(null);
     const isPlayerWindowOpen = playerWindow && !playerWindow.closed;
 
@@ -41,16 +40,10 @@ export function ScreenMirroringToolbar({
         }
     };
 
-    const closePlayerWindow = () => {
+    const handleOpenCloseClick = () => {
         if (isPlayerWindowOpen) {
             playerWindow?.close();
             setPlayerWindow(null);
-        }
-    };
-
-    const handleOpenCloseClick = () => {
-        if (isPlayerWindowOpen) {
-            closePlayerWindow();
         } else {
             openPlayerWindow();
         }

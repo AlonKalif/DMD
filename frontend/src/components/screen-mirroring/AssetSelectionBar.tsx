@@ -1,35 +1,57 @@
-// File: /src/components/screen-mirroring/AssetSelectionBar.tsx
+// /src/components/screen-mirroring/AssetSelectionBar.tsx
 import { MediaAsset } from 'types/api';
 import { API_BASE_URL } from 'config';
+// --- Add these imports ---
+import { useDrag } from 'react-dnd';
 
-interface AssetSelectionBarProps {
-    assets: MediaAsset[];
-    onAssetSelect: (asset: MediaAsset) => void;
-    onBrowseClick: () => void;
+// Define a type for our draggable items
+export const ItemTypes = {
+    ASSET: 'asset',
+};
+
+// A new component for a single draggable asset
+function DraggableAsset({ asset }: { asset: MediaAsset }) {
+    const assetUrl = `${API_BASE_URL}/static/${asset.file_path.replace(/^public\//, '')}`;
+
+    const [{ isDragging }, drag] = useDrag(() => ({
+        type: ItemTypes.ASSET,
+        // The item is the data payload that will be available on drop
+        item: { id: asset.ID, url: assetUrl },
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    }));
+
+    return (
+        <button
+            ref={drag}
+            className="group flex-shrink-0"
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+        >
+            <img
+                src={assetUrl}
+                alt={asset.file_path}
+                className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-blue-500"
+            />
+        </button>
+    );
 }
 
-export function AssetSelectionBar({ assets, onAssetSelect, onBrowseClick }: AssetSelectionBarProps) {
+
+// The main component now uses DraggableAsset
+export function AssetSelectionBar({ assets, onBrowseClick }: { assets: MediaAsset[], onBrowseClick: () => void }) {
     return (
         <div className="flex flex-shrink-0 items-center space-x-2 overflow-x-auto border-y border-gray-700 bg-gray-800 p-2">
-            {/* Render existing assets */}
             {assets.map((asset) => (
-                <button key={asset.ID} onClick={() => onAssetSelect(asset)} className="group flex-shrink-0">
-                    <img
-                        src={`${API_BASE_URL}/static/${asset.file_path.replace(/^public\//, '')}`}
-                        alt={asset.file_path}
-                        className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-blue-500"
-                    />
-                </button>
+                <DraggableAsset key={asset.ID} asset={asset} />
             ))}
 
-            {/* If no assets, show a placeholder message */}
             {assets.length === 0 && (
                 <div className="flex h-28 items-center justify-center">
                     <p className="text-gray-400">No media assets found.</p>
                 </div>
             )}
 
-            {/* Browse Button pushed to the right */}
             <div className="ml-auto flex-shrink-0 pl-2">
                 <button
                     onClick={onBrowseClick}
