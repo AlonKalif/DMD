@@ -1,7 +1,6 @@
 // /src/components/screen-mirroring/AssetSelectionBar.tsx
 import { MediaAsset } from 'types/api';
 import { API_BASE_URL } from 'config';
-// --- Add these imports ---
 import { useDrag } from 'react-dnd';
 
 // Define a type for our draggable items
