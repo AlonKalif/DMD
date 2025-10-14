@@ -60,13 +60,14 @@ export default function PlayerDisplayPage() {
             ) : (
                 // Dynamic grid rendering
                 <div className={clsx('grid h-full w-full gap-2', gridClasses[currentLayout.layout])}>
-                    {currentLayout.slots.map(({ slotId, url }) => (
-                        <div key={slotId} className="flex h-full w-full items-center justify-center rounded-lg bg-gray-900">
+                    {currentLayout.slots.map(({ slotId, url, zoom }) => (
+                        <div key={slotId} className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-gray-900">
                             {url ? (
                                 <img
                                     src={url}
                                     alt={`Content for slot ${slotId + 1}`}
-                                    className="max-h-full max-w-full object-contain"
+                                    className="max-h-full max-w-full object-contain transition-transform duration-200"
+                                    style={{ transform: `scale(${zoom})` }}
                                 />
                             ) : null}
                         </div>

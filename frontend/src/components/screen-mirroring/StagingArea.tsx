@@ -12,11 +12,12 @@ interface StagingAreaProps {
     onLayoutChange: (layout: LayoutType) => void;
     onDropAsset: (slotId: number, item: DropItem) => void;
     onClearSlot: (slotId: number) => void;
+    onZoomChange: (slotId: number, direction: 'in' | 'out' | 'reset') => void;
     notification: string | null;
     isNotificationVisible: boolean;
 }
 
-export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, notification, isNotificationVisible  }: StagingAreaProps) {
+export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, notification, isNotificationVisible  }: StagingAreaProps) {
     const { layout, status, slots } = layoutState;
 
     // Dynamic grid classes based on the layout
@@ -48,10 +49,6 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
             {/* Status Badge in the top-center */}
             {status !== 'empty' && (
                 <div className={clsx(
-                    // Changes:
-                    // 1. `top-0` aligns the top of the badge with the border.
-                    // 2. `-translate-y-1/2` pulls the badge up by 50% of its own height,
-                    //    centering it perfectly on the border line.
                     'absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3/4 transform rounded px-3 py-0.1 text-sm font-bold text-white z-10',
                     status === 'staged' && 'bg-blue-500',
                     status === 'live' && 'bg-green-500',
@@ -66,8 +63,9 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
                     <ImageSlot
                         key={slot.slotId}
                         slot={slot}
-                        onDropAsset={onDropAsset} // Pass the handler to each slot
+                        onDropAsset={onDropAsset}
                         onClearSlot={onClearSlot}
+                        onZoomChange={onZoomChange}
                     />
                 ))}
             </div>

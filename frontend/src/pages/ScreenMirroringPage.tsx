@@ -8,7 +8,7 @@ import { StagingArea } from 'components/screen-mirroring/StagingArea';
 
 export type LayoutType = 'single' | 'dual' | 'quad';
 export type LayoutStatus = 'empty' | 'staged' | 'live';
-export interface ImageSlotState { slotId: number; url: string | null; }
+export interface ImageSlotState { slotId: number; url: string | null; zoom: number;}
 export interface LayoutState { layout: LayoutType; status: LayoutStatus; slots: ImageSlotState[]; }
 interface DropItem { id: number; url: string; }
 
@@ -17,7 +17,7 @@ const createInitialLayoutState = (layout: LayoutType): LayoutState => {
     return {
         layout,
         status: 'empty',
-        slots: Array.from({ length: slotCount }, (_, i) => ({ slotId: i, url: null })),
+        slots: Array.from({ length: slotCount }, (_, i) => ({ slotId: i, url: null, zoom: 1 })),
     };
 };
 
@@ -92,17 +92,43 @@ export default function ScreenMirroringPage() {
         }
     };
 
-    // --- THE FIX ---
-    // This handler contains the logic to revert the status from 'live' to 'staged'.
     const handlePlayerWindowClose = () => {
         if (layoutState.status === 'live') {
             setLayoutState(prevState => ({ ...prevState, status: 'staged' }));
         }
     };
-    // --- END FIX ---
 
     const handleSyncWithPlayer = () => {
         channel.postMessage({ type: 'request_current_content' });
+    };
+
+    const handleZoomChange = (slotId: number, direction: 'in' | 'out' | 'reset') => {
+        const ZOOM_INCREMENT = 0.1;
+
+        setLayoutState(prevState => {
+            const newSlots = prevState.slots.map(s => {
+                if (s.slotId === slotId) {
+                    let newZoom = s.zoom;
+                    if (direction === 'in') {
+                        newZoom += ZOOM_INCREMENT;
+                    } else if (direction === 'out') {
+                        newZoom = Math.max(0.1, newZoom - ZOOM_INCREMENT); // Prevent zooming out to zero or negative
+                    } else {
+                        newZoom = 1; // Reset to 100%
+                    }
+                    return { ...s, zoom: parseFloat(newZoom.toFixed(2)) }; // Keep precision to 2 decimal places
+                }
+                return s;
+            });
+
+            // If the layout is live, send an update to the player window immediately
+            if (prevState.status === 'live') {
+                const liveState = { ...prevState, slots: newSlots };
+                channel.postMessage({ type: 'show_layout', payload: liveState });
+            }
+
+            return { ...prevState, slots: newSlots };
+        });
     };
 
     return (
@@ -125,6 +151,7 @@ export default function ScreenMirroringPage() {
                     onLayoutChange={handleLayoutChange}
                     onDropAsset={handleDropAsset}
                     onClearSlot={handleClearSlot}
+                    onZoomChange={handleZoomChange}
                     notification={notification}
                     isNotificationVisible={isNotificationVisible}
                 />
