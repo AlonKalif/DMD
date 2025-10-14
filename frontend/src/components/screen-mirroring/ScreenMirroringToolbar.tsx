@@ -104,7 +104,7 @@ export function ScreenMirroringToolbar({
             : 'bg-green-600 hover:bg-green-700';
 
     // Focus Button
-    const focusText = 'Focus On Player Window';
+    const focusText = 'Focus Player Window';
     const isFocusDisabled = !isPlayerWindowOpen;
     const focusColor = isFocusDisabled
         ? 'bg-gray-500 cursor-not-allowed opacity-50'
@@ -146,16 +146,23 @@ export function ScreenMirroringToolbar({
                 {syncText}
             </button>
 
-            {/* 4. Focus Button */}
-            <button
-                onClick={handleFocusClick}
-                disabled={isFocusDisabled}
-                className={clsx('rounded px-4 py-2 font-bold text-white', focusColor)}
-            >
-                {focusText}
-            </button>
+            <div className="flex items-center gap-4">
+                {/* 4. Focus Button */}
+                <button
+                    onClick={handleFocusClick}
+                    disabled={isFocusDisabled}
+                    className={clsx('rounded px-4 py-2 font-bold text-white', focusColor)}
+                >
+                    {focusText}
+                </button>
 
+                {/* Instructional Text */}
+                <div className="flex flex-col text-sm text-gray-500">
+                    <span>Press focus and then</span>
+                    <span>F11 to go full screen</span>
+                </div>
 
+            </div>
             <div className="ml-auto"></div>
         </div>
     );

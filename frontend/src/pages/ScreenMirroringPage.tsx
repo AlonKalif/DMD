@@ -1,5 +1,5 @@
 // /src/pages/ScreenMirroringPage.tsx
-import { useState, useRef } from 'react';
+import {useState, useRef, useEffect} from 'react';
 import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
 import { AssetSelectionBar } from 'components/screen-mirroring/AssetSelectionBar';
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
@@ -41,6 +41,14 @@ export default function ScreenMirroringPage() {
     };
 
     const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
+
+    // This effect runs when the component mounts to automatically sync with an open player window.
+    useEffect(() => {
+        // As soon as the channel is ready, ask the player window for its current state.
+        if (channel) {
+            channel.postMessage({ type: 'request_current_content' });
+        }
+    }, [channel]); // The dependency array ensures this runs once the channel is initialized.
 
     const handleLayoutChange = (newLayout: LayoutType) => {
         setLayoutState(createInitialLayoutState(newLayout));
