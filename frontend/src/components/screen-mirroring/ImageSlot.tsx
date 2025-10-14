@@ -86,7 +86,7 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot , onZoomChange, onMov
             ) : (
                 <div className="text-center text-gray-500">
                     <span className="text-2xl font-bold">+</span>
-                    <p>Drop an asset here</p>
+                    <p>Drop an image here</p>
                 </div>
             )}
         </div>
