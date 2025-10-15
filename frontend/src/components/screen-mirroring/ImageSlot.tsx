@@ -1,7 +1,7 @@
 // /src/components/screen-mirroring/ImageSlot.tsx
 import { ImageSlotState } from 'pages/ScreenMirroringPage';
 import { useDrop, useDrag } from 'react-dnd';
-import { ItemTypes } from './AssetSelectionBar';
+import { ItemTypes } from './AssetPanel';
 import clsx from 'clsx';
 
 interface AssetDropItem { id: number; url: string; }

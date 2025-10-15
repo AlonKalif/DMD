@@ -1,7 +1,7 @@
 // /src/pages/ScreenMirroringPage.tsx
 import {useState, useRef, useEffect} from 'react';
 import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
-import { AssetSelectionBar } from 'components/screen-mirroring/AssetSelectionBar';
+import { AssetPanel } from 'components/screen-mirroring/AssetPanel';
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
 import { useAppSelector } from 'app/hooks';
 import { StagingArea } from 'components/screen-mirroring/StagingArea';
@@ -178,7 +178,7 @@ export default function ScreenMirroringPage() {
                 onPlayerWindowClose={handlePlayerWindowClose}
                 onSyncWithPlayerClick={handleSyncWithPlayer}
             />
-            <AssetSelectionBar
+            <AssetPanel
                 assets={assets}
                 onBrowseClick={() => fileInputRef.current?.click()}
             />
