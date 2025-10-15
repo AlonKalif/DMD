@@ -40,18 +40,24 @@ function DraggableAsset({ asset }: { asset: MediaAsset }) {
 // The main component now uses DraggableAsset
 export function AssetSelectionBar({ assets, onBrowseClick }: { assets: MediaAsset[], onBrowseClick: () => void }) {
     return (
-        <div className="flex flex-shrink-0 items-center space-x-2 overflow-x-auto border-y border-gray-700 bg-gray-800 p-2">
-            {assets.map((asset) => (
-                <DraggableAsset key={asset.ID} asset={asset} />
-            ))}
+        // 1. Main container: Sets up the flex layout for its two children.
+        <div className="flex flex-shrink-0 items-center border-y border-gray-700 bg-gray-800 p-2">
 
-            {assets.length === 0 && (
-                <div className="flex h-28 items-center justify-center">
-                    <p className="text-gray-400">No media assets found.</p>
-                </div>
-            )}
+            {/* 2. Scrollable asset container: This div will grow and scroll. */}
+            <div className="flex flex-grow items-center space-x-2 overflow-x-auto scrollbar-thin scrollbar-track-gray-700 scrollbar-thumb-gray-500 hover:scrollbar-thumb-blue-500">
+                {assets.map((asset) => (
+                    <DraggableAsset key={asset.ID} asset={asset} />
+                ))}
 
-            <div className="ml-auto flex-shrink-0 pl-2">
+                {assets.length === 0 && (
+                    <div className="flex h-28 items-center justify-center">
+                        <p className="text-gray-400">No media assets found.</p>
+                    </div>
+                )}
+            </div>
+
+            {/* 3. Static button container: This remains fixed on the right. */}
+            <div className="flex-shrink-0 pl-2">
                 <button
                     onClick={onBrowseClick}
                     className="flex h-28 w-28 flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-600 text-gray-400 transition-colors hover:border-blue-500 hover:text-blue-500"

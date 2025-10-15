@@ -158,10 +158,9 @@ export function ScreenMirroringToolbar({
 
                 {/* Instructional Text */}
                 <div className="flex flex-col text-sm text-gray-500">
-                    <span>Press focus and then</span>
-                    <span>F11 to go full screen</span>
+                    <span>Focus + F11</span>
+                    <span>For Full Screen</span>
                 </div>
-
             </div>
             <div className="ml-auto"></div>
         </div>
