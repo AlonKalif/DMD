@@ -55,6 +55,23 @@ func (r *imagesRepo) GetAllImages(filters filters.ImagesFilters) ([]*images.Imag
 	return assets, nil
 }
 
+// GetAllTypes queries the database for a distinct list of non-empty image types.
+func (r *imagesRepo) GetAllTypes() ([]string, error) {
+	var types []string
+
+	result := r.db.Model(&images.ImageEntry{}).
+		Distinct("type").
+		Where("type IS NOT NULL AND type != ?", "").
+		Order("type asc").
+		Pluck("type", &types)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return types, nil
+}
+
 func (r *imagesRepo) CreateImageEntry(asset *images.ImageEntry) error {
 	return r.db.Create(asset).Error
 }

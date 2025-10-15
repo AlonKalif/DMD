@@ -80,6 +80,7 @@ type PlaylistRepository interface {
 type ImagesRepository interface {
 	GetImageByID(id uint) (*images.ImageEntry, error)
 	GetAllImages(filters filters.ImagesFilters) ([]*images.ImageEntry, error)
+	GetAllTypes() ([]string, error)
 	CreateImageEntry(asset *images.ImageEntry) error
 	UpdateImageEntry(asset *images.ImageEntry) error
 	DeleteImage(id uint) error
