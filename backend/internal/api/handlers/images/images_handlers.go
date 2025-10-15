@@ -37,9 +37,9 @@ func NewImagesHandler(rs *common.RoutingServices, path string) common.IHandler {
 
 func (h *ImagesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if _, ok := mux.Vars(r)["id"]; ok {
-		h.getMediaAssetByID(w, r)
+		h.getImageEntryByID(w, r)
 	} else {
-		h.getAllMediaAssets(w, r)
+		h.getAllImageEntries(w, r)
 	}
 }
 
@@ -89,7 +89,7 @@ func (h *ImagesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper Methods
-func (h *ImagesHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) getAllImageEntries(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	page, _ := strconv.Atoi(queryParams.Get("page"))
 	pageSize, _ := strconv.Atoi(queryParams.Get("pageSize"))
@@ -107,7 +107,7 @@ func (h *ImagesHandler) getAllMediaAssets(w http.ResponseWriter, r *http.Request
 	utils.RespondWithJSON(w, http.StatusOK, assets)
 }
 
-func (h *ImagesHandler) getMediaAssetByID(w http.ResponseWriter, r *http.Request) {
+func (h *ImagesHandler) getImageEntryByID(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
 		utils.RespondWithError(w, err)
