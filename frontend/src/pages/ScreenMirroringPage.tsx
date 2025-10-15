@@ -3,7 +3,6 @@ import {useState, useRef, useEffect} from 'react';
 import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
 import { AssetPanel } from 'components/screen-mirroring/AssetPanel';
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
-import { useAppSelector } from 'app/hooks';
 import { StagingArea } from 'components/screen-mirroring/StagingArea';
 
 export type LayoutType = 'single' | 'dual' | 'quad';
@@ -27,7 +26,6 @@ export default function ScreenMirroringPage() {
     const [isNotificationVisible, setIsNotificationVisible] = useState(false);
     const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const assets = useAppSelector((state) => state.images.items);
 
     const handleChannelMessage = (message: BroadcastMessage) => {
         if (message.type === 'response_current_content' && message.payload) {
@@ -179,7 +177,6 @@ export default function ScreenMirroringPage() {
                 onSyncWithPlayerClick={handleSyncWithPlayer}
             />
             <AssetPanel
-                assets={assets}
                 onBrowseClick={() => fileInputRef.current?.click()}
             />
             <main className="flex flex-1 min-h-0 items-center justify-center bg-gray-900 p-4">

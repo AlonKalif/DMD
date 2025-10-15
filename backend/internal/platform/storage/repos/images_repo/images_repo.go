@@ -61,7 +61,7 @@ func (r *imagesRepo) GetAllTypes() ([]string, error) {
 
 	result := r.db.Model(&images.ImageEntry{}).
 		Distinct("type").
-		Where("type IS NOT NULL AND type != ?", "").
+		Where("type IS NOT NULL AND type != ? AND type != ?", "", images.ImageTypeUnknown).
 		Order("type asc").
 		Pluck("type", &types)
 
