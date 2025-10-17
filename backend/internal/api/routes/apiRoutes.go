@@ -40,6 +40,7 @@ var apiRoutes = []routeDetails{
 	newRouteDetails("/audio/playlists", audio.NewPlaylistsHandler),
 	newRouteDetails("/display", display.NewDisplayHandler),
 	newRouteDetails("/images/images", images.NewImagesHandler),
+	newRouteDetails("/images/images/{id}", images.NewImagesHandler),
 	newRouteDetails("/images/types", images.NewImageTypeHandler),
 	newRouteDetails("/system", system.NewSystemHandler),
 }

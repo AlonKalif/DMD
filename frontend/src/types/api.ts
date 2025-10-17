@@ -5,7 +5,7 @@
 export interface MediaAsset {
     ID: number;
     name: string;
-    type: 'image' | 'map';
+    type: string;
     file_path: string;
 }
 

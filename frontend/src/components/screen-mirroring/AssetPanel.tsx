@@ -4,7 +4,7 @@ import { API_BASE_URL } from 'config';
 import { useDrag } from 'react-dnd';
 import { useEffect, useState } from 'react';
 import { useHorizontalScroll } from 'hooks/useHorizontalScroll';
-import { EditAssetModal } from 'EditAssetModal';
+import { EditAssetModal } from 'components/screen-mirroring/EditAssetModal';
 import axios from 'axios';
 import clsx from 'clsx';
 
@@ -63,7 +63,7 @@ interface FilterPillsProps {
 }
 
 function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps) {
-    const [types, setTypes] = useState<string[]>([refreshKey]);
+    const [types, setTypes] = useState<string[]>([]);
     const scrollRef = useHorizontalScroll();
 
     useEffect(() => {
@@ -79,7 +79,7 @@ function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps)
             }
         };
         fetchTypes();
-    }, []); // Empty array ensures this runs only once
+    }, [refreshKey]); // Empty array ensures this runs only once
 
     return (
         <div ref={scrollRef} className="scrollbar-hide flex items-center space-x-2 overflow-x-auto pb-2">
@@ -99,11 +99,13 @@ function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps)
     );
 }
 
-export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: {
-    assets: MediaAsset[],
-    onBrowseClick: () => void },
-    onEditAsset: (asset: MediaAsset) => void })
-{
+interface AssetSelectionBarProps {
+    assets: MediaAsset[];
+    onBrowseClick: () => void;
+    onEditAsset: (asset: MediaAsset) => void;
+}
+
+export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetSelectionBarProps) {
     const scrollRef = useHorizontalScroll();
 
     return (
