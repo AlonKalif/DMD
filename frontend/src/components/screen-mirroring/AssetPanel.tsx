@@ -29,6 +29,8 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
         }),
     }));
 
+    const displayType = asset.type === 'unknown' ? '' : asset.type;
+
     return (
         <button
             ref={drag}
@@ -37,7 +39,7 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
         >
             <img
                 src={assetUrl}
-                alt={asset.file_path}
+                alt={asset.name}
                 className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-blue-500"
             />
             {/* Edit Button */}
@@ -52,6 +54,21 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 15h2m4 0h.01M17 3l-4.5 4.5" />
                 </svg>
             </div>
+            {/* --- START: NEW TYPE DISPLAY --- */}
+            {displayType && ( // Only show if there's a type to display
+                <div
+                    // Position at bottom-left, hide by default, show on hover
+                    className={clsx(
+                        "absolute bottom-1 left-1 z-10 rounded-full px-2 py-0.5 text-xs font-semibold text-white",
+                        "bg-black/70 opacity-0 transition-opacity duration-200",
+                        "group-hover:opacity-100",
+                        // Optional: Different color for 'Uncategorized'
+                        displayType === 'Uncategorized' ? 'bg-gray-500' : 'bg-green-600'
+                    )}
+                >
+                    {displayType}
+                </div>
+            )}
         </button>
     );
 }
@@ -89,7 +106,7 @@ function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps)
                     onClick={() => onTypeSelect(type)}
                     className={clsx(
                         "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
-                        activeType === type ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                        activeType === type ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
                     )}
                 >
                     {type}
