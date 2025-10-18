@@ -55,7 +55,7 @@ export default function PlayerDisplayPage() {
                 <img
                     src={DEFAULT_PLAYER_WINDOW_IMG}
                     alt="Player display waiting for content"
-                    className="max-h-[80vh] w-auto rounded-lg object-contain"
+                    className="max-h-[220vh] w-auto rounded-lg object-contain"
                 />
             ) : (
                 // Dynamic grid rendering

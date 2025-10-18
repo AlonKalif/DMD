@@ -50,5 +50,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&audio.Playlist{},
 		&audio.PlaylistTrack{},
 		&images.ImageEntry{},
+		&images.PresetLayout{},
+		&images.PresetLayoutSlot{},
 	)
 }

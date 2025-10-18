@@ -94,3 +94,20 @@ func (r *imagesRepo) BulkCreateImageEntries(assets []*images.ImageEntry) error {
 		return nil
 	})
 }
+
+func (r *imagesRepo) CreatePreset(preset *images.PresetLayout) error {
+	if err := r.db.Create(preset).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *imagesRepo) GetAllPresets() ([]*images.PresetLayout, error) {
+	var presets []*images.PresetLayout
+	err := r.db.Preload("Slots.Image").Order("created_at desc").Find(&presets).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return presets, nil
+}
