@@ -41,6 +41,10 @@ func (s *Service) RunImagesDirWatcher() {
 	s.dirWatcher.Run()
 }
 
+func (s *Service) GetImagesPath() string {
+	return s.imagesPath
+}
+
 // SyncImageEntriesWithDatabase performs a two-way sync between the filesystem and the database.
 func (s *Service) SyncImageEntriesWithDatabase() {
 

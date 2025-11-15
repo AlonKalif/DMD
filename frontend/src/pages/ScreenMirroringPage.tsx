@@ -246,6 +246,55 @@ export default function ScreenMirroringPage() {
         }
     };
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        
+        if (!file) {
+            return;
+        }
+
+        // Validate that it's an image
+        if (!file.type.startsWith('image/')) {
+            console.error('Selected file is not an image');
+            if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
+            setNotification('Please select an image file');
+            setIsNotificationVisible(true);
+            notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
+            return;
+        }
+
+        try {
+            // Create FormData and append the file
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Upload to backend
+            await axios.post(`${API_BASE_URL}/api/v1/images/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Show success notification
+            if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
+            setNotification('Image uploaded successfully');
+            setIsNotificationVisible(true);
+            notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
+
+        } catch (error) {
+            console.error('Failed to upload file:', error);
+            if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
+            setNotification('Failed to upload image');
+            setIsNotificationVisible(true);
+            notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
+        } finally {
+            // Reset file input to allow re-uploading the same file
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
     return (
         <div className="flex h-screen flex-col">
             <ScreenMirroringToolbar
@@ -262,7 +311,7 @@ export default function ScreenMirroringPage() {
                 presetRefreshKey={presetRefreshKey}
             />
             <main className="flex flex-1 min-h-0 items-center justify-center bg-gray-900 p-4">
-                <input type="file" ref={fileInputRef} onChange={() => {}} className="hidden" accept="image/*,video/*" />
+                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,video/*" />
                 <StagingArea
                     layoutState={layoutState}
                     onLayoutChange={handleLayoutChange}
