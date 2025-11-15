@@ -42,5 +42,7 @@ var apiRoutes = []routeDetails{
 	newRouteDetails("/images/images", images.NewImagesHandler),
 	newRouteDetails("/images/images/{id}", images.NewImagesHandler),
 	newRouteDetails("/images/types", images.NewImageTypeHandler),
+	newRouteDetails("/images/presets", images.NewPresetHandler),
+	newRouteDetails("/images/presets/{id}", images.NewPresetHandler),
 	newRouteDetails("/system", system.NewSystemHandler),
 }

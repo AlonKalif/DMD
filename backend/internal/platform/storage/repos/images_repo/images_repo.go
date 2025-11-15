@@ -111,3 +111,7 @@ func (r *imagesRepo) GetAllPresets() ([]*images.PresetLayout, error) {
 
 	return presets, nil
 }
+
+func (r *imagesRepo) DeletePreset(id uint) error {
+	return r.db.Delete(&images.PresetLayout{}, id).Error
+}

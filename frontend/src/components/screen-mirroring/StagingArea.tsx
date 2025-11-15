@@ -14,11 +14,13 @@ interface StagingAreaProps {
     onClearSlot: (slotId: number) => void;
     onZoomChange: (slotId: number, direction: 'in' | 'out' | 'reset') => void;
     onMoveAsset: (sourceSlotId: number, targetSlotId: number) => void;
+    onSavePreset: () => void;
+    isSaving: boolean;
     notification: string | null;
     isNotificationVisible: boolean;
 }
 
-export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onMoveAsset, notification, isNotificationVisible  }: StagingAreaProps) {
+export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onMoveAsset, onSavePreset, isSaving, notification, isNotificationVisible  }: StagingAreaProps) {
     const { layout, status, slots } = layoutState;
 
     // Dynamic grid classes based on the layout
@@ -30,10 +32,11 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
 
     return (
         <div className={clsx(
-            'relative flex h-full w-full items-center justify-center rounded-lg border-4 border-dashed p-2',
-            status === 'empty' && 'border-gray-600',
-            status === 'staged' && 'border-blue-500 border-solid',
-            status === 'live' && 'border-green-500 border-solid',
+            'relative flex h-full w-full items-center justify-center rounded-lg border-4 p-2 transition-colors duration-300',
+            status === 'empty' && 'border-gray-600 border-dashed',
+            status === 'staged' && !isSaving && 'border-blue-500 border-solid',
+            status === 'live' && !isSaving && 'border-green-500 border-solid',
+            isSaving && 'border-green-500 border-solid',
         )}>
             {/* Notification Banner */}
             <div className={clsx(
@@ -42,9 +45,14 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
             )}>
                 {notification}
             </div>
-            {/* Layout Selector in the top-left corner */}
+            {/* Layout Selector with Save Preset button in the top-left corner */}
             <div className="absolute top-2 left-2 z-10">
-                <LayoutSelector currentLayout={layout} onSelectLayout={onLayoutChange} />
+                <LayoutSelector 
+                    currentLayout={layout} 
+                    onSelectLayout={onLayoutChange}
+                    onSavePreset={onSavePreset}
+                    status={status}
+                />
             </div>
 
             {/* Status Badge in the top-center */}

@@ -1,11 +1,13 @@
 // /src/components/screen-mirroring/LayoutSelector.tsx
 
 import clsx from 'clsx';
-import { LayoutType } from 'pages/ScreenMirroringPage'; // We will export this type
+import { LayoutType, LayoutStatus } from 'pages/ScreenMirroringPage'; // We will export this type
 
 interface LayoutSelectorProps {
     currentLayout: LayoutType;
     onSelectLayout: (layout: LayoutType) => void;
+    onSavePreset: () => void;
+    status: LayoutStatus;
 }
 
 const layoutOptions: { id: LayoutType; icon: JSX.Element }[] = [
@@ -35,7 +37,7 @@ const layoutOptions: { id: LayoutType; icon: JSX.Element }[] = [
     },
 ];
 
-export function LayoutSelector({ currentLayout, onSelectLayout }: LayoutSelectorProps) {
+export function LayoutSelector({ currentLayout, onSelectLayout, onSavePreset, status }: LayoutSelectorProps) {
     return (
         <div className="flex items-center space-x-1 rounded-lg bg-gray-900/80 p-1">
             {layoutOptions.map(({ id, icon }) => (
@@ -53,6 +55,24 @@ export function LayoutSelector({ currentLayout, onSelectLayout }: LayoutSelector
                     {icon}
                 </button>
             ))}
+            
+            {/* Save Preset Button */}
+            {status !== 'empty' && (
+                <>
+                    {/* Divider */}
+                    <div className="h-8 w-px bg-gray-600" />
+                    
+                    <button
+                        onClick={onSavePreset}
+                        title="Save current layout as preset"
+                        className="rounded-md p-2 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                        </svg>
+                    </button>
+                </>
+            )}
         </div>
     );
 }

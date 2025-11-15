@@ -88,4 +88,5 @@ type ImagesRepository interface {
 	BulkCreateImageEntries(assets []*images.ImageEntry) error // Transactional
 	CreatePreset(preset *images.PresetLayout) error
 	GetAllPresets() ([]*images.PresetLayout, error)
+	DeletePreset(id uint) error
 }

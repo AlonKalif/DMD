@@ -1,10 +1,11 @@
 // /src/components/screen-mirroring/AssetPanel.tsx
-import { MediaAsset } from 'types/api';
+import { MediaAsset, PresetLayout } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { useDrag } from 'react-dnd';
 import { useEffect, useState } from 'react';
 import { useHorizontalScroll } from 'hooks/useHorizontalScroll';
 import { EditAssetModal } from 'components/screen-mirroring/EditAssetModal';
+import { PresetPanel } from 'components/screen-mirroring/PresetPanel';
 import axios from 'axios';
 import clsx from 'clsx';
 
@@ -165,7 +166,15 @@ export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetS
     );
 }
 
-export function AssetPanel({ onBrowseClick }: { onBrowseClick: () => void }) {
+interface AssetPanelProps {
+    onBrowseClick: () => void;
+    onLoadPreset: (preset: PresetLayout) => void;
+    onDeletePreset: (id: number) => void;
+    presetRefreshKey: number;
+}
+
+export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey }: AssetPanelProps) {
+    const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
     const [activeType, setActiveType] = useState('All');
     const [assets, setAssets] = useState<MediaAsset[]>([]);
     // const [isLoading, setIsLoading] = useState(false);
@@ -210,21 +219,52 @@ export function AssetPanel({ onBrowseClick }: { onBrowseClick: () => void }) {
 
     return (
         <div className="space-y-2 border-y border-gray-700 bg-gray-800 p-2">
-            <AssetSelectionBar
-                assets={assets}
-                onBrowseClick={onBrowseClick}
-                onEditAsset={setEditingAsset} // Pass the handler to open the modal
-            />
-            {/* --- Conditionally render the modal --- */}
-            {editingAsset && (
-                <EditAssetModal
-                    asset={editingAsset}
-                    onClose={() => setEditingAsset(null)}
-                    onSave={handleSaveAsset}
+            {/* Tab Switcher */}
+            <div className="flex items-center space-x-2 pb-2">
+                <button
+                    onClick={() => setActiveTab('assets')}
+                    className={clsx(
+                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
+                        activeTab === 'assets' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                    )}
+                >
+                    Assets
+                </button>
+                <button
+                    onClick={() => setActiveTab('presets')}
+                    className={clsx(
+                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
+                        activeTab === 'presets' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                    )}
+                >
+                    Presets
+                </button>
+            </div>
+
+            {/* Conditionally render based on active tab */}
+            {activeTab === 'assets' ? (
+                <>
+                    <AssetSelectionBar
+                        assets={assets}
+                        onBrowseClick={onBrowseClick}
+                        onEditAsset={setEditingAsset}
+                    />
+                    {editingAsset && (
+                        <EditAssetModal
+                            asset={editingAsset}
+                            onClose={() => setEditingAsset(null)}
+                            onSave={handleSaveAsset}
+                        />
+                    )}
+                    <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
+                </>
+            ) : (
+                <PresetPanel
+                    onLoadPreset={onLoadPreset}
+                    onDeletePreset={onDeletePreset}
+                    refreshKey={presetRefreshKey}
                 />
             )}
-            {/* We can add a loading indicator here later if we want */}
-            <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
         </div>
     );
 }
