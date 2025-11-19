@@ -1,6 +1,7 @@
 backend/TODO.txt
 TODO.txt
 node_modules/
+backend/internal/server/server_config.json
 
 .npmrc
 .configs
