@@ -2,6 +2,7 @@ package routes
 
 import (
 	"dmd/backend/internal/api/common"
+	"dmd/backend/internal/api/handlers/spotify"
 	"dmd/backend/internal/api/handlers/websocket"
 	"dmd/backend/internal/api/middleware"
 	"log/slog"
@@ -26,6 +27,11 @@ func NewRouter(rs *common.RoutingServices, staticAssetsPath string) *mux.Router 
 
 	// Register API routes on the sub-router
 	registerRoutes(apiV1, rs)
+
+	// Register Spotify auth routes if service is available
+	if rs.SpotifyService != nil {
+		spotify.RegisterSpotifyAuthRoutes(apiV1, rs.SpotifyService, rs.Log)
+	}
 
 	return newRouter
 }

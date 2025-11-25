@@ -49,6 +49,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&audio.Track{},
 		&audio.Playlist{},
 		&audio.PlaylistTrack{},
+		&audio.SpotifyToken{},
 		&images.ImageEntry{},
 		&images.PresetLayout{},
 		&images.PresetLayoutSlot{},

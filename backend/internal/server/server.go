@@ -8,6 +8,7 @@ import (
 	"dmd/backend/internal/platform/storage"
 	"dmd/backend/internal/platform/storage/repos/images_repo"
 	"dmd/backend/internal/services/images"
+	"dmd/backend/internal/services/spotify"
 	"dmd/backend/internal/services/websocket"
 	"encoding/json"
 	"log/slog"
@@ -21,10 +22,11 @@ import (
 )
 
 type Server struct {
-	log        *slog.Logger
-	server     *http.Server
-	wsManager  *websocket.Manager
-	imgService *images.Service
+	log            *slog.Logger
+	server         *http.Server
+	wsManager      *websocket.Manager
+	imgService     *images.Service
+	spotifyService *spotify.Service
 }
 
 // New is the main constructor for our server. It orchestrates the setup.
@@ -39,22 +41,26 @@ func New() *Server {
 	// Initialize services.
 	wsManager := websocket.NewManager(log)
 	imgService := initImagesService(log, db, wsManager, configs.ImagesPath)
+	spotifyService := initSpotifyService(log, db, configs.SpotifyClientID, configs.SpotifyClientSecret)
 
 	// Initialize router
 	router := routes.NewRouter(&common.RoutingServices{
-		Log:          log,
-		DbConnection: db,
-		WsManager:    wsManager,
-		ImageService: imgService}, configs.AssetsPath)
+		Log:            log,
+		DbConnection:   db,
+		WsManager:      wsManager,
+		ImageService:   imgService,
+		SpotifyService: spotifyService,
+	}, configs.AssetsPath)
 
 	// Initialize server
 	httpServer := newHttpServer(router, ":"+configs.ServerPort)
 
 	return &Server{
-		log:        log,
-		server:     httpServer,
-		wsManager:  wsManager,
-		imgService: imgService,
+		log:            log,
+		server:         httpServer,
+		wsManager:      wsManager,
+		imgService:     imgService,
+		spotifyService: spotifyService,
 	}
 }
 
@@ -95,8 +101,19 @@ func initImagesService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manag
 	return imgService
 }
 
+func initSpotifyService(log *slog.Logger, db *gorm.DB, clientID, clientSecret string) *spotify.Service {
+	if clientID == "" || clientSecret == "" {
+		log.Warn("Spotify credentials not configured, Spotify features disabled")
+		return nil
+	}
+	return spotify.NewService(log, db, clientID, clientSecret)
+}
+
 func newHttpServer(router *mux.Router, port string) *http.Server {
-	allowedOrigins := handlers.AllowedOrigins([]string{"http://localhost:3000"})
+	allowedOrigins := handlers.AllowedOrigins([]string{
+		"http://localhost:3000",
+		"http://127.0.0.1:3000",
+	})
 	allowedMethods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE"})
 	allowedHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Authorization"})
 
@@ -132,18 +149,22 @@ func loadConfiguration(log *slog.Logger, filename string) ServerConfig {
 
 func newDefaultConfigs() ServerConfig {
 	return ServerConfig{
-		ServerPort: "8080",
-		DBPath:     "dmd.db",
-		AssetsPath: "public",
-		ImagesPath: "public/images",
-		AudioPath:  "public/audio",
+		ServerPort:          "8080",
+		DBPath:              "dmd.db",
+		AssetsPath:          "public",
+		ImagesPath:          "public/images",
+		AudioPath:           "public/audio",
+		SpotifyClientID:     "",
+		SpotifyClientSecret: "",
 	}
 }
 
 type ServerConfig struct {
-	ServerPort string `json:"server_port"`
-	DBPath     string `json:"db_path"`
-	AssetsPath string `json:"assets_path"`
-	ImagesPath string `json:"images_path"`
-	AudioPath  string `json:"audios_path"`
+	ServerPort          string `json:"server_port"`
+	DBPath              string `json:"db_path"`
+	AssetsPath          string `json:"assets_path"`
+	ImagesPath          string `json:"images_path"`
+	AudioPath           string `json:"audios_path"`
+	SpotifyClientID     string `json:"spotify_client_id"`
+	SpotifyClientSecret string `json:"spotify_client_secret"`
 }

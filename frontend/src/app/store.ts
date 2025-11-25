@@ -8,6 +8,7 @@ import combatReducer from 'features/combatTracker/combatSlice';
 import uiReducer from 'features/ui/uiSlice';
 import displayReducer from '../features/display/displaySlice';
 import imagesReducer from '../features/images/imageSlice';
+import spotifyReducer from '../features/spotify/spotifySlice';
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     audio: audioReducer,
     display: displayReducer,
     images: imagesReducer,
+    spotify: spotifyReducer,
   },
 });
 

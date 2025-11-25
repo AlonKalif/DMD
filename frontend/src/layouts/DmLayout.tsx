@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { useWebSocket } from 'hooks/useWebSocket';
 import { useAppDispatch } from 'app/hooks';
 import { fetchImages } from 'features/images/imageSlice';
+import { checkAuthStatus, fetchAccessToken } from 'features/spotify/spotifySlice';
 import { useEffect, useCallback } from 'react';
 import {API_BASE_URL} from "config";
 
@@ -12,6 +13,14 @@ export default function DmLayout() {
     // Fetch images on initial load
     useEffect(() => {
         dispatch(fetchImages());
+        
+        // Check Spotify auth status and pre-warm token
+        dispatch(checkAuthStatus()).then((result) => {
+            if (result.payload === true) {
+                // If logged in, fetch token immediately
+                dispatch(fetchAccessToken());
+            }
+        });
     }, [dispatch]);
 
     // Handle incoming WebSocket messages

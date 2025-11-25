@@ -2,6 +2,7 @@ package common
 
 import (
 	assetsService "dmd/backend/internal/services/images"
+	spotifyService "dmd/backend/internal/services/spotify"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
 	"net/http"
@@ -20,8 +21,9 @@ type IHandler interface {
 type HandlerCreator func(rs *RoutingServices, path string) IHandler
 
 type RoutingServices struct {
-	Log          *slog.Logger
-	DbConnection *gorm.DB
-	WsManager    *wsService.Manager
-	ImageService *assetsService.Service
+	Log            *slog.Logger
+	DbConnection   *gorm.DB
+	WsManager      *wsService.Manager
+	ImageService   *assetsService.Service
+	SpotifyService *spotifyService.Service
 }
