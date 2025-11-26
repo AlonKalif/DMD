@@ -14,17 +14,17 @@ import (
 )
 
 const (
-	redirectURI = "http://127.0.0.1:8080/api/v1/auth/spotify/callback"
-	tokenID     = 1 // Singleton ID for single-user app
+	tokenID = 1 // Singleton ID for single-user app
 )
 
 type Service struct {
-	db   *gorm.DB
-	auth *spotifyauth.Authenticator
-	log  *slog.Logger
+	db          *gorm.DB
+	auth        *spotifyauth.Authenticator
+	log         *slog.Logger
+	redirectURI string
 }
 
-func NewService(log *slog.Logger, db *gorm.DB, clientID, clientSecret string) *Service {
+func NewService(log *slog.Logger, db *gorm.DB, clientID, clientSecret, redirectURI string) *Service {
 	auth := spotifyauth.New(
 		spotifyauth.WithRedirectURL(redirectURI),
 		spotifyauth.WithScopes(
@@ -40,9 +40,10 @@ func NewService(log *slog.Logger, db *gorm.DB, clientID, clientSecret string) *S
 	)
 
 	return &Service{
-		db:   db,
-		auth: auth,
-		log:  log,
+		db:          db,
+		auth:        auth,
+		log:         log,
+		redirectURI: redirectURI,
 	}
 }
 

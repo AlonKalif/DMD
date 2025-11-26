@@ -266,6 +266,31 @@ frontend/
 - **npm**: 8+
 - **Chrome**: Latest version
 
+### Configuration (First-Time Setup)
+
+**⚠️ Important:** The backend requires Spotify API credentials that are **not included in the repository** for security reasons.
+
+1. **Create backend config file**:
+   ```bash
+   cd backend/internal/server
+   cp server_config.example.json server_config.json
+   ```
+
+2. **Add your Spotify credentials** to `server_config.json`:
+   ```json
+   {
+     "spotify_client_id": "YOUR_SPOTIFY_CLIENT_ID",
+     "spotify_client_secret": "YOUR_SPOTIFY_CLIENT_SECRET"
+   }
+   ```
+
+3. **Get credentials** from [Spotify Developer Dashboard](https://developer.spotify.com/dashboard):
+   - Create a new app
+   - Add redirect URI: `http://127.0.0.1:8080/api/v1/auth/spotify/callback`
+   - Copy Client ID and Client Secret to your config file
+
+> **Note:** `server_config.json` is in `.gitignore` and will never be committed. This keeps your credentials secure.
+
 ### Backend Setup
 
 1. **Navigate to backend**:

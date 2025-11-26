@@ -244,19 +244,19 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
             {/* Conditionally render based on active tab */}
             {activeTab === 'assets' ? (
                 <>
-                    <AssetSelectionBar
-                        assets={assets}
-                        onBrowseClick={onBrowseClick}
+            <AssetSelectionBar
+                assets={assets}
+                onBrowseClick={onBrowseClick}
                         onEditAsset={setEditingAsset}
-                    />
-                    {editingAsset && (
-                        <EditAssetModal
-                            asset={editingAsset}
-                            onClose={() => setEditingAsset(null)}
-                            onSave={handleSaveAsset}
-                        />
-                    )}
-                    <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
+            />
+            {editingAsset && (
+                <EditAssetModal
+                    asset={editingAsset}
+                    onClose={() => setEditingAsset(null)}
+                    onSave={handleSaveAsset}
+                />
+            )}
+            <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
                 </>
             ) : (
                 <PresetPanel

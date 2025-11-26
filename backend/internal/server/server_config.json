@@ -1,9 +1,0 @@
-{
-  "server_port": "8080",
-  "db_path": "dmd.db",
-  "assets_path": "public",
-  "images_path": "public/images",
-  "audios_path": "public/audio",
-  "spotify_client_id": "09818e24c9ed487b89e4e9916ae35513",
-  "spotify_client_secret": "d77b633134b541eb9d65b70fc7026785"
-}

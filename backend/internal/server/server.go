@@ -41,7 +41,7 @@ func New() *Server {
 	// Initialize services.
 	wsManager := websocket.NewManager(log)
 	imgService := initImagesService(log, db, wsManager, configs.ImagesPath)
-	spotifyService := initSpotifyService(log, db, configs.SpotifyClientID, configs.SpotifyClientSecret)
+	spotifyService := initSpotifyService(log, db, configs.SpotifyClientID, configs.SpotifyClientSecret, configs.SpotifyRedirectURI)
 
 	// Initialize router
 	router := routes.NewRouter(&common.RoutingServices{
@@ -101,12 +101,12 @@ func initImagesService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manag
 	return imgService
 }
 
-func initSpotifyService(log *slog.Logger, db *gorm.DB, clientID, clientSecret string) *spotify.Service {
+func initSpotifyService(log *slog.Logger, db *gorm.DB, clientID, clientSecret, redirectURI string) *spotify.Service {
 	if clientID == "" || clientSecret == "" {
 		log.Warn("Spotify credentials not configured, Spotify features disabled")
 		return nil
 	}
-	return spotify.NewService(log, db, clientID, clientSecret)
+	return spotify.NewService(log, db, clientID, clientSecret, redirectURI)
 }
 
 func newHttpServer(router *mux.Router, port string) *http.Server {
@@ -156,6 +156,7 @@ func newDefaultConfigs() ServerConfig {
 		AudioPath:           "public/audio",
 		SpotifyClientID:     "",
 		SpotifyClientSecret: "",
+		SpotifyRedirectURI:  "http://127.0.0.1:8080/api/v1/auth/spotify/callback",
 	}
 }
 
@@ -167,4 +168,5 @@ type ServerConfig struct {
 	AudioPath           string `json:"audios_path"`
 	SpotifyClientID     string `json:"spotify_client_id"`
 	SpotifyClientSecret string `json:"spotify_client_secret"`
+	SpotifyRedirectURI  string `json:"spotify_redirect_uri"`
 }
