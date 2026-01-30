@@ -147,25 +147,9 @@ The `server_config.json` can be customized per environment.
 
 ## Troubleshooting
 
-### "Connection refused" when clicking Spotify connect (WSL2)
-
-**Problem**: Chrome on Windows can't reach the WSL2 backend.
-
-**Solution**: 
-1. Verify port forwarding is set up (see WSL2 setup section above)
-2. Check WSL2 IP hasn't changed: `wsl hostname -I` (in PowerShell)
-3. If IP changed, update port forwarding in PowerShell
-4. Restart backend server
-
-### Spotify OAuth fails with "INVALID_CLIENT: Insecure redirect URI"
-
-**Problem**: Spotify rejects redirect URIs that aren't `localhost` or `127.0.0.1` when using HTTP.
-
-**Solution**: This happens if you try to use a WSL2 IP directly (e.g., `172.18.31.33`). You MUST use `127.0.0.1` and set up Windows port forwarding to WSL2. Spotify's security policy only allows HTTP with localhost IPs.
-
-### Spotify OAuth fails with "Invalid redirect URI"
-
-**Problem**: The redirect URI in Spotify Dashboard doesn't match the backend config.
-
-**Solution**: Ensure the `spotify_redirect_uri` in `server_config.json` exactly matches one of the URIs registered in your Spotify Dashboard. For standard setups, use `http://127.0.0.1:8080/api/v1/auth/spotify/callback`.
+For comprehensive troubleshooting guides, see:
+- [Troubleshooting Documentation](docs/troubleshooting/README.md)
+- [WSL2 Connection Issues](docs/troubleshooting/wsl2/connection_issues.md)
+- [Spotify OAuth Errors](docs/troubleshooting/spotify/oauth_errors.md)
+- [Complete WSL2 Spotify OAuth Guide](docs/SPOTIFY_OAUTH_WSL2_TROUBLESHOOTING.md)
 

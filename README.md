@@ -1,6 +1,6 @@
 # DMD (Dungeon Master Dashboard)
 
-A full-stack desktop application designed to assist Dungeon Masters in running D&D sessions with a sophisticated dual-window system for controlling and displaying content to players.
+A full-stack desktop application designed to assist Dungeon Masters in running D&D sessions with a dual-window system for controlling and displaying content to players.
 
 ---
 
