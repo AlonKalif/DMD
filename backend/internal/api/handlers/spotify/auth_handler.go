@@ -90,6 +90,18 @@ func (h *AuthHandler) Status(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Logout removes the stored Spotify token
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	if err := h.spotify.DeleteToken(); err != nil {
+		h.log.Error("Failed to delete token", "error", err)
+		utils.RespondWithError(w, errors.NewInternalError("Failed to logout", err))
+		return
+	}
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{
+		"message": "Logged out successfully",
+	})
+}
+
 // Token returns a valid access token (refreshing if needed)
 func (h *AuthHandler) Token(w http.ResponseWriter, r *http.Request) {
 	token, err := h.spotify.GetValidToken(r.Context())

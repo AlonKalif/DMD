@@ -2,6 +2,7 @@ package routes
 
 import (
 	"dmd/backend/internal/api/common"
+	"dmd/backend/internal/api/handlers/crawl"
 	"dmd/backend/internal/api/handlers/spotify"
 	"dmd/backend/internal/api/handlers/websocket"
 	"dmd/backend/internal/api/middleware"
@@ -32,6 +33,10 @@ func NewRouter(rs *common.RoutingServices, staticAssetsPath string) *mux.Router 
 	if rs.SpotifyService != nil {
 		spotify.RegisterSpotifyAuthRoutes(apiV1, rs.SpotifyService, rs.Log)
 	}
+
+	// Register crawl photo upload route
+	photoHandler := crawl.NewCharacterTemplatePhotoHandler(rs, rs.Log, staticAssetsPath)
+	apiV1.HandleFunc("/crawl/templates/{id}/photo", photoHandler.Post).Methods("POST")
 
 	return newRouter
 }

@@ -3,6 +3,7 @@ package routes
 import (
 	"dmd/backend/internal/api/common"
 	"dmd/backend/internal/api/handlers/audio"
+	"dmd/backend/internal/api/handlers/crawl"
 	"dmd/backend/internal/api/handlers/display"
 	"dmd/backend/internal/api/handlers/gameplay/abilities"
 	"dmd/backend/internal/api/handlers/gameplay/characters"
@@ -46,4 +47,6 @@ var apiRoutes = []routeDetails{
 	newRouteDetails("/images/presets/{id}", images.NewPresetHandler),
 	newRouteDetails("/images/upload", images.NewUploadHandler),
 	newRouteDetails("/system", system.NewSystemHandler),
+	newRouteDetails("/crawl/templates", crawl.NewCharacterTemplateHandler),
+	newRouteDetails("/crawl/templates/{id}", crawl.NewCharacterTemplateHandler),
 }

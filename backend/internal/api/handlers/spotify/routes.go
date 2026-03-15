@@ -15,4 +15,5 @@ func RegisterSpotifyAuthRoutes(router *mux.Router, spotify *spotifyService.Servi
 	router.HandleFunc("/auth/spotify/callback", handler.Callback).Methods("GET")
 	router.HandleFunc("/auth/spotify/status", handler.Status).Methods("GET")
 	router.HandleFunc("/auth/spotify/token", handler.Token).Methods("GET")
+	router.HandleFunc("/auth/spotify/logout", handler.Logout).Methods("POST")
 }

@@ -22,8 +22,15 @@ export function PlaylistPanel() {
         }
 
         try {
+            const devicesResp = await axios.get('https://api.spotify.com/v1/me/player/devices', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const devices = devicesResp.data.devices || [];
+            const dmdDevice = devices.find((d: any) => d.name === 'DMD Spotify Player');
+            const resolvedDeviceId = dmdDevice ? dmdDevice.id : deviceId;
+
             await axios.put(
-                `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+                `https://api.spotify.com/v1/me/player/play?device_id=${resolvedDeviceId}`,
                 { context_uri: playlistUri },
                 {
                     headers: {

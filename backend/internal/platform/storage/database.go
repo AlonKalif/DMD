@@ -5,6 +5,7 @@ import (
 	"dmd/backend/internal/model/audio"
 	"dmd/backend/internal/model/character"
 	"dmd/backend/internal/model/combat"
+	"dmd/backend/internal/model/crawl"
 	"dmd/backend/internal/model/gameplay"
 	"dmd/backend/internal/model/images"
 	"log/slog"
@@ -53,5 +54,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&images.ImageEntry{},
 		&images.PresetLayout{},
 		&images.PresetLayoutSlot{},
+		&crawl.CharacterTemplate{},
 	)
 }

@@ -9,6 +9,8 @@ interface SpotifyState {
     isCheckingStatus: boolean;
     isFetchingToken: boolean;
     error: string | null;
+    // User profile
+    displayName: string | null;
     // Player state
     isPlayerReady: boolean;
     deviceId: string | null;
@@ -40,6 +42,8 @@ const initialState: SpotifyState = {
     isCheckingStatus: false,
     isFetchingToken: false,
     error: null,
+    // User profile
+    displayName: null,
     // Player state
     isPlayerReady: false,
     deviceId: null,
@@ -102,6 +106,39 @@ export const fetchPlaylists = createAsyncThunk(
     }
 );
 
+// Fetch the current user's Spotify profile
+export const fetchUserProfile = createAsyncThunk(
+    'spotify/fetchUserProfile',
+    async (_, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as { spotify: SpotifyState };
+            const token = state.spotify.accessToken;
+
+            const response = await axios.get('https://api.spotify.com/v1/me', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            return response.data.display_name as string;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error || 'Failed to fetch user profile');
+        }
+    }
+);
+
+// Logout from Spotify (delete token on backend)
+export const logoutFromSpotify = createAsyncThunk(
+    'spotify/logout',
+    async (_, { rejectWithValue }) => {
+        try {
+            await axios.post(`${API_BASE_URL}/api/v1/auth/spotify/logout`);
+            return;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error || 'Failed to logout');
+        }
+    }
+);
+
 const spotifySlice = createSlice({
     name: 'spotify',
     initialState,
@@ -113,10 +150,12 @@ const spotifySlice = createSlice({
             state.isLoggedIn = false;
             state.accessToken = null;
             state.tokenExpiry = null;
+            state.displayName = null;
             state.isPlayerReady = false;
             state.deviceId = null;
             state.currentTrack = null;
             state.isPlaying = false;
+            state.playlists = [];
         },
         setPlayerReady(state, action: PayloadAction<{ ready: boolean; deviceId: string | null }>) {
             state.isPlayerReady = action.payload.ready;
@@ -132,6 +171,9 @@ const spotifySlice = createSlice({
         },
         setVolume(state, action: PayloadAction<number>) {
             state.volume = action.payload;
+        },
+        setAuthError(state, action: PayloadAction<string>) {
+            state.error = action.payload;
         },
     },
     extraReducers: (builder) => {
@@ -182,10 +224,21 @@ const spotifySlice = createSlice({
             .addCase(fetchPlaylists.rejected, (state, action) => {
                 state.isFetchingPlaylists = false;
                 state.error = action.payload as string;
+            })
+            // Fetch User Profile
+            .addCase(fetchUserProfile.fulfilled, (state, action) => {
+                state.displayName = action.payload;
+            })
+            // Logout
+            .addCase(logoutFromSpotify.fulfilled, (state) => {
+                Object.assign(state, initialState);
+            })
+            .addCase(logoutFromSpotify.rejected, (state, action) => {
+                state.error = action.payload as string;
             });
     },
 });
 
-export const { clearError, logout, setPlayerReady, setCurrentTrack, setPlaybackState, setVolume } = spotifySlice.actions;
+export const { clearError, logout, setPlayerReady, setCurrentTrack, setPlaybackState, setVolume, setAuthError } = spotifySlice.actions;
 export default spotifySlice.reducer;
 

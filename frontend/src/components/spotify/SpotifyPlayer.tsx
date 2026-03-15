@@ -1,9 +1,12 @@
+import { useEffect, useRef } from 'react';
 import { useSpotifyPlayer } from 'hooks/useSpotifyPlayer';
-import { useAppSelector } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
+import { setPlaybackState, setVolume as setVolumeAction } from 'features/spotify/spotifySlice';
 import { formatTime } from 'utils/formatTime';
 
 export function SpotifyPlayer() {
     const player = useSpotifyPlayer();
+    const dispatch = useAppDispatch();
     const { currentTrack, isPlaying, position, duration, volume, deviceId } = useAppSelector(
         (state) => state.spotify
     );
@@ -24,6 +27,7 @@ export function SpotifyPlayer() {
     };
 
     const handleVolumeChange = async (newVolume: number) => {
+        dispatch(setVolumeAction(newVolume));
         if (!player) return;
         await player.setVolume(newVolume);
     };
@@ -32,6 +36,21 @@ export function SpotifyPlayer() {
         if (!player) return;
         await player.seek(newPosition);
     };
+
+    // Locally advance the position every second while playing
+    const positionRef = useRef(position);
+    positionRef.current = position;
+    useEffect(() => {
+        if (!isPlaying) return;
+        const intervalId = setInterval(() => {
+            dispatch(setPlaybackState({
+                isPlaying: true,
+                position: positionRef.current + 1000,
+                duration,
+            }));
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }, [isPlaying, duration, dispatch]);
 
     if (!deviceId) {
         return (

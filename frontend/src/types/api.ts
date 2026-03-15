@@ -23,4 +23,16 @@ export interface PresetLayout {
     slots?: PresetLayoutSlot[];
 }
 
-// We can add other types like Character, NPC, etc. here later.
+export interface CharacterTemplate {
+    ID: number;
+    name: string;
+    race: string;
+    class: string;
+    photo_path: string;
+    level: number;
+    hp: number;
+    max_hp: number;
+    ac: number;
+    color: string;
+    custom_fields: Record<string, unknown> | null;
+}

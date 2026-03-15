@@ -4,7 +4,7 @@ import DmLayout from 'layouts/DmLayout';
 import PlayerDisplayPage from 'pages/PlayerDisplayPage';
 import ScreenMirroringPage from 'pages/ScreenMirroringPage';
 import AudioPlayerPage from 'pages/AudioPlayerPage';
-import CardsPage from 'pages/CardsPage';
+import DungeonCrawlPage from 'pages/DungeonCrawlPage';
 // --- Add these imports ---
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -18,7 +18,7 @@ export function AppRouter() {
                 <Route path="/" element={<DmLayout />}>
                     <Route index element={<ScreenMirroringPage />} />
                     <Route path="audio" element={<AudioPlayerPage />} />
-                    <Route path="cards" element={<CardsPage />} />
+                    <Route path="crawl" element={<DungeonCrawlPage />} />
                 </Route>
 
                 {/* Route for the separate Player Window */}

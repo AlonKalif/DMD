@@ -1,6 +1,7 @@
 import { BottomNavBar } from 'components/layout/BottomNavBar';
 import { Outlet } from 'react-router-dom';
 import { useWebSocket } from 'hooks/useWebSocket';
+import { useSpotifyPlayer } from 'hooks/useSpotifyPlayer';
 import { useAppDispatch } from 'app/hooks';
 import { fetchImages } from 'features/images/imageSlice';
 import { checkAuthStatus, fetchAccessToken } from 'features/spotify/spotifySlice';
@@ -34,6 +35,9 @@ export default function DmLayout() {
 
     // Now, the onMessage function is stable between re-renders
     useWebSocket(`${API_BASE_URL}/ws`, handleWebSocketMessage);
+
+    // Keep the Spotify player alive across page navigations
+    useSpotifyPlayer();
 
     return (
         <div className="pb-16">

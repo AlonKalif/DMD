@@ -6,6 +6,7 @@ import (
 	"dmd/backend/internal/model/audio"
 	"dmd/backend/internal/model/character"
 	"dmd/backend/internal/model/combat"
+	"dmd/backend/internal/model/crawl"
 	"dmd/backend/internal/model/gameplay"
 	"dmd/backend/internal/model/images"
 )
@@ -75,6 +76,14 @@ type PlaylistRepository interface {
 	GetPlaylistByID(id uint) (*audio.Playlist, error)
 	GetAllPlaylists(filters filters.PlaylistFilters) ([]*audio.Playlist, error)
 	CreatePlaylist(playlist *audio.Playlist, trackIDs []uint) (*audio.Playlist, error) // Transactional
+}
+
+type CharacterTemplateRepository interface {
+	GetByID(id uint) (*crawl.CharacterTemplate, error)
+	GetAll(filters filters.CharacterTemplateFilters) ([]*crawl.CharacterTemplate, error)
+	Create(tmpl *crawl.CharacterTemplate) error
+	Update(tmpl *crawl.CharacterTemplate) error
+	Delete(id uint) error
 }
 
 type ImagesRepository interface {

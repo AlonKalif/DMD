@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
-import { setPlayerReady, setCurrentTrack, setPlaybackState } from 'features/spotify/spotifySlice';
+import { setPlayerReady, setCurrentTrack, setPlaybackState, setAuthError } from 'features/spotify/spotifySlice';
 
 // Initialize SDK ready callback globally before SDK loads
 if (!window.onSpotifyWebPlaybackSDKReady) {
@@ -9,10 +9,12 @@ if (!window.onSpotifyWebPlaybackSDKReady) {
     };
 }
 
+// Module-level singleton — survives component mount/unmount cycles
+let playerInstance: SpotifyPlayer | null = null;
+
 export function useSpotifyPlayer() {
     const dispatch = useAppDispatch();
     const { accessToken, isLoggedIn } = useAppSelector((state) => state.spotify);
-    const playerRef = useRef<SpotifyPlayer | null>(null);
     const [isSDKReady, setIsSDKReady] = useState(false);
 
     // Wait for SDK to load
@@ -30,6 +32,7 @@ export function useSpotifyPlayer() {
     // Initialize player when SDK and token are ready
     useEffect(() => {
         if (!isSDKReady || !accessToken || !isLoggedIn) return;
+        if (playerInstance) return;
 
         const player = new window.Spotify.Player({
             name: 'DMD Spotify Player',
@@ -39,22 +42,16 @@ export function useSpotifyPlayer() {
             volume: 0.5,
         });
 
-        // Ready
         player.addListener('ready', ({ device_id }) => {
-            console.log('Player ready with Device ID:', device_id);
             dispatch(setPlayerReady({ ready: true, deviceId: device_id }));
         });
 
-        // Not Ready
-        player.addListener('not_ready', ({ device_id }) => {
-            console.log('Device has gone offline:', device_id);
+        player.addListener('not_ready', () => {
             dispatch(setPlayerReady({ ready: false, deviceId: null }));
         });
 
-        // Player State Changed
         player.addListener('player_state_changed', (state) => {
             if (!state) return;
-
             dispatch(setCurrentTrack(state.track_window.current_track));
             dispatch(setPlaybackState({
                 isPlaying: !state.paused,
@@ -63,30 +60,30 @@ export function useSpotifyPlayer() {
             }));
         });
 
-        // Errors
         player.addListener('initialization_error', ({ message }) => {
             console.error('Initialization Error:', message);
         });
 
         player.addListener('authentication_error', ({ message }) => {
             console.error('Authentication Error:', message);
+            dispatch(setAuthError('Spotify session has expired or is missing permissions. Please logout and reconnect.'));
         });
 
         player.addListener('account_error', ({ message }) => {
             console.error('Account Error:', message);
         });
 
-        // Connect to player
         player.connect();
-        playerRef.current = player;
-
-        // Cleanup
-        return () => {
-            player.disconnect();
-            playerRef.current = null;
-        };
+        playerInstance = player;
     }, [isSDKReady, accessToken, isLoggedIn, dispatch]);
 
-    return playerRef.current;
-}
+    // Disconnect only on logout
+    useEffect(() => {
+        if (!isLoggedIn && playerInstance) {
+            playerInstance.disconnect();
+            playerInstance = null;
+        }
+    }, [isLoggedIn]);
 
+    return playerInstance;
+}

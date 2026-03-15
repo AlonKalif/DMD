@@ -53,3 +53,9 @@ type ImagesFilters struct {
 	Page     int
 	PageSize int
 }
+
+type CharacterTemplateFilters struct {
+	Name     string
+	Page     int
+	PageSize int
+}

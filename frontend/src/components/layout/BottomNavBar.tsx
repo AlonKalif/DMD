@@ -19,8 +19,8 @@ export function BottomNavBar() {
             <NavLink to="/audio" className={navLinkClass}>
                 Audio Player
             </NavLink>
-            <NavLink to="/cards" className={navLinkClass}>
-                Cards
+            <NavLink to="/crawl" className={navLinkClass}>
+                Dungeon Crawl
             </NavLink>
         </nav>
     );

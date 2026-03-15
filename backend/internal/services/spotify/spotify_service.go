@@ -29,6 +29,7 @@ func NewService(log *slog.Logger, db *gorm.DB, clientID, clientSecret, redirectU
 		spotifyauth.WithRedirectURL(redirectURI),
 		spotifyauth.WithScopes(
 			spotifyauth.ScopeUserReadPrivate,
+			spotifyauth.ScopeUserReadEmail,
 			spotifyauth.ScopeUserReadPlaybackState,
 			spotifyauth.ScopeUserModifyPlaybackState,
 			spotifyauth.ScopeStreaming,
@@ -53,7 +54,7 @@ func (s *Service) GenerateAuthURL() (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	url := s.auth.AuthURL(state)
+	url := s.auth.AuthURL(state, spotifyauth.ShowDialog)
 	return url, state, nil
 }
 
@@ -102,6 +103,11 @@ func (s *Service) IsAuthenticated() bool {
 	var count int64
 	s.db.Model(&audio.SpotifyToken{}).Where("id = ?", tokenID).Count(&count)
 	return count > 0
+}
+
+// DeleteToken removes the stored token from the DB (logout)
+func (s *Service) DeleteToken() error {
+	return s.db.Unscoped().Delete(&audio.SpotifyToken{}, tokenID).Error
 }
 
 // saveToken saves or updates the token in the database (singleton pattern)

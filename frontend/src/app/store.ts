@@ -9,6 +9,7 @@ import uiReducer from 'features/ui/uiSlice';
 import displayReducer from '../features/display/displaySlice';
 import imagesReducer from '../features/images/imageSlice';
 import spotifyReducer from '../features/spotify/spotifySlice';
+import crawlReducer from '../features/crawl/crawlSlice';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     display: displayReducer,
     images: imagesReducer,
     spotify: spotifyReducer,
+    crawl: crawlReducer,
   },
 });
 
