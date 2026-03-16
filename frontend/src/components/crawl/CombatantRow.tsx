@@ -1,0 +1,52 @@
+import { useRef, useEffect, createRef } from 'react';
+import { useAppSelector } from 'app/hooks';
+import { CombatantCard } from './CombatantCard';
+
+export function CombatantRow() {
+    const combatants = useAppSelector((state) => state.crawl.combatants);
+    const activeTurnIndex = useAppSelector((state) => state.crawl.activeTurnIndex);
+    const cardRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
+
+    // Ensure refs exist for all combatants
+    combatants.forEach((c) => {
+        if (!cardRefs.current.has(c.instanceId)) {
+            cardRefs.current.set(c.instanceId, createRef<HTMLDivElement>());
+        }
+    });
+
+    // Clean up stale refs
+    const currentIds = new Set(combatants.map(c => c.instanceId));
+    cardRefs.current.forEach((_, key) => {
+        if (!currentIds.has(key)) cardRefs.current.delete(key);
+    });
+
+    useEffect(() => {
+        if (activeTurnIndex < 0 || activeTurnIndex >= combatants.length) return;
+        const activeId = combatants[activeTurnIndex].instanceId;
+        const ref = cardRefs.current.get(activeId);
+        if (ref?.current) {
+            ref.current.scrollIntoView({ inline: 'center', behavior: 'smooth', block: 'nearest' });
+        }
+    }, [activeTurnIndex, combatants]);
+
+    if (combatants.length === 0) {
+        return (
+            <div className="flex h-full items-center justify-center text-gray-500 text-sm">
+                Drag or double-click characters from the bank to start a battle.
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex gap-3 overflow-x-auto px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600">
+            {combatants.map((combatant, idx) => (
+                <CombatantCard
+                    key={combatant.instanceId}
+                    ref={cardRefs.current.get(combatant.instanceId)}
+                    combatant={combatant}
+                    isActive={idx === activeTurnIndex}
+                />
+            ))}
+        </div>
+    );
+}

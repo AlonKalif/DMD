@@ -10,15 +10,17 @@ import { CharacterTemplate } from 'types/api';
 import { BankToolbar } from './BankToolbar';
 import { BankGrid } from './BankGrid';
 import { TemplateFormModal } from './TemplateFormModal';
-import { InitiativeModal } from './InitiativeModal';
 
-export function CharacterBank() {
+interface CharacterBankProps {
+    onRequestInitiative: (template: CharacterTemplate) => void;
+}
+
+export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
     const dispatch = useAppDispatch();
     const status = useAppSelector((state) => state.crawl.status);
 
     const [showForm, setShowForm] = useState(false);
     const [editingTemplate, setEditingTemplate] = useState<CharacterTemplate | undefined>();
-    const [initiativeTarget, setInitiativeTarget] = useState<CharacterTemplate | null>(null);
 
     useEffect(() => {
         if (status === 'idle') {
@@ -55,12 +57,7 @@ export function CharacterBank() {
     }, [dispatch, editingTemplate]);
 
     const handleDoubleClick = (template: CharacterTemplate) => {
-        setInitiativeTarget(template);
-    };
-
-    const handleInitiativeConfirm = (_template: CharacterTemplate, _initiative: number) => {
-        // Battle integration will be wired here in the next phase
-        setInitiativeTarget(null);
+        onRequestInitiative(template);
     };
 
     return (
@@ -77,14 +74,6 @@ export function CharacterBank() {
                     initial={editingTemplate}
                     onSave={handleSave}
                     onClose={() => { setShowForm(false); setEditingTemplate(undefined); }}
-                />
-            )}
-
-            {initiativeTarget && (
-                <InitiativeModal
-                    template={initiativeTarget}
-                    onConfirm={handleInitiativeConfirm}
-                    onClose={() => setInitiativeTarget(null)}
                 />
             )}
         </div>

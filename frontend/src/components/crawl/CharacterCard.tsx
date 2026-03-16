@@ -10,14 +10,6 @@ interface CharacterCardProps {
     onDoubleClick: (template: CharacterTemplate) => void;
 }
 
-function getHpBarColor(hp: number, maxHp: number): string {
-    if (maxHp <= 0) return 'bg-gray-500';
-    const ratio = hp / maxHp;
-    if (ratio > 2 / 3) return 'bg-green-400';
-    if (ratio > 1 / 3) return 'bg-orange-400';
-    return 'bg-red-500';
-}
-
 export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: CharacterCardProps) {
     const [{ isDragging }, dragRef] = useDrag(() => ({
         type: DND_TYPES.BANK_CHARACTER,
@@ -26,10 +18,6 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
             isDragging: monitor.isDragging(),
         }),
     }), [template]);
-
-    const hpPercent = template.max_hp > 0
-        ? Math.round((template.hp / template.max_hp) * 100)
-        : 0;
 
     const bgColor = template.color || '#374151';
 
@@ -93,15 +81,9 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
                 Lv {template.level}
             </span>
 
-            {/* HP bar */}
-            <div className="mb-1 h-2 w-full overflow-hidden rounded-full bg-black/30">
-                <div
-                    className={`h-full rounded-full transition-all ${getHpBarColor(template.hp, template.max_hp)}`}
-                    style={{ width: `${hpPercent}%` }}
-                />
-            </div>
+            {/* Max HP */}
             <p className="text-xs text-white/80">
-                {template.hp}/{template.max_hp} HP
+                {template.max_hp} HP
             </p>
 
             {/* AC */}

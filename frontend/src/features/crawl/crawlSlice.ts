@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { CharacterTemplate } from 'types/api';
+import { CharacterTemplate, Combatant, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
 
 interface CrawlState {
@@ -8,6 +8,8 @@ interface CrawlState {
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
     searchQuery: string;
+    combatants: Combatant[];
+    activeTurnIndex: number;
 }
 
 const initialState: CrawlState = {
@@ -15,6 +17,8 @@ const initialState: CrawlState = {
     status: 'idle',
     error: null,
     searchQuery: '',
+    combatants: [],
+    activeTurnIndex: -1,
 };
 
 export const fetchTemplates = createAsyncThunk(
@@ -71,12 +75,97 @@ export const uploadTemplatePhoto = createAsyncThunk(
     }
 );
 
+function sortByInitiative(combatants: Combatant[]) {
+    combatants.sort((a, b) => b.initiative - a.initiative);
+}
+
 const crawlSlice = createSlice({
     name: 'crawl',
     initialState,
     reducers: {
         setSearchQuery(state, action: PayloadAction<string>) {
             state.searchQuery = action.payload;
+        },
+
+        addCombatant(state, action: PayloadAction<{ template: CharacterTemplate; initiative: number }>) {
+            const { template, initiative } = action.payload;
+            const combatant: Combatant = {
+                instanceId: crypto.randomUUID(),
+                templateId: template.ID,
+                name: template.name,
+                race: template.race,
+                class: template.class,
+                photo_path: template.photo_path,
+                level: template.level,
+                hp: template.max_hp,
+                max_hp: template.max_hp,
+                ac: template.ac,
+                color: template.color,
+                initiative,
+                statusEffects: [],
+                isDead: false,
+            };
+            state.combatants.push(combatant);
+            sortByInitiative(state.combatants);
+            if (state.activeTurnIndex === -1) {
+                state.activeTurnIndex = 0;
+            }
+        },
+
+        removeCombatant(state, action: PayloadAction<string>) {
+            const instanceId = action.payload;
+            const idx = state.combatants.findIndex(c => c.instanceId === instanceId);
+            if (idx === -1) return;
+
+            state.combatants.splice(idx, 1);
+
+            if (state.combatants.length === 0) {
+                state.activeTurnIndex = -1;
+            } else if (idx < state.activeTurnIndex) {
+                state.activeTurnIndex -= 1;
+            } else if (state.activeTurnIndex >= state.combatants.length) {
+                state.activeTurnIndex = 0;
+            }
+        },
+
+        adjustHp(state, action: PayloadAction<{ instanceId: string; delta: number }>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
+            if (!combatant) return;
+
+            combatant.hp = Math.max(0, Math.min(combatant.max_hp, combatant.hp + action.payload.delta));
+            combatant.isDead = combatant.hp === 0;
+        },
+
+        addStatusEffect(state, action: PayloadAction<{ instanceId: string; effect: StatusEffect }>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
+            if (!combatant) return;
+            if (!combatant.statusEffects.includes(action.payload.effect)) {
+                combatant.statusEffects.push(action.payload.effect);
+            }
+        },
+
+        removeStatusEffect(state, action: PayloadAction<{ instanceId: string; effect: StatusEffect }>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
+            if (!combatant) return;
+            combatant.statusEffects = combatant.statusEffects.filter(e => e !== action.payload.effect);
+        },
+
+        nextTurn(state) {
+            if (state.combatants.length === 0) return;
+
+            const alive = state.combatants.some(c => !c.isDead);
+            if (!alive) return;
+
+            let next = (state.activeTurnIndex + 1) % state.combatants.length;
+            while (state.combatants[next].isDead) {
+                next = (next + 1) % state.combatants.length;
+            }
+            state.activeTurnIndex = next;
+        },
+
+        clearAll(state) {
+            state.combatants = [];
+            state.activeTurnIndex = -1;
         },
     },
     extraReducers: (builder) => {
@@ -109,5 +198,15 @@ const crawlSlice = createSlice({
     },
 });
 
-export const { setSearchQuery } = crawlSlice.actions;
+export const {
+    setSearchQuery,
+    addCombatant,
+    removeCombatant,
+    adjustHp,
+    addStatusEffect,
+    removeStatusEffect,
+    nextTurn,
+    clearAll,
+} = crawlSlice.actions;
+
 export default crawlSlice.reducer;

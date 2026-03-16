@@ -8,7 +8,9 @@ interface InitiativeModalProps {
 }
 
 export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModalProps) {
-    const [initiative, setInitiative] = useState(0);
+    const [initiative, setInitiative] = useState(10);
+
+    const adjust = (delta: number) => setInitiative((prev) => prev + delta);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -27,14 +29,38 @@ export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModa
                     Adding <span className="font-semibold text-white">{template.name}</span> to battle.
                 </p>
                 <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-300">Initiative</label>
-                    <input
-                        type="number"
-                        value={initiative}
-                        onChange={(e) => setInitiative(Number(e.target.value))}
-                        className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-center focus:border-blue-500 focus:ring-blue-500"
-                        autoFocus
-                    />
+                    <label className="mb-2 block text-sm font-medium text-gray-300">Initiative</label>
+                    <div className="flex items-center justify-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => adjust(-5)}
+                            className="rounded bg-red-700/60 px-2.5 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                        >
+                            -5
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => adjust(-1)}
+                            className="rounded bg-red-700/60 px-2.5 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                        >
+                            -1
+                        </button>
+                        <span className="min-w-[3rem] text-center text-2xl font-bold">{initiative}</span>
+                        <button
+                            type="button"
+                            onClick={() => adjust(1)}
+                            className="rounded bg-green-700/60 px-2.5 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                        >
+                            +1
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => adjust(5)}
+                            className="rounded bg-green-700/60 px-2.5 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                        >
+                            +5
+                        </button>
+                    </div>
                 </div>
                 <div className="flex justify-end space-x-2">
                     <button
