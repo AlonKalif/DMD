@@ -29,6 +29,11 @@ export function CombatantRow() {
         }
     }, [activeTurnIndex, combatants]);
 
+    const templateCounts = new Map<number, number>();
+    combatants.forEach((c) => {
+        templateCounts.set(c.templateId, (templateCounts.get(c.templateId) ?? 0) + 1);
+    });
+
     if (combatants.length === 0) {
         return (
             <div className="flex h-full items-center justify-center text-faded-ink text-sm font-display">
@@ -45,6 +50,7 @@ export function CombatantRow() {
                     ref={cardRefs.current.get(combatant.instanceId)}
                     combatant={combatant}
                     isActive={idx === activeTurnIndex}
+                    showCopyIndex={(templateCounts.get(combatant.templateId) ?? 0) > 1}
                 />
             ))}
         </div>

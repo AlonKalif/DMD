@@ -60,4 +60,5 @@ export interface Combatant {
     initiative: number;
     statusEffects: StatusEffect[];
     isDead: boolean;
+    copyIndex: number;
 }

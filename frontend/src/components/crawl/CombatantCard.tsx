@@ -10,6 +10,7 @@ import { GlassVial } from 'components/ui/GlassVial';
 interface CombatantCardProps {
     combatant: Combatant;
     isActive: boolean;
+    showCopyIndex: boolean;
 }
 
 function getHpLiquidClass(hp: number, maxHp: number): string {
@@ -21,7 +22,7 @@ function getHpLiquidClass(hp: number, maxHp: number): string {
 }
 
 export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
-    function CombatantCard({ combatant, isActive }, ref) {
+    function CombatantCard({ combatant, isActive, showCopyIndex }, ref) {
         const dispatch = useAppDispatch();
         const [showPicker, setShowPicker] = useState(false);
 
@@ -83,6 +84,9 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 {/* Name */}
                 <p className="max-w-full truncate text-center text-sm font-bold text-white" title={combatant.name}>
                     {combatant.name}
+                    {showCopyIndex && (
+                        <span className="ml-1 text-sm font-bold text-paladin-gold">#{combatant.copyIndex}</span>
+                    )}
                 </p>
 
                 {/* Race / Class */}

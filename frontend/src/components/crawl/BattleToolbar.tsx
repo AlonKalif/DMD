@@ -5,6 +5,7 @@ export function BattleToolbar() {
     const dispatch = useAppDispatch();
     const combatants = useAppSelector((state) => state.crawl.combatants);
     const activeTurnIndex = useAppSelector((state) => state.crawl.activeTurnIndex);
+    const round = useAppSelector((state) => state.crawl.round);
 
     const activeCombatant = activeTurnIndex >= 0 && activeTurnIndex < combatants.length
         ? combatants[activeTurnIndex]
@@ -23,9 +24,14 @@ export function BattleToolbar() {
             <h2 className="text-lg font-bold font-blackletter gold-gradient-text whitespace-nowrap">Dungeon Crawl</h2>
 
             {activeCombatant ? (
-                <span className="text-sm text-paladin-gold">
-                    Turn: <span className="font-semibold text-parchment">{activeCombatant.name}</span>
-                </span>
+                <div className="flex items-center gap-4">
+                    <span className="rounded-full border border-paladin-gold/40 bg-paladin-gold/10 px-3 py-0.5 text-sm font-semibold text-paladin-gold">
+                        Round {round}
+                    </span>
+                    <span className="text-sm text-paladin-gold">
+                        Turn: <span className="font-semibold text-parchment">{activeCombatant.name}</span>
+                    </span>
+                </div>
             ) : (
                 <span className="text-sm text-faded-ink">No active battle</span>
             )}

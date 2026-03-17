@@ -10,6 +10,7 @@ interface CrawlState {
     searchQuery: string;
     combatants: Combatant[];
     activeTurnIndex: number;
+    round: number;
 }
 
 const initialState: CrawlState = {
@@ -19,6 +20,7 @@ const initialState: CrawlState = {
     searchQuery: '',
     combatants: [],
     activeTurnIndex: -1,
+    round: 0,
 };
 
 export const fetchTemplates = createAsyncThunk(
@@ -89,6 +91,10 @@ const crawlSlice = createSlice({
 
         addCombatant(state, action: PayloadAction<{ template: CharacterTemplate; initiative: number }>) {
             const { template, initiative } = action.payload;
+            const existingCopies = state.combatants.filter(c => c.templateId === template.ID);
+            const nextCopyIndex = existingCopies.length > 0
+                ? Math.max(...existingCopies.map(c => c.copyIndex)) + 1
+                : 1;
             const combatant: Combatant = {
                 instanceId: crypto.randomUUID(),
                 templateId: template.ID,
@@ -104,11 +110,13 @@ const crawlSlice = createSlice({
                 initiative,
                 statusEffects: [],
                 isDead: false,
+                copyIndex: nextCopyIndex,
             };
             state.combatants.push(combatant);
             sortByInitiative(state.combatants);
             if (state.activeTurnIndex === -1) {
                 state.activeTurnIndex = 0;
+                state.round = 1;
             }
         },
 
@@ -156,9 +164,13 @@ const crawlSlice = createSlice({
             const alive = state.combatants.some(c => !c.isDead);
             if (!alive) return;
 
-            let next = (state.activeTurnIndex + 1) % state.combatants.length;
+            const prev = state.activeTurnIndex;
+            let next = (prev + 1) % state.combatants.length;
             while (state.combatants[next].isDead) {
                 next = (next + 1) % state.combatants.length;
+            }
+            if (next <= prev) {
+                state.round += 1;
             }
             state.activeTurnIndex = next;
         },
@@ -166,6 +178,7 @@ const crawlSlice = createSlice({
         clearAll(state) {
             state.combatants = [];
             state.activeTurnIndex = -1;
+            state.round = 0;
         },
     },
     extraReducers: (builder) => {
