@@ -26,7 +26,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
     return (
         <div
             ref={dragRef as unknown as React.Ref<HTMLDivElement>}
-            className="group relative flex w-36 flex-col items-center rounded-lg p-3 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing"
+            className="parchment-edge group relative flex w-36 flex-col items-center rounded-lg p-3 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing arcane-glow-hover border border-transparent"
             style={{
                 backgroundColor: bgColor,
                 opacity: isDragging ? 0.5 : 1,

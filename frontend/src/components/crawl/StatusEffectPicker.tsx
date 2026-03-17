@@ -24,7 +24,7 @@ export function StatusEffectPicker({ appliedEffects, onAdd, onClose }: StatusEff
     return (
         <div
             ref={ref}
-            className="absolute left-0 top-full z-40 mt-1 max-h-48 w-44 overflow-y-auto rounded-md border border-gray-600 bg-gray-800 py-1 shadow-lg"
+            className="absolute left-0 top-full z-40 mt-1 max-h-48 w-44 overflow-y-auto rounded-md border border-paladin-gold/30 leather-card py-1 shadow-lg"
         >
             {STATUS_EFFECTS.map((effect) => {
                 const isApplied = appliedEffects.includes(effect);
@@ -36,8 +36,8 @@ export function StatusEffectPicker({ appliedEffects, onAdd, onClose }: StatusEff
                         onClick={() => { onAdd(effect); onClose(); }}
                         className={`flex w-full items-center gap-2 px-3 py-1 text-left text-xs transition-colors ${
                             isApplied
-                                ? 'cursor-default text-gray-500'
-                                : 'text-white hover:bg-gray-700'
+                                ? 'cursor-default text-faded-ink/50'
+                                : 'text-parchment hover:bg-paladin-gold/10'
                         }`}
                     >
                         <span

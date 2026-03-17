@@ -310,7 +310,7 @@ export default function ScreenMirroringPage() {
                 onDeletePreset={handleDeletePreset}
                 presetRefreshKey={presetRefreshKey}
             />
-            <main className="flex flex-1 min-h-0 items-center justify-center bg-gray-900 p-4">
+            <main className="flex flex-1 min-h-0 items-center justify-center p-4">
                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,video/*" />
                 <StagingArea
                     layoutState={layoutState}

@@ -22,10 +22,10 @@ export function BattleSection({ onRequestInitiative }: BattleSectionProps) {
     return (
         <div
             ref={dropRef as unknown as React.Ref<HTMLDivElement>}
-            className={`flex flex-col rounded-lg border transition-colors ${
+            className={`leather-card flex flex-col rounded-lg transition-colors ${
                 isOver
-                    ? 'border-yellow-400 bg-yellow-400/5'
-                    : 'border-gray-700 bg-gray-800/50'
+                    ? 'border-paladin-gold bg-paladin-gold/5'
+                    : ''
             }`}
         >
             <BattleToolbar />

@@ -27,7 +27,7 @@ export default function AudioPlayerPage() {
     if (isCheckingStatus) {
         return (
             <div className="flex h-full items-center justify-center">
-                <div className="text-gray-400">Checking Spotify connection...</div>
+                <div className="text-faded-ink">Checking Spotify connection...</div>
             </div>
         );
     }
@@ -35,8 +35,8 @@ export default function AudioPlayerPage() {
     if (!isLoggedIn) {
         return (
             <div className="flex h-full flex-col items-center justify-center space-y-4 p-8">
-                <h1 className="text-3xl font-bold text-white">Spotify Music Player</h1>
-                <p className="text-gray-400 text-center max-w-md">
+                <h1 className="text-3xl font-bold font-blackletter gold-gradient-text">Spotify Music Player</h1>
+                <p className="text-parchment/70 text-center max-w-md">
                     Connect your Spotify account to play music during your D&D sessions.
                 </p>
                 <SpotifyLoginButton />
@@ -45,28 +45,28 @@ export default function AudioPlayerPage() {
     }
 
     return (
-        <div className="flex h-full flex-col space-y-6 overflow-y-auto bg-gray-900 p-8">
+        <div className="flex h-full flex-col space-y-6 overflow-y-auto p-8">
             <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-bold text-white">Spotify Music Player</h1>
+                <h1 className="text-3xl font-bold font-blackletter gold-gradient-text">Spotify Music Player</h1>
                 {displayName && (
-                    <span className="text-sm text-gray-400">
-                        Signed in as <span className="font-medium text-green-400">{displayName}</span>
+                    <span className="text-sm text-faded-ink">
+                        Signed in as <span className="font-medium text-paladin-gold">{displayName}</span>
                     </span>
                 )}
                 <button
                     onClick={handleLogout}
-                    className="rounded border border-gray-600 px-3 py-1.5 text-sm text-gray-300 transition-colors hover:border-red-500 hover:text-red-400"
+                    className="rounded border border-paladin-gold/30 px-3 py-1.5 text-sm text-parchment/70 transition-colors hover:border-wax-red hover:text-wax-red"
                 >
                     Logout
                 </button>
             </div>
 
             {error && (
-                <div className="flex items-center gap-3 rounded-lg border border-yellow-600 bg-yellow-900/30 px-4 py-3 text-sm text-yellow-300">
+                <div className="flex items-center gap-3 rounded-lg border border-paladin-gold/40 bg-paladin-gold/10 px-4 py-3 text-sm text-paladin-gold">
                     <span>{error}</span>
                     <button
                         onClick={handleLogout}
-                        className="ml-auto whitespace-nowrap rounded bg-yellow-600 px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-yellow-700"
+                        className="ml-auto whitespace-nowrap rounded bg-paladin-gold px-3 py-1 text-sm font-medium text-ink transition-colors hover:bg-paladin-gold/80"
                     >
                         Reconnect
                     </button>

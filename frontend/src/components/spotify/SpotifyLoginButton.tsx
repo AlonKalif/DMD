@@ -59,7 +59,7 @@ export function SpotifyLoginButton() {
         <button
             onClick={handleLogin}
             disabled={isAuthenticating}
-            className="flex items-center justify-center space-x-2 rounded-lg bg-green-600 px-6 py-3 text-white font-semibold transition-colors hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed"
+            className="flex items-center justify-center space-x-2 rounded-lg bg-paladin-gold px-6 py-3 text-ink font-semibold font-blackletter transition-colors hover:bg-paladin-gold/80 disabled:bg-faded-ink disabled:cursor-not-allowed arcane-glow-hover border border-transparent"
         >
             {isAuthenticating ? (
                 <>

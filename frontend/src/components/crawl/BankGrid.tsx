@@ -18,7 +18,7 @@ export function BankGrid({ onEdit, onDelete, onDoubleClick }: BankGridProps) {
 
     if (filtered.length === 0) {
         return (
-            <div className="flex flex-1 items-center justify-center text-gray-500">
+            <div className="flex flex-1 items-center justify-center text-faded-ink font-display">
                 {templates.length === 0
                     ? 'No character templates yet. Create one to get started!'
                     : 'No characters match your search.'}

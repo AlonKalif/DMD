@@ -55,21 +55,21 @@ export function DmToolbar() {
     };
 
     return (
-        <div className="flex gap-2 bg-gray-800 p-2">
+        <div className="leather-card flex gap-2 p-2">
             <button
                 onClick={handleOpenPlayerWindow}
                 className={clsx(
-                    'rounded px-4 py-2 font-bold text-white',
+                    'rounded px-4 py-2 font-bold text-parchment arcane-glow-hover border border-transparent',
                     isPlayerWindowOpen
-                        ? 'bg-gray-500 hover:bg-gray-600' // Style for "Focus"
-                        : 'bg-blue-600 hover:bg-blue-700'   // Style for "Open"
+                        ? 'bg-faded-ink/40 hover:bg-faded-ink/60'
+                        : 'bg-arcane-purple hover:bg-arcane-purple/80'
                 )}
             >
                 {isPlayerWindowOpen ? 'Focus Player Window' : 'Open Player Window'}
             </button>
             <button
                 onClick={handleSendMessage}
-                className="rounded bg-green-600 px-4 py-2 font-bold text-white hover:bg-green-700"
+                className="rounded bg-paladin-gold px-4 py-2 font-bold text-ink hover:bg-paladin-gold/80 arcane-glow-hover border border-transparent"
             >
                 Send Test Image
             </button>
