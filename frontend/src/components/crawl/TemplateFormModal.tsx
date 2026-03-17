@@ -5,9 +5,8 @@ import { CharacterTemplate, MediaAsset } from 'types/api';
 import { API_BASE_URL } from 'config';
 
 const COLOR_PRESETS = [
-    '#ef4444', '#f97316', '#eab308', '#22c55e',
-    '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280',
-    '#14b8a6', '#f43f5e', '#a855f7', '#374151',
+    '#1a160f', '#2a2419', '#991b1b',
+    '#2d4a3e', '#3b2a1a', '#6b5e4c',
 ];
 
 interface TemplateFormModalProps {

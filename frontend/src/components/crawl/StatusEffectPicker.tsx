@@ -24,30 +24,30 @@ export function StatusEffectPicker({ appliedEffects, onAdd, onClose }: StatusEff
     return (
         <div
             ref={ref}
-            className="absolute left-0 top-full z-40 mt-1 max-h-48 w-44 overflow-y-auto rounded-md border border-paladin-gold/30 leather-card py-1 shadow-lg"
+            className="absolute left-1/2 -translate-x-1/2 bottom-full z-40 mb-1 w-80 rounded-md border border-paladin-gold/30 leather-card p-3 shadow-lg"
         >
-            {STATUS_EFFECTS.map((effect) => {
-                const isApplied = appliedEffects.includes(effect);
-                return (
-                    <button
-                        key={effect}
-                        type="button"
-                        disabled={isApplied}
-                        onClick={() => { onAdd(effect); onClose(); }}
-                        className={`flex w-full items-center gap-2 px-3 py-1 text-left text-xs transition-colors ${
-                            isApplied
-                                ? 'cursor-default text-faded-ink/50'
-                                : 'text-parchment hover:bg-paladin-gold/10'
-                        }`}
-                    >
-                        <span
-                            className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
+            <div className="grid grid-cols-3 gap-2">
+                {STATUS_EFFECTS.map((effect) => {
+                    const isApplied = appliedEffects.includes(effect);
+                    return (
+                        <button
+                            key={effect}
+                            type="button"
+                            disabled={isApplied}
+                            onClick={() => { onAdd(effect); onClose(); }}
+                            className={`rounded-full px-2 py-1 text-xs font-medium leading-tight text-center transition-colors ${
+                                isApplied
+                                    ? 'cursor-default opacity-30'
+                                    : 'text-white hover:scale-105 hover:brightness-125'
+                            }`}
                             style={{ backgroundColor: STATUS_EFFECT_COLORS[effect] }}
-                        />
-                        {effect}
-                    </button>
-                );
-            })}
+                            title={effect}
+                        >
+                            {effect}
+                        </button>
+                    );
+                })}
+            </div>
         </div>
     );
 }

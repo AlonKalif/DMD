@@ -38,7 +38,7 @@ export function CombatantRow() {
     }
 
     return (
-        <div className="flex gap-3 overflow-x-auto px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600">
+        <div className="flex gap-5 overflow-x-auto px-4 pt-12 pb-6 scrollbar-thin scrollbar-thumb-gray-600">
             {combatants.map((combatant, idx) => (
                 <CombatantCard
                     key={combatant.instanceId}

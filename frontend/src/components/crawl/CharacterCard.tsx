@@ -26,7 +26,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
     return (
         <div
             ref={dragRef as unknown as React.Ref<HTMLDivElement>}
-            className="parchment-edge group relative flex w-36 flex-col items-center rounded-lg p-3 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing arcane-glow-hover border border-transparent"
+            className="group relative flex w-44 flex-col items-center rounded-lg border-2 border-paladin-gold/60 p-4 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing"
             style={{
                 backgroundColor: bgColor,
                 opacity: isDragging ? 0.5 : 1,
@@ -52,7 +52,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
             </div>
 
             {/* Photo or placeholder */}
-            <div className="mb-2 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-black/20">
+            <div className="mb-2 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-black/20">
                 {template.photo_path ? (
                     <img
                         src={`${API_BASE_URL}/static/${template.photo_path}`}
@@ -60,36 +60,36 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
                         className="h-full w-full object-cover"
                     />
                 ) : (
-                    <span className="text-2xl text-white/60">&#9876;</span>
+                    <span className="text-3xl text-white/60">&#9876;</span>
                 )}
             </div>
 
             {/* Name */}
-            <p className="max-w-full truncate text-center text-sm font-bold text-white" title={template.name}>
+            <p className="max-w-full truncate text-center text-base font-bold text-white" title={template.name}>
                 {template.name}
             </p>
 
             {/* Race / Class */}
             {raceClass && (
-                <p className="max-w-full truncate text-center text-xs italic text-white/70" title={raceClass}>
+                <p className="max-w-full truncate text-center text-sm italic text-white/70" title={raceClass}>
                     {raceClass}
                 </p>
             )}
 
             {/* Level badge */}
-            <span className="mt-1 mb-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white">
+            <span className="mt-1 mb-1 rounded-full bg-black/30 px-2.5 py-0.5 text-sm text-white">
                 Lv {template.level}
             </span>
 
             {/* Max HP */}
-            <p className="text-xs text-white/80">
+            <p className="text-sm text-white/80">
                 {template.max_hp} HP
             </p>
 
             {/* AC */}
             <div className="mt-1 flex items-center gap-1">
-                <span className="text-xs text-yellow-300">&#128737;</span>
-                <span className="text-xs font-semibold text-white">{template.ac}</span>
+                <span className="text-sm text-yellow-300">&#128737;</span>
+                <span className="text-sm font-semibold text-white">{template.ac}</span>
             </div>
         </div>
     );

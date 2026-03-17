@@ -31,20 +31,24 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
 
         const raceClass = [combatant.race, combatant.class].filter(Boolean).join(' ');
 
-        const primaryEffect = combatant.statusEffects.length > 0 ? combatant.statusEffects[0] : null;
-        const borderColor = primaryEffect ? STATUS_EFFECT_COLORS[primaryEffect] : undefined;
+        const activeEffects = combatant.statusEffects;
+        const effectColors = activeEffects.map((e) => STATUS_EFFECT_COLORS[e]);
+
+        const blendedShadow = effectColors.length > 0
+            ? effectColors
+                .map((c) => `0 0 12px 3px ${c}aa, 0 0 24px 6px ${c}44`)
+                .join(', ')
+            : '0 4px 6px -1px rgba(0,0,0,0.3)';
 
         return (
             <div
                 ref={ref}
-                className={`parchment-edge group relative flex w-40 flex-shrink-0 flex-col items-center rounded-lg p-3 shadow-md transition-all ${
+                className={`group relative flex w-48 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 p-4 transition-all ${
                     isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
                     backgroundColor: combatant.color || '#374151',
-                    borderWidth: borderColor ? 3 : 0,
-                    borderColor: borderColor ?? 'transparent',
-                    borderStyle: 'solid',
+                    boxShadow: blendedShadow,
                 }}
             >
                 {/* Death overlay */}
@@ -64,7 +68,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 </button>
 
                 {/* Photo */}
-                <div className="mb-1 flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-black/20">
+                <div className="mb-1.5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-black/20">
                     {combatant.photo_path ? (
                         <img
                             src={`${API_BASE_URL}/static/${combatant.photo_path}`}
@@ -72,44 +76,44 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                             className="h-full w-full object-cover"
                         />
                     ) : (
-                        <span className="text-xl text-white/60">&#9876;</span>
+                        <span className="text-2xl text-white/60">&#9876;</span>
                     )}
                 </div>
 
                 {/* Name */}
-                <p className="max-w-full truncate text-center text-xs font-bold text-white" title={combatant.name}>
+                <p className="max-w-full truncate text-center text-sm font-bold text-white" title={combatant.name}>
                     {combatant.name}
                 </p>
 
                 {/* Race / Class */}
                 {raceClass && (
-                    <p className="max-w-full truncate text-center text-[10px] italic text-white/70" title={raceClass}>
+                    <p className="max-w-full truncate text-center text-xs italic text-white/70" title={raceClass}>
                         {raceClass}
                     </p>
                 )}
 
                 {/* Initiative badge */}
-                <span className="mt-0.5 rounded-full bg-black/30 px-1.5 py-0.5 text-[10px] text-white">
+                <span className="mt-0.5 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white">
                     Init {combatant.initiative}
                 </span>
 
                 {/* HP bar */}
                 <GlassVial
                     percent={hpPercent}
-                    className="mt-1 mb-0.5 h-2"
+                    className="mt-1.5 mb-0.5 h-2.5"
                     liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
                 />
-                <p className="text-[10px] text-white/80">
+                <p className="text-xs text-white/80">
                     {combatant.hp}/{combatant.max_hp} HP
                 </p>
 
                 {/* HP buttons */}
-                <div className="mt-1 flex gap-1">
+                <div className="mt-1.5 flex gap-1.5">
                     {[-5, -1, 1, 5].map((delta) => (
                         <button
                             key={delta}
                             onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
-                            className={`rounded px-1.5 py-0.5 text-[10px] font-bold transition-colors ${
+                            className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
                                 delta < 0
                                     ? 'bg-red-700/60 text-red-200 hover:bg-red-600/80'
                                     : 'bg-green-700/60 text-green-200 hover:bg-green-600/80'
@@ -121,35 +125,16 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 </div>
 
                 {/* AC */}
-                <div className="mt-1 flex items-center gap-1">
-                    <span className="text-[10px] text-yellow-300">&#128737;</span>
-                    <span className="text-[10px] font-semibold text-white">{combatant.ac}</span>
-                </div>
-
-                {/* Status effects pills */}
-                <div className="mt-1 flex flex-wrap justify-center gap-1">
-                    {combatant.statusEffects.map((effect) => (
-                        <span
-                            key={effect}
-                            className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium text-white"
-                            style={{ backgroundColor: STATUS_EFFECT_COLORS[effect] }}
-                        >
-                            {effect}
-                            <button
-                                onClick={() => dispatch(removeStatusEffect({ instanceId: combatant.instanceId, effect }))}
-                                className="ml-0.5 text-white/70 hover:text-white"
-                            >
-                                &times;
-                            </button>
-                        </span>
-                    ))}
+                <div className="mt-1.5 flex items-center gap-1">
+                    <span className="text-xs text-yellow-300">&#128737;</span>
+                    <span className="text-xs font-semibold text-white">{combatant.ac}</span>
                 </div>
 
                 {/* Add status effect button */}
                 <div className="relative mt-1">
                     <button
                         onClick={() => setShowPicker(!showPicker)}
-                        className="rounded bg-black/30 px-2 py-0.5 text-[10px] text-white/70 hover:bg-black/50 hover:text-white"
+                        className="rounded bg-black/30 px-2.5 py-0.5 text-xs text-white/70 hover:bg-black/50 hover:text-white"
                     >
                         + Effect
                     </button>
@@ -164,13 +149,31 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     )}
                 </div>
 
-                {/* Bottom border effect label */}
-                {primaryEffect && (
-                    <div
-                        className="absolute bottom-0 left-0 right-0 rounded-b-lg px-2 py-0.5 text-center text-[9px] font-semibold text-white"
-                        style={{ backgroundColor: STATUS_EFFECT_COLORS[primaryEffect] }}
-                    >
-                        {primaryEffect}
+                {/* Floating effect labels above card */}
+                {activeEffects.length > 0 && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1.5">
+                        {activeEffects.map((effect) => {
+                            const color = STATUS_EFFECT_COLORS[effect];
+                            return (
+                                <div
+                                    key={effect}
+                                    className="group/effect relative whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white cursor-default"
+                                    style={{
+                                        backgroundColor: `${color}22`,
+                                        boxShadow: `0 0 12px 4px ${color}30`,
+                                        textShadow: `0 0 6px ${color}`,
+                                    }}
+                                >
+                                    {effect}
+                                    <button
+                                        onClick={() => dispatch(removeStatusEffect({ instanceId: combatant.instanceId, effect }))}
+                                        className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[9px] text-white/80 hover:bg-red-700 hover:text-white group-hover/effect:flex"
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
