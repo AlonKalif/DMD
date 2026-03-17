@@ -70,22 +70,26 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
             <form
                 onSubmit={handleSubmit}
-                className="flex w-full max-w-md flex-col space-y-4 rounded-lg bg-gray-800 p-6 text-white max-h-[90vh] overflow-y-auto"
+                className="leather-card relative flex w-full max-w-md flex-col space-y-4 rounded-lg p-6 text-parchment max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-xl font-bold">
+                <div className="filigree-corner filigree-tl" />
+                <div className="filigree-corner filigree-tr" />
+                <div className="filigree-corner filigree-bl" />
+                <div className="filigree-corner filigree-br" />
+                <h2 className="text-xl font-bold font-blackletter gold-gradient-text">
                     {initial ? 'Edit Character' : 'New Character'}
                 </h2>
 
                 {/* Name */}
                 <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-300">Name *</label>
+                    <label className="mb-1 block text-sm font-medium text-parchment/70">Name *</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="w-full rounded-md border-gray-600 bg-gray-700 p-2 focus:border-blue-500 focus:ring-blue-500"
+                        className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         autoFocus
                     />
                 </div>
@@ -93,23 +97,23 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                 {/* Race & Class */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">Race</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">Race</label>
                         <input
                             type="text"
                             value={race}
                             onChange={(e) => setRace(e.target.value)}
                             placeholder="e.g. Half-Elf"
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-sm text-parchment placeholder-faded-ink focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">Class</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">Class</label>
                         <input
                             type="text"
                             value={charClass}
                             onChange={(e) => setCharClass(e.target.value)}
                             placeholder="e.g. Ranger"
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-sm focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-sm text-parchment placeholder-faded-ink focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                 </div>
@@ -117,50 +121,50 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                 {/* Stats row */}
                 <div className="grid grid-cols-4 gap-3">
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">Level</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">Level</label>
                         <input
                             type="number"
                             min={0}
                             value={level}
                             onChange={(e) => setLevel(Number(e.target.value))}
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-center focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">HP</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">HP</label>
                         <input
                             type="number"
                             min={0}
                             value={hp}
                             onChange={(e) => setHp(Number(e.target.value))}
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-center focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">Max HP</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">Max HP</label>
                         <input
                             type="number"
                             min={0}
                             value={maxHp}
                             onChange={(e) => setMaxHp(Number(e.target.value))}
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-center focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-xs font-medium text-gray-300">AC</label>
+                        <label className="mb-1 block text-xs font-medium text-parchment/70">AC</label>
                         <input
                             type="number"
                             min={0}
                             value={ac}
                             onChange={(e) => setAc(Number(e.target.value))}
-                            className="w-full rounded-md border-gray-600 bg-gray-700 p-2 text-center focus:border-blue-500 focus:ring-blue-500"
+                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         />
                     </div>
                 </div>
 
                 {/* Color picker */}
                 <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-300">Card Color</label>
+                    <label className="mb-1 block text-sm font-medium text-parchment/70">Card Color</label>
                     <div className="flex flex-wrap gap-2">
                         {COLOR_PRESETS.map((c) => (
                             <button
@@ -179,10 +183,10 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
 
                 {/* Photo picker */}
                 <div>
-                    <label className="mb-1 block text-sm font-medium text-gray-300">Photo</label>
+                    <label className="mb-1 block text-sm font-medium text-parchment/70">Photo</label>
                     <div className="flex items-center gap-3">
                         {selectedImagePath ? (
-                            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-600">
+                            <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-paladin-gold/30">
                                 <img
                                     src={`${API_BASE_URL}/static/${selectedImagePath}`}
                                     alt="Selected"
@@ -200,16 +204,16 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                         <button
                             type="button"
                             onClick={() => setShowImagePicker(!showImagePicker)}
-                            className="rounded-md bg-gray-600 px-3 py-1.5 text-sm hover:bg-gray-500"
+                            className="rounded-md bg-faded-ink/40 px-3 py-1.5 text-sm text-parchment hover:bg-faded-ink/60"
                         >
                             {selectedImagePath ? 'Change Image' : 'Choose Image'}
                         </button>
                     </div>
 
                     {showImagePicker && (
-                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-gray-600 bg-gray-700 p-2">
+                        <div className="mt-2 max-h-48 overflow-y-auto rounded-md border border-paladin-gold/30 bg-leather-dark p-2">
                             {images.length === 0 ? (
-                                <p className="text-center text-sm text-gray-400 py-4">No images available.</p>
+                                <p className="text-center text-sm text-faded-ink py-4">No images available.</p>
                             ) : (
                                 <div className="grid grid-cols-5 gap-2">
                                     {images.map((img) => (
@@ -219,7 +223,7 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                                             onClick={() => handleSelectImage(img)}
                                             className={`overflow-hidden rounded-md border-2 transition-transform hover:scale-105 ${
                                                 selectedImagePath === img.file_path
-                                                    ? 'border-blue-500'
+                                                    ? 'border-arcane-purple'
                                                     : 'border-transparent'
                                             }`}
                                         >
@@ -241,14 +245,14 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-md bg-gray-600 px-4 py-2 hover:bg-gray-500"
+                        className="rounded-md bg-faded-ink/40 px-4 py-2 text-parchment hover:bg-faded-ink/60"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={isSaving || !name.trim()}
-                        className="rounded-md bg-blue-600 px-4 py-2 hover:bg-blue-500 disabled:opacity-50"
+                        className="rounded-md bg-arcane-purple px-4 py-2 text-parchment font-semibold hover:bg-arcane-purple/80 disabled:opacity-50 arcane-glow-hover border border-transparent"
                     >
                         {isSaving ? 'Saving...' : initial ? 'Update' : 'Create'}
                     </button>

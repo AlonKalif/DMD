@@ -44,7 +44,7 @@ export function PresetPanel({ onLoadPreset, onDeletePreset, refreshKey }: Preset
         >
             {presets.length === 0 ? (
                 <div className="flex h-32 w-full items-center justify-center">
-                    <p className="text-gray-400">No saved presets. Save your first layout!</p>
+                    <p className="text-faded-ink">No saved presets. Save your first layout!</p>
                 </div>
             ) : (
                 presets.map((preset) => (

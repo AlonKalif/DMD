@@ -19,29 +19,29 @@ export function BattleToolbar() {
     };
 
     return (
-        <div className="flex items-center gap-4 px-4 py-2 border-b border-gray-700">
-            <h2 className="text-lg font-bold text-white whitespace-nowrap">Dungeon Crawl</h2>
+        <div className="flex items-center gap-4 px-4 py-2 border-b border-paladin-gold/20">
+            <h2 className="text-lg font-bold font-blackletter gold-gradient-text whitespace-nowrap">Dungeon Crawl</h2>
 
             {activeCombatant ? (
-                <span className="text-sm text-yellow-300">
-                    Turn: <span className="font-semibold text-white">{activeCombatant.name}</span>
+                <span className="text-sm text-paladin-gold">
+                    Turn: <span className="font-semibold text-parchment">{activeCombatant.name}</span>
                 </span>
             ) : (
-                <span className="text-sm text-gray-500">No active battle</span>
+                <span className="text-sm text-faded-ink">No active battle</span>
             )}
 
             <div className="ml-auto flex gap-2">
                 <button
                     onClick={() => dispatch(nextTurn())}
                     disabled={!hasCombatants}
-                    className="rounded-md bg-yellow-600 px-3 py-1 text-sm font-semibold text-white hover:bg-yellow-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-md bg-paladin-gold px-3 py-1 text-sm font-semibold text-ink hover:bg-paladin-gold/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors arcane-glow-hover border border-transparent"
                 >
                     Next Turn &rarr;
                 </button>
                 <button
                     onClick={handleClearAll}
                     disabled={!hasCombatants}
-                    className="rounded-md bg-red-700 px-3 py-1 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-md bg-wax-red px-3 py-1 text-sm font-semibold text-parchment hover:bg-wax-red/80 disabled:opacity-40 disabled:cursor-not-allowed transition-colors arcane-glow-hover border border-transparent"
                 >
                     Clear All
                 </button>

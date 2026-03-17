@@ -40,9 +40,14 @@ export default function DmLayout() {
     useSpotifyPlayer();
 
     return (
-        <div className="pb-16">
-            <Outlet />
-            <BottomNavBar />
+        <div className="relative min-h-screen bg-obsidian">
+            <div className="d20-background" aria-hidden="true">
+                {"pentagon ".repeat(200)}
+            </div>
+            <div className="relative z-10 pb-16">
+                <Outlet />
+                <BottomNavBar />
+            </div>
         </div>
     );
 }

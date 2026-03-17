@@ -41,12 +41,12 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
             <img
                 src={assetUrl}
                 alt={asset.name}
-                className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-blue-500"
+                className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-arcane-purple"
             />
             {/* Edit Button */}
             <div
                 onClick={() => onEdit(asset)}
-                className="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-blue-600"
+                className="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-arcane-purple"
                 title="Edit Type"
             >
                 {/* Simple "tag" SVG icon */}
@@ -64,7 +64,7 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
                         "bg-black/70 opacity-0 transition-opacity duration-200",
                         "group-hover:opacity-100",
                         // Optional: Different color for 'Uncategorized'
-                        displayType === 'Uncategorized' ? 'bg-gray-500' : 'bg-green-600'
+                        displayType === 'Uncategorized' ? 'bg-faded-ink' : 'bg-paladin-gold text-ink'
                     )}
                 >
                     {displayType}
@@ -106,8 +106,8 @@ function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps)
                     key={type}
                     onClick={() => onTypeSelect(type)}
                     className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
-                        activeType === type ? 'bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
+                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
+                        activeType === type ? 'bg-paladin-gold text-ink' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
                     )}
                 >
                     {type}
@@ -144,7 +144,7 @@ export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetS
 
                 {assets.length === 0 && (
                     <div className="flex h-28 items-center justify-center">
-                        <p className="text-gray-400">No media assets found.</p>
+                        <p className="text-faded-ink">No media assets found.</p>
                     </div>
                 )}
             </div>
@@ -153,7 +153,7 @@ export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetS
             <div className="flex-shrink-0 pl-2">
                 <button
                     onClick={onBrowseClick}
-                    className="flex h-28 w-28 flex-col items-center justify-center rounded-md border-2 border-dashed border-gray-600 text-gray-400 transition-colors hover:border-blue-500 hover:text-blue-500"
+                    className="flex h-28 w-28 flex-col items-center justify-center rounded-md border-2 border-dashed border-paladin-gold/30 text-faded-ink transition-colors hover:border-arcane-purple hover:text-arcane-purple"
                     title="Browse for a local file"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -218,14 +218,14 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
     }, [activeType, refreshKey]); // Re-run this effect whenever the activeType changes
 
     return (
-        <div className="space-y-2 border-y border-gray-700 bg-gray-800 p-2">
+        <div className="leather-card space-y-2 border-y border-paladin-gold/20 p-2">
             {/* Tab Switcher */}
             <div className="flex items-center space-x-2 pb-2">
                 <button
                     onClick={() => setActiveTab('assets')}
                     className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
-                        activeTab === 'assets' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
+                        activeTab === 'assets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
                     )}
                 >
                     Assets
@@ -233,8 +233,8 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
                 <button
                     onClick={() => setActiveTab('presets')}
                     className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-white transition-colors",
-                        activeTab === 'presets' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600'
+                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
+                        activeTab === 'presets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
                     )}
                 >
                     Presets

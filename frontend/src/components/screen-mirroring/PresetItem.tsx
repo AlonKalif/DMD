@@ -30,7 +30,7 @@ export function PresetItem({ preset, onLoad, onDelete }: PresetItemProps) {
             {/* Delete button - positioned outside the main container */}
             <button
                 onClick={handleDelete}
-                className="absolute -top-2 -right-2 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-white opacity-0 transition-all hover:bg-red-600 group-hover:opacity-100"
+                className="absolute -top-2 -right-2 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-leather-dark text-parchment opacity-0 transition-all hover:bg-wax-red group-hover:opacity-100"
                 title="Delete preset"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,7 +41,7 @@ export function PresetItem({ preset, onLoad, onDelete }: PresetItemProps) {
             {/* Main preset container */}
             <div
                 onClick={() => onLoad(preset)}
-                className="flex h-full w-full cursor-pointer rounded-md border-2 border-gray-600 bg-gray-900 p-1 transition-all hover:border-blue-500 hover:shadow-lg"
+                className="flex h-full w-full cursor-pointer rounded-md border-2 border-paladin-gold/30 bg-obsidian p-1 transition-all hover:border-arcane-purple hover:shadow-lg arcane-glow-hover"
             >
 
                 {/* Mini preview grid */}
@@ -51,7 +51,7 @@ export function PresetItem({ preset, onLoad, onDelete }: PresetItemProps) {
                         return (
                             <div
                                 key={slot.ID}
-                                className="relative overflow-hidden rounded-sm bg-gray-800"
+                                className="relative overflow-hidden rounded-sm bg-leather-dark"
                             >
                                 <img
                                     src={imageUrl}

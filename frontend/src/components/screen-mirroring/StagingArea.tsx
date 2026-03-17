@@ -33,14 +33,14 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
     return (
         <div className={clsx(
             'relative flex h-full w-full items-center justify-center rounded-lg border-4 p-2 transition-colors duration-300',
-            status === 'empty' && 'border-gray-600 border-dashed',
-            status === 'staged' && !isSaving && 'border-blue-500 border-solid',
-            status === 'live' && !isSaving && 'border-green-500 border-solid',
-            isSaving && 'border-green-500 border-solid',
+            status === 'empty' && 'border-faded-ink/40 border-dashed',
+            status === 'staged' && !isSaving && 'border-arcane-purple border-solid',
+            status === 'live' && !isSaving && 'border-paladin-gold border-solid',
+            isSaving && 'border-paladin-gold border-solid',
         )}>
             {/* Notification Banner */}
             <div className={clsx(
-                'absolute top-0 left-1/4 right-1/4 bg-blue-800/95 p-2 text-center font-semibold text-white shadow-lg transition-opacity duration-300 ease-in-out z-20 rounded-b-lg',
+                'absolute top-0 left-1/4 right-1/4 leather-card p-2 text-center font-semibold text-parchment shadow-lg transition-opacity duration-300 ease-in-out z-20 rounded-b-lg',
                 isNotificationVisible ? 'opacity-97' : 'opacity-0'
             )}>
                 {notification}
@@ -58,9 +58,9 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
             {/* Status Badge in the top-center */}
             {status !== 'empty' && (
                 <div className={clsx(
-                    'absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3/4 transform rounded px-3 py-0.1 text-sm font-bold text-white z-10',
-                    status === 'staged' && 'bg-blue-500',
-                    status === 'live' && 'bg-green-500',
+                    'absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3/4 transform rounded px-3 py-0.1 text-sm font-bold font-blackletter text-parchment z-10',
+                    status === 'staged' && 'bg-arcane-purple',
+                    status === 'live' && 'bg-paladin-gold text-ink',
                 )}>
                     {status.toUpperCase()}
                 </div>

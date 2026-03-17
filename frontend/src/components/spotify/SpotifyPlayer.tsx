@@ -55,13 +55,13 @@ export function SpotifyPlayer() {
     if (!deviceId) {
         return (
             <div className="flex items-center justify-center p-4">
-                <div className="text-gray-400">Initializing player...</div>
+                <div className="text-faded-ink">Initializing player...</div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col space-y-4 rounded-lg bg-gray-800 p-6">
+        <div className="leather-card relative flex flex-col space-y-4 rounded-lg p-6">
             {/* Current Track */}
             {currentTrack ? (
                 <div className="flex items-center space-x-4">
@@ -71,18 +71,18 @@ export function SpotifyPlayer() {
                         className="h-20 w-20 rounded-md"
                     />
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-white">{currentTrack.name}</h3>
-                        <p className="text-sm text-gray-400">
+                        <h3 className="text-lg font-semibold font-blackletter gold-gradient-text">{currentTrack.name}</h3>
+                        <p className="text-sm text-faded-ink">
                             {currentTrack.artists.map((a) => a.name).join(', ')}
                         </p>
                     </div>
                 </div>
             ) : (
                 <div className="flex items-center space-x-4">
-                    <div className="h-20 w-20 rounded-md bg-gray-700"></div>
+                    <div className="h-20 w-20 rounded-md bg-leather-dark"></div>
                     <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-400">No track playing</h3>
-                        <p className="text-sm text-gray-500">Select a playlist to start</p>
+                        <h3 className="text-lg font-semibold font-blackletter text-faded-ink">No track playing</h3>
+                        <p className="text-sm text-faded-ink/70">Select a playlist to start</p>
                     </div>
                 </div>
             )}
@@ -95,10 +95,10 @@ export function SpotifyPlayer() {
                     max={duration}
                     value={position}
                     onChange={(e) => handleSeek(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                    className="arcane-slider"
                     disabled={!currentTrack}
                 />
-                <div className="flex justify-between text-xs text-gray-400">
+                <div className="flex justify-between text-xs text-faded-ink">
                     <span>{formatTime(position)}</span>
                     <span>{formatTime(duration)}</span>
                 </div>
@@ -109,7 +109,7 @@ export function SpotifyPlayer() {
                 <button
                     onClick={handlePrevious}
                     disabled={!currentTrack}
-                    className="rounded-full p-2 text-white hover:bg-gray-700 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-full p-2 text-parchment hover:bg-paladin-gold/10 disabled:text-faded-ink/40 disabled:cursor-not-allowed transition-colors"
                 >
                     <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
@@ -119,7 +119,7 @@ export function SpotifyPlayer() {
                 <button
                     onClick={handlePlayPause}
                     disabled={!currentTrack}
-                    className="rounded-full bg-white p-4 text-black hover:scale-105 transition-transform disabled:bg-gray-600 disabled:cursor-not-allowed"
+                    className="rounded-full bg-paladin-gold p-4 text-ink hover:scale-105 transition-transform disabled:bg-faded-ink disabled:cursor-not-allowed"
                 >
                     {isPlaying ? (
                         <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -135,7 +135,7 @@ export function SpotifyPlayer() {
                 <button
                     onClick={handleNext}
                     disabled={!currentTrack}
-                    className="rounded-full p-2 text-white hover:bg-gray-700 disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-full p-2 text-parchment hover:bg-paladin-gold/10 disabled:text-faded-ink/40 disabled:cursor-not-allowed transition-colors"
                 >
                     <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
@@ -145,7 +145,7 @@ export function SpotifyPlayer() {
 
             {/* Volume Control */}
             <div className="flex items-center space-x-2">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-faded-ink" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
                 </svg>
                 <input
@@ -155,7 +155,7 @@ export function SpotifyPlayer() {
                     step="0.01"
                     value={volume}
                     onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                    className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
+                    className="arcane-slider flex-1"
                 />
             </div>
         </div>

@@ -20,12 +20,16 @@ export default function DungeonCrawlPage() {
     };
 
     return (
-        <div className="flex h-full flex-col bg-gray-900 gap-2 p-2 pb-0">
+        <div className="flex h-full flex-col gap-2 p-2 pb-0">
             {/* Battle section — top */}
             <BattleSection onRequestInitiative={handleRequestInitiative} />
 
-            {/* Divider */}
-            <div className="border-t border-gray-700" />
+            {/* Flourish Divider */}
+            <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-paladin-gold/40 to-transparent" />
+                <span className="text-paladin-gold/60 text-sm select-none">&#10087; &#10086; &#10087;</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-paladin-gold/40 to-transparent" />
+            </div>
 
             {/* Character Bank — bottom */}
             <div className="flex flex-1 flex-col overflow-hidden">

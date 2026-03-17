@@ -46,7 +46,7 @@ export function PlaylistPanel() {
     if (isFetchingPlaylists) {
         return (
             <div className="flex items-center justify-center p-4">
-                <div className="text-gray-400">Loading playlists...</div>
+                <div className="text-faded-ink">Loading playlists...</div>
             </div>
         );
     }
@@ -54,20 +54,20 @@ export function PlaylistPanel() {
     if (playlists.length === 0) {
         return (
             <div className="flex items-center justify-center p-4">
-                <div className="text-gray-400">No playlists found</div>
+                <div className="text-faded-ink">No playlists found</div>
             </div>
         );
     }
 
     return (
         <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">Your Playlists</h2>
+            <h2 className="text-xl font-bold font-blackletter gold-gradient-text">Your Playlists</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                 {playlists.map((playlist) => (
                     <div
                         key={playlist.id}
                         onClick={() => handlePlayPlaylist(playlist.uri)}
-                        className="cursor-pointer rounded-lg bg-gray-800 p-4 transition-colors hover:bg-gray-700"
+                        className="parchment-texture parchment-edge cursor-pointer rounded-lg p-4 arcane-glow-hover border border-transparent"
                     >
                         {playlist.images && playlist.images[0] ? (
                             <img
@@ -76,14 +76,14 @@ export function PlaylistPanel() {
                                 className="mb-2 h-32 w-full rounded-md object-cover"
                             />
                         ) : (
-                            <div className="mb-2 h-32 w-full rounded-md bg-gray-700 flex items-center justify-center">
-                                <svg className="h-12 w-12 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                            <div className="mb-2 h-32 w-full rounded-md bg-leather-dark flex items-center justify-center">
+                                <svg className="h-12 w-12 text-faded-ink" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
                                 </svg>
                             </div>
                         )}
-                        <h3 className="truncate font-semibold text-white">{playlist.name}</h3>
-                        <p className="text-sm text-gray-400">{playlist.tracks.total} tracks</p>
+                        <h3 className="truncate font-semibold text-ink">{playlist.name}</h3>
+                        <p className="text-sm text-faded-ink">{playlist.tracks.total} tracks</p>
                     </div>
                 ))}
             </div>

@@ -5,18 +5,19 @@ import { Combatant, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { StatusEffectPicker } from './StatusEffectPicker';
+import { GlassVial } from 'components/ui/GlassVial';
 
 interface CombatantCardProps {
     combatant: Combatant;
     isActive: boolean;
 }
 
-function getHpBarColor(hp: number, maxHp: number): string {
-    if (maxHp <= 0) return 'bg-gray-500';
+function getHpLiquidClass(hp: number, maxHp: number): string {
+    if (maxHp <= 0) return '';
     const ratio = hp / maxHp;
-    if (ratio > 2 / 3) return 'bg-green-400';
-    if (ratio > 1 / 3) return 'bg-orange-400';
-    return 'bg-red-500';
+    if (ratio > 2 / 3) return 'bg-gradient-to-r from-green-800 via-green-500 to-green-800 shadow-[0_0_10px_rgba(34,197,94,0.5)]';
+    if (ratio > 1 / 3) return 'bg-gradient-to-r from-orange-800 via-orange-500 to-orange-800 shadow-[0_0_10px_rgba(249,115,22,0.5)]';
+    return '';
 }
 
 export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
@@ -36,8 +37,8 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         return (
             <div
                 ref={ref}
-                className={`group relative flex w-40 flex-shrink-0 flex-col items-center rounded-lg p-3 shadow-md transition-all ${
-                    isActive ? 'outline outline-3 outline-offset-4 outline-yellow-400 scale-105' : ''
+                className={`parchment-edge group relative flex w-40 flex-shrink-0 flex-col items-center rounded-lg p-3 shadow-md transition-all ${
+                    isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
                     backgroundColor: combatant.color || '#374151',
@@ -93,12 +94,11 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 </span>
 
                 {/* HP bar */}
-                <div className="mt-1 mb-0.5 h-2 w-full overflow-hidden rounded-full bg-black/30">
-                    <div
-                        className={`h-full rounded-full transition-all ${getHpBarColor(combatant.hp, combatant.max_hp)}`}
-                        style={{ width: `${hpPercent}%` }}
-                    />
-                </div>
+                <GlassVial
+                    percent={hpPercent}
+                    className="mt-1 mb-0.5 h-2"
+                    liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
+                />
                 <p className="text-[10px] text-white/80">
                     {combatant.hp}/{combatant.max_hp} HP
                 </p>

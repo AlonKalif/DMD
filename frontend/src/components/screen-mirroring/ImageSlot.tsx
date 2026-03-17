@@ -48,9 +48,9 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot , onZoomChange, onMov
             ref={drop}
             // Group class to enable hover effects on child elements
             className={clsx(
-                "group relative flex h-full w-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-md bg-gray-800/50 p-2 transition-all",
-                isOver && canDrop && "ring-4 ring-blue-500",
-                !isOver && canDrop && "ring-2 ring-dashed ring-gray-500"
+                "group relative flex h-full w-full min-h-0 min-w-0 items-center justify-center overflow-hidden rounded-md bg-leather-dark/50 p-2 transition-all border border-paladin-gold/10",
+                isOver && canDrop && "ring-4 ring-arcane-purple",
+                !isOver && canDrop && "ring-2 ring-dashed ring-faded-ink"
             )}
         >
             {slot.url ? (
@@ -84,9 +84,9 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot , onZoomChange, onMov
                     </div>
                 </>
             ) : (
-                <div className="text-center text-gray-500">
+                <div className="text-center text-faded-ink">
                     <span className="text-2xl font-bold">+</span>
-                    <p>Drop an image here</p>
+                    <p className="font-display">Drop an image here</p>
                 </div>
             )}
         </div>

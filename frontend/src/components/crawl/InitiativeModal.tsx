@@ -21,42 +21,46 @@ export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModa
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
             <form
                 onSubmit={handleSubmit}
-                className="flex w-72 flex-col space-y-4 rounded-lg bg-gray-800 p-6 text-white"
+                className="leather-card relative flex w-72 flex-col space-y-4 rounded-lg p-6 text-parchment"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-lg font-bold">Set Initiative</h2>
-                <p className="text-sm text-gray-300">
-                    Adding <span className="font-semibold text-white">{template.name}</span> to battle.
+                <div className="filigree-corner filigree-tl" />
+                <div className="filigree-corner filigree-tr" />
+                <div className="filigree-corner filigree-bl" />
+                <div className="filigree-corner filigree-br" />
+                <h2 className="text-lg font-bold font-blackletter gold-gradient-text">Set Initiative</h2>
+                <p className="text-sm text-parchment/70">
+                    Adding <span className="font-semibold text-parchment">{template.name}</span> to battle.
                 </p>
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-gray-300">Initiative</label>
+                    <label className="mb-2 block text-sm font-medium text-parchment/70">Initiative</label>
                     <div className="flex items-center justify-center gap-2">
                         <button
                             type="button"
                             onClick={() => adjust(-5)}
-                            className="rounded bg-red-700/60 px-2.5 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                            className="rounded bg-wax-red/60 px-2.5 py-1 text-sm font-bold text-parchment hover:bg-wax-red/80"
                         >
                             -5
                         </button>
                         <button
                             type="button"
                             onClick={() => adjust(-1)}
-                            className="rounded bg-red-700/60 px-2.5 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                            className="rounded bg-wax-red/60 px-2.5 py-1 text-sm font-bold text-parchment hover:bg-wax-red/80"
                         >
                             -1
                         </button>
-                        <span className="min-w-[3rem] text-center text-2xl font-bold">{initiative}</span>
+                        <span className="min-w-[3rem] text-center text-2xl font-bold font-blackletter gold-gradient-text">{initiative}</span>
                         <button
                             type="button"
                             onClick={() => adjust(1)}
-                            className="rounded bg-green-700/60 px-2.5 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                            className="rounded bg-paladin-gold/40 px-2.5 py-1 text-sm font-bold text-parchment hover:bg-paladin-gold/60"
                         >
                             +1
                         </button>
                         <button
                             type="button"
                             onClick={() => adjust(5)}
-                            className="rounded bg-green-700/60 px-2.5 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                            className="rounded bg-paladin-gold/40 px-2.5 py-1 text-sm font-bold text-parchment hover:bg-paladin-gold/60"
                         >
                             +5
                         </button>
@@ -66,13 +70,13 @@ export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModa
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-md bg-gray-600 px-4 py-2 hover:bg-gray-500"
+                        className="rounded-md bg-faded-ink/40 px-4 py-2 text-parchment hover:bg-faded-ink/60"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
-                        className="rounded-md bg-green-600 px-4 py-2 hover:bg-green-500"
+                        className="rounded-md bg-paladin-gold px-4 py-2 text-ink font-semibold hover:bg-paladin-gold/80 arcane-glow-hover border border-transparent"
                     >
                         Add to Battle
                     </button>

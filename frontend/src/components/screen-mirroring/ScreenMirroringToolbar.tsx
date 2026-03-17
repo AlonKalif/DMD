@@ -85,38 +85,38 @@ export function ScreenMirroringToolbar({
 
     // Open / Close Button
     const openCloseText = isPlayerWindowOpen ? 'Close Players Window' : 'Open Players Window';
-    const openCloseColor = isPlayerWindowOpen ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700';
+    const openCloseColor = isPlayerWindowOpen ? 'bg-wax-red hover:bg-wax-red/80' : 'bg-arcane-purple hover:bg-arcane-purple/80';
 
     // Show / Hide Button
     const showHideText = previewStatus === 'live' ? 'Hide From Players' : 'Show To Players';
     const isShowHideDisabled = !isPlayerWindowOpen || previewStatus === 'empty';
     const showHideColor = isShowHideDisabled
-        ? 'bg-gray-500 cursor-not-allowed opacity-50'
+        ? 'bg-faded-ink/40 cursor-not-allowed opacity-50'
         : previewStatus === 'live'
-            ? 'bg-orange-600 hover:bg-orange-700'
-            : 'bg-green-600 hover:bg-green-700';
+            ? 'bg-wax-red hover:bg-wax-red/80'
+            : 'bg-paladin-gold text-ink hover:bg-paladin-gold/80';
 
     // Focus Button
     const focusText = 'Focus Player Window';
     const isFocusDisabled = !isPlayerWindowOpen;
     const focusColor = isFocusDisabled
-        ? 'bg-gray-500 cursor-not-allowed opacity-50'
-        : 'bg-purple-600 hover:bg-purple-700';
+        ? 'bg-faded-ink/40 cursor-not-allowed opacity-50'
+        : 'bg-arcane-purple hover:bg-arcane-purple/80';
 
     // Sync Button
     const syncText = 'Get Player View';
     const isSyncDisabled = !isPlayerWindowOpen;
     const syncColor = isSyncDisabled
-        ? 'bg-gray-500 cursor-not-allowed opacity-50'
-        : 'bg-purple-600 hover:bg-purple-700';
+        ? 'bg-faded-ink/40 cursor-not-allowed opacity-50'
+        : 'bg-arcane-purple hover:bg-arcane-purple/80';
 
     return (
-        <div className="flex w-full items-center gap-4 border-b border-gray-700 bg-gray-800 p-2">
+        <div className="leather-card flex w-full items-center gap-4 border-b border-paladin-gold/20 p-2">
 
             {/* 1. Open/Close Button */}
             <button
                 onClick={handleOpenCloseClick}
-                className={clsx('rounded px-4 py-2 font-bold text-white', openCloseColor)}
+                className={clsx('rounded px-4 py-2 font-bold text-parchment arcane-glow-hover border border-transparent', openCloseColor)}
             >
                 {openCloseText}
             </button>
@@ -125,7 +125,7 @@ export function ScreenMirroringToolbar({
             <button
                 onClick={handleShowHideClick}
                 disabled={isShowHideDisabled}
-                className={clsx('rounded px-4 py-2 font-bold text-white', showHideColor)}
+                className={clsx('rounded px-4 py-2 font-bold text-parchment arcane-glow-hover border border-transparent', showHideColor)}
             >
                 {showHideText}
             </button>
@@ -134,7 +134,7 @@ export function ScreenMirroringToolbar({
             <button
                 onClick={onSyncWithPlayerClick}
                 disabled={isSyncDisabled}
-                className={clsx('rounded px-4 py-2 font-bold text-white', syncColor)}
+                className={clsx('rounded px-4 py-2 font-bold text-parchment arcane-glow-hover border border-transparent', syncColor)}
             >
                 {syncText}
             </button>
@@ -144,13 +144,13 @@ export function ScreenMirroringToolbar({
                 <button
                     onClick={handleFocusClick}
                     disabled={isFocusDisabled}
-                    className={clsx('rounded px-4 py-2 font-bold text-white', focusColor)}
+                    className={clsx('rounded px-4 py-2 font-bold text-parchment arcane-glow-hover border border-transparent', focusColor)}
                 >
                     {focusText}
                 </button>
 
                 {/* Instructional Text */}
-                <div className="flex flex-col text-sm text-gray-500">
+                <div className="flex flex-col text-sm text-faded-ink">
                     <span>Focus + F11</span>
                     <span>For Full Screen</span>
                 </div>
