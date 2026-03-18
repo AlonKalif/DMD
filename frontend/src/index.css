@@ -146,4 +146,23 @@
       -ms-overflow-style: none;
       scrollbar-width: none;
     }
+
+    .fantasy-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: #d8ae3166 transparent;
+    }
+    .fantasy-scrollbar::-webkit-scrollbar {
+      height: 6px;
+    }
+    .fantasy-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 0 1rem;
+    }
+    .fantasy-scrollbar::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, #d8ae3100, #d8ae3166, #d8ae3100);
+      border-radius: 9999px;
+    }
+    .fantasy-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(90deg, #d8ae3100, #d8ae31aa, #d8ae3100);
+    }
   }

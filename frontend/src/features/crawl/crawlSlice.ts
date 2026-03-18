@@ -152,6 +152,7 @@ const crawlSlice = createSlice({
             combatant.hp = Math.max(0, Math.min(combatant.max_hp, combatant.hp + action.payload.delta));
 
             if (combatant.hp === 0) {
+                combatant.statusEffects = [];
                 if (combatant.type === 'pc') {
                     combatant.isInDeathSave = true;
                     combatant.deathSaveCount = 0;
@@ -189,6 +190,7 @@ const crawlSlice = createSlice({
                 combatant.isInDeathSave = false;
                 combatant.deathSaveCount = 0;
                 combatant.isDead = true;
+                combatant.statusEffects = [];
             }
         },
 
