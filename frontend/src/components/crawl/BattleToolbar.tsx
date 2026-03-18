@@ -1,15 +1,19 @@
 import { useAppDispatch, useAppSelector } from 'app/hooks';
-import { nextTurn, clearAll } from 'features/crawl/crawlSlice';
+import { nextTurn, clearAll, selectTemplateForCombatant } from 'features/crawl/crawlSlice';
 
 export function BattleToolbar() {
     const dispatch = useAppDispatch();
     const combatants = useAppSelector((state) => state.crawl.combatants);
+    const templates = useAppSelector((state) => state.crawl.templates);
     const activeTurnIndex = useAppSelector((state) => state.crawl.activeTurnIndex);
     const round = useAppSelector((state) => state.crawl.round);
 
     const activeCombatant = activeTurnIndex >= 0 && activeTurnIndex < combatants.length
         ? combatants[activeTurnIndex]
         : null;
+    const activeTemplate = activeCombatant
+        ? selectTemplateForCombatant(templates, activeCombatant.templateId)
+        : undefined;
 
     const hasCombatants = combatants.length > 0;
 
@@ -29,7 +33,7 @@ export function BattleToolbar() {
                         Round {round}
                     </span>
                     <span className="text-sm text-paladin-gold">
-                        Turn: <span className="font-semibold text-parchment">{activeCombatant.name}</span>
+                        Turn: <span className="font-semibold text-parchment">{activeTemplate?.name ?? '???'}</span>
                     </span>
                 </div>
             ) : (

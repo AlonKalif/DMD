@@ -33,8 +33,8 @@ func (r *characterTemplateRepo) GetAll(f filters.CharacterTemplateFilters) ([]*c
 		query = query.Where("name LIKE ?", "%"+f.Name+"%")
 	}
 
-	if f.Type != "" {
-		query = query.Where("type = ?", f.Type)
+	if f.CharacterType != "" {
+		query = query.Where("character_type = ?", f.CharacterType)
 	}
 
 	if f.PageSize > 0 && f.Page > 0 {

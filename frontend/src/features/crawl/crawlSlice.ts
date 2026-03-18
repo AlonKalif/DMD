@@ -83,6 +83,10 @@ function sortByInitiative(combatants: Combatant[]) {
     combatants.sort((a, b) => b.initiative - a.initiative);
 }
 
+function findTemplate(templates: CharacterTemplate[], templateId: number) {
+    return templates.find(t => t.ID === templateId);
+}
+
 const crawlSlice = createSlice({
     name: 'crawl',
     initialState,
@@ -104,16 +108,9 @@ const crawlSlice = createSlice({
             const combatant: Combatant = {
                 instanceId: crypto.randomUUID(),
                 templateId: template.ID,
-                name: template.name,
-                race: template.race,
-                class: template.class,
-                photo_path: template.photo_path,
-                level: template.level,
                 hp: template.max_hp,
                 max_hp: template.max_hp,
                 ac: template.ac,
-                color: template.color,
-                type: template.type,
                 initiative,
                 statusEffects: [],
                 isDead: false,
@@ -153,7 +150,8 @@ const crawlSlice = createSlice({
 
             if (combatant.hp === 0) {
                 combatant.statusEffects = [];
-                if (combatant.type === 'pc') {
+                const template = findTemplate(state.templates, combatant.templateId);
+                if (template?.character_type === 'pc') {
                     combatant.isInDeathSave = true;
                     combatant.deathSaveCount = 0;
                 } else {
@@ -270,5 +268,12 @@ export const {
     nextTurn,
     clearAll,
 } = crawlSlice.actions;
+
+export function selectTemplateForCombatant(
+    templates: CharacterTemplate[],
+    templateId: number,
+): CharacterTemplate | undefined {
+    return templates.find(t => t.ID === templateId);
+}
 
 export default crawlSlice.reducer;

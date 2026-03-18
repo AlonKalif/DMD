@@ -37,7 +37,7 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
 
     const handleEdit = (template: CharacterTemplate) => {
         setEditingTemplate(template);
-        setFormType(template.type);
+        setFormType(template.character_type);
         setShowForm(true);
     };
 

@@ -94,10 +94,10 @@ func (h *CharacterTemplateHandler) getAll(w http.ResponseWriter, r *http.Request
 	pageSize, _ := strconv.Atoi(queryParams.Get("pageSize"))
 
 	f := filters.CharacterTemplateFilters{
-		Name:     queryParams.Get("name"),
-		Type:     queryParams.Get("type"),
-		Page:     page,
-		PageSize: pageSize,
+		Name:          queryParams.Get("name"),
+		CharacterType: queryParams.Get("character_type"),
+		Page:          page,
+		PageSize:      pageSize,
 	}
 
 	templates, err := h.repo.GetAll(f)

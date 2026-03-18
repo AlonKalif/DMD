@@ -1,5 +1,5 @@
 import { useState, forwardRef } from 'react';
-import { useAppDispatch } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import {
     adjustHp,
     removeCombatant,
@@ -7,6 +7,7 @@ import {
     removeStatusEffect,
     adjustDeathSave,
     reviveCombatant,
+    selectTemplateForCombatant,
 } from 'features/crawl/crawlSlice';
 import { Combatant, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
@@ -31,13 +32,18 @@ function getHpLiquidClass(hp: number, maxHp: number): string {
 export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
     function CombatantCard({ combatant, isActive, showCopyIndex }, ref) {
         const dispatch = useAppDispatch();
+        const templates = useAppSelector((state) => state.crawl.templates);
+        const template = selectTemplateForCombatant(templates, combatant.templateId);
         const [showPicker, setShowPicker] = useState(false);
+
+        const name = template?.name ?? '???';
+        const color = template?.color ?? '#374151';
+        const photoPath = template?.photo_path;
+        const raceClass = [template?.race, template?.class].filter(Boolean).join(' ');
 
         const hpPercent = combatant.max_hp > 0
             ? Math.round((combatant.hp / combatant.max_hp) * 100)
             : 0;
-
-        const raceClass = [combatant.race, combatant.class].filter(Boolean).join(' ');
 
         const activeEffects = combatant.statusEffects;
         const effectColors = activeEffects.map((e) => STATUS_EFFECT_COLORS[e]);
@@ -55,7 +61,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
-                    backgroundColor: combatant.color || '#374151',
+                    backgroundColor: color,
                     boxShadow: blendedShadow,
                 }}
             >
@@ -76,7 +82,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 {combatant.isInDeathSave && !combatant.isDead && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-black/80">
                         <p className="text-xs font-semibold text-white/60">
-                            {combatant.name}
+                            {name}
                             {showCopyIndex && <span className="ml-1 text-paladin-gold">#{combatant.copyIndex}</span>}
                         </p>
                         <p className="font-blackletter text-lg font-bold text-wax-red" style={{ textShadow: '0 0 10px rgba(153,27,27,0.6)' }}>
@@ -116,10 +122,10 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
 
                 {/* Photo */}
                 <div className="mb-1.5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-black/20">
-                    {combatant.photo_path ? (
+                    {photoPath ? (
                         <img
-                            src={`${API_BASE_URL}/static/${combatant.photo_path}`}
-                            alt={combatant.name}
+                            src={`${API_BASE_URL}/static/${photoPath}`}
+                            alt={name}
                             className="h-full w-full object-cover"
                         />
                     ) : (
@@ -128,8 +134,8 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 </div>
 
                 {/* Name */}
-                <p className="max-w-full truncate text-center text-sm font-bold text-white" title={combatant.name}>
-                    {combatant.name}
+                <p className="max-w-full truncate text-center text-sm font-bold text-white" title={name}>
+                    {name}
                     {showCopyIndex && (
                         <span className="ml-1 text-sm font-bold text-paladin-gold">#{combatant.copyIndex}</span>
                     )}
@@ -203,15 +209,15 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                 {activeEffects.length > 0 && (
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {activeEffects.map((effect) => {
-                            const color = STATUS_EFFECT_COLORS[effect];
+                            const effectColor = STATUS_EFFECT_COLORS[effect];
                             return (
                                 <div
                                     key={effect}
                                     className="group/effect relative whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white cursor-default"
                                     style={{
-                                        backgroundColor: `${color}22`,
-                                        boxShadow: `0 0 12px 4px ${color}30`,
-                                        textShadow: `0 0 6px ${color}`,
+                                        backgroundColor: `${effectColor}22`,
+                                        boxShadow: `0 0 12px 4px ${effectColor}30`,
+                                        textShadow: `0 0 6px ${effectColor}`,
                                     }}
                                 >
                                     {effect}

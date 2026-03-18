@@ -39,7 +39,7 @@ func NewConnection(log *slog.Logger, dbPath string) (*gorm.DB, error) {
 }
 
 func AutoMigrate(db *gorm.DB) error {
-	return db.AutoMigrate(
+	if err := db.AutoMigrate(
 		&character.Character{},
 		&character.NPC{},
 		&character.Ability{},
@@ -55,5 +55,14 @@ func AutoMigrate(db *gorm.DB) error {
 		&images.PresetLayout{},
 		&images.PresetLayoutSlot{},
 		&crawl.CharacterTemplate{},
-	)
+	); err != nil {
+		return err
+	}
+
+	// One-time migration: copy legacy "type" column values into the new "character_type" column.
+	if db.Migrator().HasColumn(&crawl.CharacterTemplate{}, "type") {
+		db.Exec("UPDATE character_templates SET character_type = type WHERE character_type IS NULL OR character_type = ''")
+	}
+
+	return nil
 }

@@ -16,7 +16,7 @@ export function BankGrid({ type, onEdit, onDelete, onDoubleClick }: BankGridProp
     );
 
     const filtered = templates.filter((t) =>
-        t.type === type && t.name.toLowerCase().includes(searchQuery.toLowerCase())
+        t.character_type === type && t.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const label = type === 'pc' ? 'PC' : 'monster';
@@ -24,7 +24,7 @@ export function BankGrid({ type, onEdit, onDelete, onDoubleClick }: BankGridProp
     if (filtered.length === 0) {
         return (
             <div className="flex flex-1 items-center justify-center text-faded-ink font-display text-sm">
-                {templates.filter(t => t.type === type).length === 0
+                {templates.filter(t => t.character_type === type).length === 0
                     ? `No ${label} templates yet. Create one!`
                     : 'No matches found.'}
             </div>

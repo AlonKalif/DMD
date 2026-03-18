@@ -55,8 +55,8 @@ type ImagesFilters struct {
 }
 
 type CharacterTemplateFilters struct {
-	Name     string
-	Type     string
-	Page     int
-	PageSize int
+	Name          string
+	CharacterType string
+	Page          int
+	PageSize      int
 }
