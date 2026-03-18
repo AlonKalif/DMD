@@ -66,13 +66,14 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
             <form
                 onSubmit={handleSubmit}
-                className="leather-card relative flex w-full max-w-md flex-col space-y-4 rounded-lg p-6 text-parchment max-h-[90vh] overflow-y-auto"
+                className="leather-card relative flex w-full max-w-md flex-col rounded-lg text-parchment max-h-[90vh] overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="filigree-corner filigree-tl" />
                 <div className="filigree-corner filigree-tr" />
                 <div className="filigree-corner filigree-bl" />
                 <div className="filigree-corner filigree-br" />
+                <div className="flex flex-col space-y-4 overflow-y-auto fantasy-scrollbar p-6">
                 <h2 className="text-xl font-bold font-blackletter gold-gradient-text">
                     {initial ? 'Edit' : 'New'} {characterType === 'pc' ? 'Player Character' : 'Monster'}
                 </h2>
@@ -225,6 +226,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                     >
                         {isSaving ? 'Saving...' : initial ? 'Update' : 'Create'}
                     </button>
+                </div>
                 </div>
             </form>
         </div>

@@ -21,13 +21,14 @@ export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModa
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
             <form
                 onSubmit={handleSubmit}
-                className="leather-card relative flex w-72 flex-col space-y-4 rounded-lg p-6 text-parchment"
+                className="leather-card relative flex w-72 flex-col rounded-lg text-parchment overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="filigree-corner filigree-tl" />
                 <div className="filigree-corner filigree-tr" />
                 <div className="filigree-corner filigree-bl" />
                 <div className="filigree-corner filigree-br" />
+                <div className="flex flex-col space-y-4 p-6">
                 <h2 className="text-lg font-bold font-blackletter gold-gradient-text">Set Initiative</h2>
                 <p className="text-sm text-parchment/70">
                     Adding <span className="font-semibold text-parchment">{template.name}</span> to battle.
@@ -80,6 +81,7 @@ export function InitiativeModal({ template, onConfirm, onClose }: InitiativeModa
                     >
                         Add to Battle
                     </button>
+                </div>
                 </div>
             </form>
         </div>
