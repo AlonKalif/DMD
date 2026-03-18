@@ -95,6 +95,7 @@ func (h *CharacterTemplateHandler) getAll(w http.ResponseWriter, r *http.Request
 
 	f := filters.CharacterTemplateFilters{
 		Name:     queryParams.Get("name"),
+		Type:     queryParams.Get("type"),
 		Page:     page,
 		PageSize: pageSize,
 	}

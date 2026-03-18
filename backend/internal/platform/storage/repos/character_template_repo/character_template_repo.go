@@ -33,6 +33,10 @@ func (r *characterTemplateRepo) GetAll(f filters.CharacterTemplateFilters) ([]*c
 		query = query.Where("name LIKE ?", "%"+f.Name+"%")
 	}
 
+	if f.Type != "" {
+		query = query.Where("type = ?", f.Type)
+	}
+
 	if f.PageSize > 0 && f.Page > 0 {
 		offset := (f.Page - 1) * f.PageSize
 		query = query.Limit(f.PageSize).Offset(offset)

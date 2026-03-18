@@ -16,5 +16,6 @@ type CharacterTemplate struct {
 	MaxHP        uint           `json:"max_hp"`
 	AC           uint           `json:"ac"`
 	Color        string         `json:"color"`
+	Type         string         `json:"type" gorm:"default:pc"`
 	CustomFields datatypes.JSON `json:"custom_fields"`
 }

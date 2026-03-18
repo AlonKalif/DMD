@@ -34,6 +34,7 @@ export interface CharacterTemplate {
     max_hp: number;
     ac: number;
     color: string;
+    type: 'pc' | 'monster';
     custom_fields: Record<string, unknown> | null;
 }
 
@@ -57,8 +58,11 @@ export interface Combatant {
     max_hp: number;
     ac: number;
     color: string;
+    type: 'pc' | 'monster';
     initiative: number;
     statusEffects: StatusEffect[];
     isDead: boolean;
+    isInDeathSave: boolean;
+    deathSaveCount: number;
     copyIndex: number;
 }

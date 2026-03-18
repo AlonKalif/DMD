@@ -7,7 +7,8 @@ interface CrawlState {
     templates: CharacterTemplate[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
-    searchQuery: string;
+    pcSearchQuery: string;
+    monsterSearchQuery: string;
     combatants: Combatant[];
     activeTurnIndex: number;
     round: number;
@@ -17,7 +18,8 @@ const initialState: CrawlState = {
     templates: [],
     status: 'idle',
     error: null,
-    searchQuery: '',
+    pcSearchQuery: '',
+    monsterSearchQuery: '',
     combatants: [],
     activeTurnIndex: -1,
     round: 0,
@@ -85,8 +87,12 @@ const crawlSlice = createSlice({
     name: 'crawl',
     initialState,
     reducers: {
-        setSearchQuery(state, action: PayloadAction<string>) {
-            state.searchQuery = action.payload;
+        setPcSearchQuery(state, action: PayloadAction<string>) {
+            state.pcSearchQuery = action.payload;
+        },
+
+        setMonsterSearchQuery(state, action: PayloadAction<string>) {
+            state.monsterSearchQuery = action.payload;
         },
 
         addCombatant(state, action: PayloadAction<{ template: CharacterTemplate; initiative: number }>) {
@@ -107,9 +113,12 @@ const crawlSlice = createSlice({
                 max_hp: template.max_hp,
                 ac: template.ac,
                 color: template.color,
+                type: template.type,
                 initiative,
                 statusEffects: [],
                 isDead: false,
+                isInDeathSave: false,
+                deathSaveCount: 0,
                 copyIndex: nextCopyIndex,
             };
             state.combatants.push(combatant);
@@ -138,10 +147,18 @@ const crawlSlice = createSlice({
 
         adjustHp(state, action: PayloadAction<{ instanceId: string; delta: number }>) {
             const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
-            if (!combatant) return;
+            if (!combatant || combatant.isInDeathSave || combatant.isDead) return;
 
             combatant.hp = Math.max(0, Math.min(combatant.max_hp, combatant.hp + action.payload.delta));
-            combatant.isDead = combatant.hp === 0;
+
+            if (combatant.hp === 0) {
+                if (combatant.type === 'pc') {
+                    combatant.isInDeathSave = true;
+                    combatant.deathSaveCount = 0;
+                } else {
+                    combatant.isDead = true;
+                }
+            }
         },
 
         addStatusEffect(state, action: PayloadAction<{ instanceId: string; effect: StatusEffect }>) {
@@ -156,6 +173,33 @@ const crawlSlice = createSlice({
             const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
             if (!combatant) return;
             combatant.statusEffects = combatant.statusEffects.filter(e => e !== action.payload.effect);
+        },
+
+        adjustDeathSave(state, action: PayloadAction<{ instanceId: string; delta: number }>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
+            if (!combatant || !combatant.isInDeathSave) return;
+
+            combatant.deathSaveCount = Math.max(-3, Math.min(3, combatant.deathSaveCount + action.payload.delta));
+
+            if (combatant.deathSaveCount >= 3) {
+                combatant.isInDeathSave = false;
+                combatant.deathSaveCount = 0;
+                combatant.hp = 1;
+            } else if (combatant.deathSaveCount <= -3) {
+                combatant.isInDeathSave = false;
+                combatant.deathSaveCount = 0;
+                combatant.isDead = true;
+            }
+        },
+
+        reviveCombatant(state, action: PayloadAction<string>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload);
+            if (!combatant || !combatant.isDead) return;
+
+            combatant.isDead = false;
+            combatant.isInDeathSave = false;
+            combatant.deathSaveCount = 0;
+            combatant.hp = 1;
         },
 
         nextTurn(state) {
@@ -212,12 +256,15 @@ const crawlSlice = createSlice({
 });
 
 export const {
-    setSearchQuery,
+    setPcSearchQuery,
+    setMonsterSearchQuery,
     addCombatant,
     removeCombatant,
     adjustHp,
     addStatusEffect,
     removeStatusEffect,
+    adjustDeathSave,
+    reviveCombatant,
     nextTurn,
     clearAll,
 } = crawlSlice.actions;

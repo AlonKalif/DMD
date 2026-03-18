@@ -1,6 +1,13 @@
 import { useState, forwardRef } from 'react';
 import { useAppDispatch } from 'app/hooks';
-import { adjustHp, removeCombatant, addStatusEffect, removeStatusEffect } from 'features/crawl/crawlSlice';
+import {
+    adjustHp,
+    removeCombatant,
+    addStatusEffect,
+    removeStatusEffect,
+    adjustDeathSave,
+    reviveCombatant,
+} from 'features/crawl/crawlSlice';
 import { Combatant, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { STATUS_EFFECT_COLORS } from './statusEffects';
@@ -52,10 +59,49 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     boxShadow: blendedShadow,
                 }}
             >
-                {/* Death overlay */}
+                {/* Dead overlay */}
                 {combatant.isDead && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-black/70">
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-lg bg-black/70">
                         <span className="text-4xl">&#9760;</span>
+                        <button
+                            onClick={() => dispatch(reviveCombatant(combatant.instanceId))}
+                            className="rounded bg-green-700/60 px-3 py-1 text-xs font-bold text-green-200 opacity-0 transition-opacity hover:bg-green-600/80 group-hover:opacity-100"
+                        >
+                            Revive
+                        </button>
+                    </div>
+                )}
+
+                {/* Death save overlay (PC only) */}
+                {combatant.isInDeathSave && !combatant.isDead && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-black/80">
+                        <p className="text-xs font-semibold text-white/60">
+                            {combatant.name}
+                            {showCopyIndex && <span className="ml-1 text-paladin-gold">#{combatant.copyIndex}</span>}
+                        </p>
+                        <p className="font-blackletter text-lg font-bold text-wax-red" style={{ textShadow: '0 0 10px rgba(153,27,27,0.6)' }}>
+                            Death Save
+                        </p>
+                        <span className={`text-3xl font-bold ${
+                            combatant.deathSaveCount > 0 ? 'text-green-400' :
+                            combatant.deathSaveCount < 0 ? 'text-red-400' : 'text-white'
+                        }`}>
+                            {combatant.deathSaveCount > 0 ? `+${combatant.deathSaveCount}` : combatant.deathSaveCount}
+                        </span>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: -1 }))}
+                                className="rounded bg-red-700/60 px-4 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                            >
+                                -1
+                            </button>
+                            <button
+                                onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: 1 }))}
+                                className="rounded bg-green-700/60 px-4 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                            >
+                                +1
+                            </button>
+                        </div>
                     </div>
                 )}
 

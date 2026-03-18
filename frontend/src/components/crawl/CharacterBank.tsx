@@ -20,6 +20,7 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
     const status = useAppSelector((state) => state.crawl.status);
 
     const [showForm, setShowForm] = useState(false);
+    const [formType, setFormType] = useState<'pc' | 'monster'>('pc');
     const [editingTemplate, setEditingTemplate] = useState<CharacterTemplate | undefined>();
 
     useEffect(() => {
@@ -28,13 +29,15 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
         }
     }, [status, dispatch]);
 
-    const handleNewTemplate = () => {
+    const handleNewTemplate = (type: 'pc' | 'monster') => {
         setEditingTemplate(undefined);
+        setFormType(type);
         setShowForm(true);
     };
 
     const handleEdit = (template: CharacterTemplate) => {
         setEditingTemplate(template);
+        setFormType(template.type);
         setShowForm(true);
     };
 
@@ -61,17 +64,36 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
     };
 
     return (
-        <div className="flex flex-1 flex-col overflow-hidden">
-            <BankToolbar onNewTemplate={handleNewTemplate} />
-            <BankGrid
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onDoubleClick={handleDoubleClick}
-            />
+        <div className="flex flex-1 gap-3 overflow-hidden">
+            {/* PC section */}
+            <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-paladin-gold/20">
+                <BankToolbar type="pc" onNewTemplate={() => handleNewTemplate('pc')} />
+                <BankGrid
+                    type="pc"
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onDoubleClick={handleDoubleClick}
+                />
+            </div>
+
+            {/* Vertical divider */}
+            <div className="w-px bg-paladin-gold/20" />
+
+            {/* Monster section */}
+            <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-paladin-gold/20">
+                <BankToolbar type="monster" onNewTemplate={() => handleNewTemplate('monster')} />
+                <BankGrid
+                    type="monster"
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onDoubleClick={handleDoubleClick}
+                />
+            </div>
 
             {showForm && (
                 <TemplateFormModal
                     initial={editingTemplate}
+                    characterType={formType}
                     onSave={handleSave}
                     onClose={() => { setShowForm(false); setEditingTemplate(undefined); }}
                 />

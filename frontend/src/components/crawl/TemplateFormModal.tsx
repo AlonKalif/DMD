@@ -4,18 +4,16 @@ import { fetchImages } from 'features/images/imageSlice';
 import { CharacterTemplate, MediaAsset } from 'types/api';
 import { API_BASE_URL } from 'config';
 
-const COLOR_PRESETS = [
-    '#1a160f', '#2a2419', '#991b1b',
-    '#2d4a3e', '#3b2a1a', '#6b5e4c',
-];
+const TYPE_COLORS = { pc: '#2d4a3e', monster: '#991b1b' } as const;
 
 interface TemplateFormModalProps {
     initial?: CharacterTemplate;
+    characterType: 'pc' | 'monster';
     onSave: (data: Omit<CharacterTemplate, 'ID'>) => void;
     onClose: () => void;
 }
 
-export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModalProps) {
+export function TemplateFormModal({ initial, characterType, onSave, onClose }: TemplateFormModalProps) {
     const dispatch = useAppDispatch();
     const images = useAppSelector((state) => state.images.items);
     const imagesStatus = useAppSelector((state) => state.images.status);
@@ -27,7 +25,6 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
     const [hp, setHp] = useState(initial?.hp ?? 10);
     const [maxHp, setMaxHp] = useState(initial?.max_hp ?? 10);
     const [ac, setAc] = useState(initial?.ac ?? 10);
-    const [color, setColor] = useState(initial?.color ?? '#374151');
     const [selectedImagePath, setSelectedImagePath] = useState(initial?.photo_path ?? '');
     const [isSaving, setIsSaving] = useState(false);
     const [showImagePicker, setShowImagePicker] = useState(false);
@@ -51,7 +48,8 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                 hp,
                 max_hp: maxHp,
                 ac,
-                color,
+                color: TYPE_COLORS[characterType],
+                type: characterType,
                 photo_path: selectedImagePath,
                 custom_fields: initial?.custom_fields ?? null,
             });
@@ -77,7 +75,7 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                 <div className="filigree-corner filigree-bl" />
                 <div className="filigree-corner filigree-br" />
                 <h2 className="text-xl font-bold font-blackletter gold-gradient-text">
-                    {initial ? 'Edit Character' : 'New Character'}
+                    {initial ? 'Edit' : 'New'} {characterType === 'pc' ? 'Player Character' : 'Monster'}
                 </h2>
 
                 {/* Name */}
@@ -158,25 +156,6 @@ export function TemplateFormModal({ initial, onSave, onClose }: TemplateFormModa
                             onChange={(e) => setAc(Number(e.target.value))}
                             className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
                         />
-                    </div>
-                </div>
-
-                {/* Color picker */}
-                <div>
-                    <label className="mb-1 block text-sm font-medium text-parchment/70">Card Color</label>
-                    <div className="flex flex-wrap gap-2">
-                        {COLOR_PRESETS.map((c) => (
-                            <button
-                                key={c}
-                                type="button"
-                                onClick={() => setColor(c)}
-                                className="h-8 w-8 rounded-full border-2 transition-transform hover:scale-110"
-                                style={{
-                                    backgroundColor: c,
-                                    borderColor: color === c ? 'white' : 'transparent',
-                                }}
-                            />
-                        ))}
                     </div>
                 </div>
 
