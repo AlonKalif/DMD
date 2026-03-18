@@ -147,6 +147,15 @@
       scrollbar-width: none;
     }
 
+    .hide-spin::-webkit-inner-spin-button,
+    .hide-spin::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .hide-spin {
+      -moz-appearance: textfield;
+    }
+
     .fantasy-scrollbar {
       scrollbar-width: thin;
       scrollbar-color: #d8ae3166 transparent;

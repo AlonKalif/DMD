@@ -22,7 +22,6 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
     const [race, setRace] = useState(initial?.race ?? '');
     const [charClass, setCharClass] = useState(initial?.class ?? '');
     const [level, setLevel] = useState(initial?.level ?? 1);
-    const [hp, setHp] = useState(initial?.hp ?? 10);
     const [maxHp, setMaxHp] = useState(initial?.max_hp ?? 10);
     const [ac, setAc] = useState(initial?.ac ?? 10);
     const [selectedImagePath, setSelectedImagePath] = useState(initial?.photo_path ?? '');
@@ -45,7 +44,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                 race: race.trim(),
                 class: charClass.trim(),
                 level,
-                hp,
+                hp: maxHp,
                 max_hp: maxHp,
                 ac,
                 color: TYPE_COLORS[characterType],
@@ -116,47 +115,39 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                 </div>
 
                 {/* Stats row */}
-                <div className="grid grid-cols-4 gap-3">
-                    <div>
-                        <label className="mb-1 block text-xs font-medium text-parchment/70">Level</label>
-                        <input
-                            type="number"
-                            min={0}
-                            value={level}
-                            onChange={(e) => setLevel(Number(e.target.value))}
-                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs font-medium text-parchment/70">HP</label>
-                        <input
-                            type="number"
-                            min={0}
-                            value={hp}
-                            onChange={(e) => setHp(Number(e.target.value))}
-                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs font-medium text-parchment/70">Max HP</label>
-                        <input
-                            type="number"
-                            min={0}
-                            value={maxHp}
-                            onChange={(e) => setMaxHp(Number(e.target.value))}
-                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
-                        />
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-xs font-medium text-parchment/70">AC</label>
-                        <input
-                            type="number"
-                            min={0}
-                            value={ac}
-                            onChange={(e) => setAc(Number(e.target.value))}
-                            className="w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-center text-parchment focus:border-arcane-purple focus:ring-arcane-purple"
-                        />
-                    </div>
+                <div className="grid grid-cols-3 gap-3">
+                    {([
+                        { label: 'Level', value: level, setter: setLevel },
+                        { label: 'Max HP', value: maxHp, setter: setMaxHp },
+                        { label: 'AC', value: ac, setter: setAc },
+                    ] as const).map(({ label, value, setter }) => (
+                        <div key={label}>
+                            <label className="mb-1 block text-xs font-medium text-parchment/70">{label}</label>
+                            <div className="flex items-center rounded-md border border-paladin-gold/30 bg-leather-dark">
+                                <button
+                                    type="button"
+                                    onClick={() => setter(Math.max(0, value - 1))}
+                                    className="px-2 py-1.5 text-sm font-bold text-paladin-gold/70 hover:text-paladin-gold transition-colors"
+                                >
+                                    &#8722;
+                                </button>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    value={value}
+                                    onChange={(e) => setter(Math.max(0, Number(e.target.value)))}
+                                    className="hide-spin w-full bg-transparent p-1 text-center text-parchment focus:outline-none"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setter(value + 1)}
+                                    className="px-2 py-1.5 text-sm font-bold text-paladin-gold/70 hover:text-paladin-gold transition-colors"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
                 {/* Photo picker */}
