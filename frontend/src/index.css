@@ -138,6 +138,11 @@
     }
   }
 
+  .logo-gold {
+    filter: invert(1) sepia(1) saturate(4) hue-rotate(325deg) brightness(0.88);
+    mix-blend-mode: screen;
+  }
+
   @layer utilities {
     .no-scrollbar::-webkit-scrollbar {
       display: none;

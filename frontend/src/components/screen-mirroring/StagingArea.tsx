@@ -66,8 +66,16 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
                 </div>
             )}
 
+            {/* Background logo watermark */}
+            <img
+                src="/dmd_logo.png"
+                alt=""
+                aria-hidden="true"
+                className="logo-gold pointer-events-none absolute inset-0 m-auto h-[110%] w-auto opacity-[0.12] select-none"
+            />
+
             {/* Main grid for the image slots */}
-            <div className={clsx('grid h-full w-full gap-2', gridClasses[layout])}>
+            <div className={clsx('relative z-[1] grid h-full w-full gap-2', gridClasses[layout])}>
                 {slots.map((slot) => (
                     <ImageSlot
                         key={slot.slotId}

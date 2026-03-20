@@ -37,7 +37,7 @@ export function CombatantRow() {
     if (combatants.length === 0) {
         return (
             <div className="flex h-full items-center justify-center text-faded-ink text-sm font-display">
-                Drag or double-click characters from the bank to start a battle.
+                Drag or double-click characters to start a battle.
             </div>
         );
     }

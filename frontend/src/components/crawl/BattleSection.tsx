@@ -29,8 +29,16 @@ export function BattleSection({ onRequestInitiative }: BattleSectionProps) {
             }`}
         >
             <BattleToolbar />
-            <div className="min-h-[200px]">
-                <CombatantRow />
+            <div className="relative min-h-[200px]">
+                <img
+                    src="/dmd_logo.png"
+                    alt=""
+                    aria-hidden="true"
+                    className="logo-gold pointer-events-none absolute inset-0 m-auto h-full max-h-48 w-auto opacity-[0.12] select-none"
+                />
+                <div className="relative z-10">
+                    <CombatantRow />
+                </div>
             </div>
         </div>
     );

@@ -44,8 +44,14 @@ export default function DmLayout() {
             <div className="d20-background" aria-hidden="true">
                 {"pentagon ".repeat(200)}
             </div>
-            <div className="relative z-10 pb-16">
-                <Outlet />
+            <div className="relative z-10 flex flex-col min-h-screen pb-16">
+                <header className="flex items-center gap-3 px-4 py-2 border-b border-paladin-gold/15">
+                    <img src="/dmd_logo.png" alt="DMD" className="logo-gold h-12 w-12" />
+                    <h1 className="text-xl font-blackletter gold-gradient-text tracking-wide">DM Dashboard</h1>
+                </header>
+                <div className="flex-1">
+                    <Outlet />
+                </div>
                 <BottomNavBar />
             </div>
         </div>

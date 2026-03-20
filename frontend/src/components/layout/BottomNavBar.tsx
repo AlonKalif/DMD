@@ -12,13 +12,15 @@ const navLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 export function BottomNavBar() {
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-16 leather-card border-t border-paladin-gold/30">
+        <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-16 items-stretch leather-card border-t border-paladin-gold/30">
             <NavLink to="/" className={navLinkClass} end>
                 Screen Mirroring
             </NavLink>
+            <div className="w-px bg-paladin-gold/15" />
             <NavLink to="/audio" className={navLinkClass}>
                 Audio Player
             </NavLink>
+            <div className="w-px bg-paladin-gold/15" />
             <NavLink to="/crawl" className={navLinkClass}>
                 Dungeon Crawl
             </NavLink>
