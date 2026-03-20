@@ -73,7 +73,7 @@ export interface DamageRelation {
 
 export interface LanguageEntry {
     language: string;
-    proficiency: 'understand' | 'speak' | 'both';
+    proficiency: 'understand' | 'speak';
     custom_text?: string;
 }
 
@@ -149,7 +149,7 @@ export interface CharacterTemplate {
     max_hp: number;
     ac: number;
     proficiency_bonus: number;
-    hit_dice: number;
+    hit_dice: string;
     spell_slots: number;
     rage_slots: number;
     speed: number;

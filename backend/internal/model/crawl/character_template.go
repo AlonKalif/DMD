@@ -26,7 +26,7 @@ type CharacterTemplate struct {
 	MaxHP            uint `json:"max_hp"`
 	AC               uint `json:"ac"`
 	ProficiencyBonus uint `json:"proficiency_bonus"`
-	HitDice          uint `json:"hit_dice"`
+	HitDice          string `json:"hit_dice"`
 	SpellSlots       uint `json:"spell_slots"`
 	RageSlots        uint `json:"rage_slots"`
 

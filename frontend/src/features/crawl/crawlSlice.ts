@@ -163,6 +163,8 @@ const crawlSlice = createSlice({
         addStatusEffect(state, action: PayloadAction<{ instanceId: string; effect: StatusEffect }>) {
             const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
             if (!combatant) return;
+            const template = state.templates.find(t => t.ID === combatant.templateId);
+            if (template?.immunities?.includes(action.payload.effect)) return;
             if (!combatant.statusEffects.includes(action.payload.effect)) {
                 combatant.statusEffects.push(action.payload.effect);
             }

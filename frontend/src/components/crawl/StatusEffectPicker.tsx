@@ -4,11 +4,12 @@ import { STATUS_EFFECT_COLORS } from './statusEffects';
 
 interface StatusEffectPickerProps {
     appliedEffects: StatusEffect[];
+    immunities: string[];
     onAdd: (effect: StatusEffect) => void;
     onClose: () => void;
 }
 
-export function StatusEffectPicker({ appliedEffects, onAdd, onClose }: StatusEffectPickerProps) {
+export function StatusEffectPicker({ appliedEffects, immunities, onAdd, onClose }: StatusEffectPickerProps) {
     const ref = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -29,21 +30,28 @@ export function StatusEffectPicker({ appliedEffects, onAdd, onClose }: StatusEff
             <div className="grid grid-cols-3 gap-2">
                 {STATUS_EFFECTS.map((effect) => {
                     const isApplied = appliedEffects.includes(effect);
+                    const isImmune = immunities.includes(effect);
+                    const disabled = isApplied || isImmune;
                     return (
                         <button
                             key={effect}
                             type="button"
-                            disabled={isApplied}
+                            disabled={disabled}
                             onClick={() => { onAdd(effect); onClose(); }}
-                            className={`rounded-full px-2 py-1 text-xs font-medium leading-tight text-center transition-colors ${
-                                isApplied
+                            className={`relative rounded-full px-2 py-1 text-xs font-medium leading-tight text-center transition-colors ${
+                                disabled
                                     ? 'cursor-default opacity-30'
                                     : 'text-white hover:scale-105 hover:brightness-125'
                             }`}
                             style={{ backgroundColor: STATUS_EFFECT_COLORS[effect] }}
-                            title={effect}
+                            title={isImmune ? `Immune to ${effect}` : effect}
                         >
                             {effect}
+                            {isImmune && (
+                                <span className="absolute -top-1.5 -right-1.5 rounded-full bg-paladin-gold px-1 py-px text-[8px] font-bold text-ink leading-none">
+                                    Immune
+                                </span>
+                            )}
                         </button>
                     );
                 })}

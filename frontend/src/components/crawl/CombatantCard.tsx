@@ -197,6 +197,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     {showPicker && (
                         <StatusEffectPicker
                             appliedEffects={combatant.statusEffects}
+                            immunities={template?.immunities ?? []}
                             onAdd={(effect: StatusEffect) =>
                                 dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
                             }
