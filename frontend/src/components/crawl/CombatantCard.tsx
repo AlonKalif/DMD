@@ -59,7 +59,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         return (
             <div
                 ref={ref}
-                className={`group relative flex w-48 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 p-4 transition-all ${
+                className={`group relative flex w-48 flex-shrink-0 flex-col items-center overflow-hidden rounded-lg border-2 border-paladin-gold/60 transition-all ${
                     isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
@@ -133,90 +133,91 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </button>
                 </div>
 
-                {/* Photo */}
-                <div className="mb-1.5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-black/20">
-                    {photoPath ? (
+                {/* Image filling top of card with fade */}
+                {photoPath ? (
+                    <div className="relative w-full h-28">
                         <img
                             src={`${API_BASE_URL}/static/${photoPath}`}
                             alt={name}
                             className="h-full w-full object-cover"
+                            style={{ objectPosition: `center ${template?.photo_offset_y ?? 50}%` }}
                         />
-                    ) : (
+                        <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 40%, ${color})` }} />
+                    </div>
+                ) : (
+                    <div className="flex h-16 w-full items-center justify-center">
                         <span className="text-2xl text-white/60">&#9876;</span>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* Name */}
-                <p className="max-w-full truncate text-center text-sm font-bold text-white" title={name}>
+                <p className="relative z-10 -mt-3 max-w-full truncate text-center text-sm font-bold text-white px-3" title={name}>
                     {name}
                     {showCopyIndex && (
                         <span className="ml-1 text-sm font-bold text-paladin-gold">#{combatant.copyIndex}</span>
                     )}
                 </p>
 
-                {/* Race / Class */}
-                {raceClass && (
-                    <p className="max-w-full truncate text-center text-xs italic text-white/70" title={raceClass}>
-                        {raceClass}
-                    </p>
-                )}
-
-                {/* Initiative badge */}
-                <span className="mt-0.5 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white">
-                    Init {combatant.initiative}
-                </span>
-
-                {/* HP bar */}
-                <GlassVial
-                    percent={hpPercent}
-                    className="mt-1.5 mb-0.5 h-2.5"
-                    liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
-                />
-                <p className="text-xs text-white/80">
-                    {combatant.hp}/{combatant.max_hp} HP
-                </p>
-
-                {/* HP buttons */}
-                <div className="mt-1.5 flex gap-1.5">
-                    {[-10, -5, -1, 1].map((delta) => (
-                        <button
-                            key={delta}
-                            onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
-                            className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
-                                delta < 0
-                                    ? 'bg-red-700/60 text-red-200 hover:bg-red-600/80'
-                                    : 'bg-green-700/60 text-green-200 hover:bg-green-600/80'
-                            }`}
-                        >
-                            {delta > 0 ? `+${delta}` : delta}
-                        </button>
-                    ))}
-                </div>
-
-                {/* AC */}
-                <div className="mt-1.5 flex items-center gap-1">
-                    <span className="text-xs text-yellow-300">&#128737;</span>
-                    <span className="text-xs font-semibold text-white">{combatant.ac}</span>
-                </div>
-
-                {/* Add status effect button */}
-                <div className="relative mt-1">
-                    <button
-                        onClick={() => setShowPicker(!showPicker)}
-                        className="rounded bg-black/30 px-2.5 py-0.5 text-xs text-white/70 hover:bg-black/50 hover:text-white"
-                    >
-                        + Effect
-                    </button>
-                    {showPicker && (
-                        <StatusEffectPicker
-                            appliedEffects={combatant.statusEffects}
-                            immunities={template?.immunities ?? []}
-                            onAdd={(effect: StatusEffect) =>
-                                dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
-                            }
-                            onClose={() => setShowPicker(false)}
-                        />
+                {/* Card content */}
+                <div className="w-full px-3 pb-3 flex flex-col items-center">
+                    {raceClass && (
+                        <p className="max-w-full truncate text-center text-xs italic text-white/70" title={raceClass}>
+                            {raceClass}
+                        </p>
                     )}
+
+                    <span className="mt-0.5 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white">
+                        Init {combatant.initiative}
+                    </span>
+
+                    <GlassVial
+                        percent={hpPercent}
+                        className="mt-1.5 mb-0.5 h-2.5"
+                        liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
+                    />
+                    <p className="text-xs text-white/80">
+                        {combatant.hp}/{combatant.max_hp} HP
+                    </p>
+
+                    <div className="mt-1.5 flex gap-1.5">
+                        {[-10, -5, -1, 1].map((delta) => (
+                            <button
+                                key={delta}
+                                onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
+                                className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
+                                    delta < 0
+                                        ? 'bg-red-700/60 text-red-200 hover:bg-red-600/80'
+                                        : 'bg-green-700/60 text-green-200 hover:bg-green-600/80'
+                                }`}
+                            >
+                                {delta > 0 ? `+${delta}` : delta}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="mt-1.5 flex items-center gap-1">
+                        <span className="text-xs text-yellow-300">&#128737;</span>
+                        <span className="text-xs font-semibold text-white">{combatant.ac}</span>
+                    </div>
+
+                    <div className="relative mt-1">
+                        <button
+                            onClick={() => setShowPicker(!showPicker)}
+                            className="rounded bg-black/30 px-2.5 py-0.5 text-xs text-white/70 hover:bg-black/50 hover:text-white"
+                        >
+                            + Effect
+                        </button>
+                        {showPicker && (
+                            <StatusEffectPicker
+                                appliedEffects={combatant.statusEffects}
+                                immunities={template?.immunities ?? []}
+                                onAdd={(effect: StatusEffect) =>
+                                    dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
+                                }
+                                onClose={() => setShowPicker(false)}
+                            />
+                        )}
+                    </div>
                 </div>
 
                 {/* Floating effect labels above card */}

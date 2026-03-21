@@ -18,6 +18,7 @@ type CharacterTemplate struct {
 	Alignment     string `json:"alignment"`
 	Size          string `json:"size"`
 	PhotoPath     string `json:"photo_path"`
+	PhotoOffsetY  int    `json:"photo_offset_y"`
 	Color         string `json:"color"`
 
 	// Core stats

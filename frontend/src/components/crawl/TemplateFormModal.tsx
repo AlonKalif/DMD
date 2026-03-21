@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, FormEvent, ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, FormEvent, ReactNode } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { fetchImages } from 'features/images/imageSlice';
 import {
@@ -181,6 +181,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
 
     // Photo
     const [selectedImagePath, setSelectedImagePath] = useState(initial?.photo_path ?? '');
+    const [photoOffsetY, setPhotoOffsetY] = useState(initial?.photo_offset_y ?? 50);
     const [showImagePicker, setShowImagePicker] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -207,12 +208,32 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                 languages, senses, actions, reactions, other_features: otherFeatures,
                 color: TYPE_COLORS[characterType], character_type: characterType,
                 photo_path: selectedImagePath,
+                photo_offset_y: photoOffsetY,
                 custom_fields: initial?.custom_fields ?? null,
             });
         } finally { setIsSaving(false); }
     };
 
-    const handleSelectImage = (asset: MediaAsset) => { setSelectedImagePath(asset.file_path); setShowImagePicker(false); };
+    const handleSelectImage = (asset: MediaAsset) => { setSelectedImagePath(asset.file_path); setPhotoOffsetY(50); setShowImagePicker(false); };
+
+    // Drag-to-adjust image offset in card preview
+    const previewRef = useRef<HTMLDivElement>(null);
+    const dragState = useRef<{ startY: number; startOffset: number } | null>(null);
+
+    const onPointerDown = useCallback((e: React.PointerEvent) => {
+        dragState.current = { startY: e.clientY, startOffset: photoOffsetY };
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    }, [photoOffsetY]);
+
+    const onPointerMove = useCallback((e: React.PointerEvent) => {
+        if (!dragState.current || !previewRef.current) return;
+        const dy = e.clientY - dragState.current.startY;
+        const h = previewRef.current.clientHeight;
+        const delta = (dy / h) * -200;
+        setPhotoOffsetY(Math.round(Math.max(0, Math.min(100, dragState.current.startOffset + delta))));
+    }, []);
+
+    const onPointerUp = useCallback(() => { dragState.current = null; }, []);
 
     const setAbility = (key: keyof AbilityScores, field: 'score' | 'modifier', val: number) => {
         setAbilities((prev) => ({ ...prev, [key]: { ...prev[key], [field]: Math.max(0, val) } }));
@@ -240,23 +261,47 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                     {initial ? 'Edit' : 'New'} {characterType === 'pc' ? 'Player Character' : 'Monster'}
                 </h2>
 
-                {/* ── Basic Info + Photo (always visible) ────────── */}
+                {/* ── Basic Info + Card Preview (always visible) ────────── */}
                 <div className="flex gap-4">
-                    {/* Photo on the left */}
-                    <div className="flex flex-col items-center gap-2">
-                        <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-paladin-gold/30 bg-leather-dark flex items-center justify-center">
+                    {/* Card preview on the left */}
+                    <div className="flex flex-col items-center gap-1.5">
+                        {/* Matches CharacterCard: w-40 image area is h-32 (ratio 5:4) */}
+                        <div
+                            ref={previewRef}
+                            className="relative w-32 aspect-[5/4] flex-shrink-0 overflow-hidden rounded-lg border-2 border-paladin-gold/60 cursor-ns-resize select-none"
+                            style={{ backgroundColor: TYPE_COLORS[characterType] }}
+                            onPointerDown={selectedImagePath ? onPointerDown : undefined}
+                            onPointerMove={selectedImagePath ? onPointerMove : undefined}
+                            onPointerUp={selectedImagePath ? onPointerUp : undefined}
+                        >
                             {selectedImagePath ? (
                                 <>
-                                    <img src={`${API_BASE_URL}/static/${selectedImagePath}`} alt="Selected" className="h-full w-full object-cover" />
-                                    <button type="button" onClick={() => setSelectedImagePath('')} className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-400">&times;</button>
+                                    <img
+                                        src={`${API_BASE_URL}/static/${selectedImagePath}`}
+                                        alt="Preview"
+                                        className="absolute inset-0 h-full w-full object-cover pointer-events-none"
+                                        style={{ objectPosition: `center ${photoOffsetY}%` }}
+                                        draggable={false}
+                                    />
+                                    <div className="absolute inset-0 pointer-events-none" style={{ background: `linear-gradient(to bottom, transparent 40%, ${TYPE_COLORS[characterType]})` }} />
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setSelectedImagePath(''); }}
+                                        className="absolute right-1 top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white hover:bg-red-400"
+                                    >&times;</button>
                                 </>
                             ) : (
-                                <span className="text-3xl text-parchment/30">&#9876;</span>
+                                <div className="flex h-full w-full items-center justify-center">
+                                    <span className="text-3xl text-parchment/30">&#9876;</span>
+                                </div>
                             )}
                         </div>
                         <button type="button" onClick={() => setShowImagePicker(!showImagePicker)} className="rounded-md bg-faded-ink/40 px-2 py-1 text-xs text-parchment hover:bg-faded-ink/60">
                             {selectedImagePath ? 'Change' : 'Choose'}
                         </button>
+                        {selectedImagePath && (
+                            <p className="text-[10px] text-parchment/40">Drag to adjust</p>
+                        )}
                     </div>
 
                     {/* Name, Race, Class */}

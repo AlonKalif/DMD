@@ -28,7 +28,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onVie
     return (
         <div
             ref={dragRef as unknown as React.Ref<HTMLDivElement>}
-            className="group relative flex w-40 flex-col items-center rounded-lg border-2 border-paladin-gold/60 p-4 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing"
+            className="group relative flex w-40 flex-col items-center overflow-hidden rounded-lg border-2 border-paladin-gold/60 shadow-md transition-transform hover:scale-105 cursor-grab active:cursor-grabbing"
             style={{
                 backgroundColor: bgColor,
                 opacity: isDragging ? 0.5 : 1,
@@ -36,7 +36,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onVie
             onDoubleClick={() => onDoubleClick(template)}
         >
             {/* Hover action buttons */}
-            <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                 <button
                     onClick={(e) => { e.stopPropagation(); onView(template); }}
                     className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
@@ -60,45 +60,47 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onVie
                 </button>
             </div>
 
-            {/* Photo or placeholder */}
-            <div className="mb-2 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-black/20">
-                {template.photo_path ? (
+            {/* Image filling top of card with fade */}
+            {template.photo_path ? (
+                <div className="relative w-full h-32">
                     <img
                         src={`${API_BASE_URL}/static/${template.photo_path}`}
                         alt={template.name}
                         className="h-full w-full object-cover"
+                        style={{ objectPosition: `center ${template.photo_offset_y ?? 50}%` }}
                     />
-                ) : (
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 40%, ${bgColor})` }} />
+                </div>
+            ) : (
+                <div className="flex h-20 w-full items-center justify-center">
                     <span className="text-3xl text-white/60">&#9876;</span>
-                )}
-            </div>
-
-            {/* Name */}
-            <p className="max-w-full truncate text-center text-base font-bold text-white" title={template.name}>
-                {template.name}
-            </p>
-
-            {/* Race / Class */}
-            {raceClass && (
-                <p className="max-w-full truncate text-center text-sm italic text-white/70" title={raceClass}>
-                    {raceClass}
-                </p>
+                </div>
             )}
 
-            {/* Level badge */}
-            <span className="mt-1 mb-1 rounded-full bg-black/30 px-2.5 py-0.5 text-sm text-white">
-                Lv {template.level}
-            </span>
+            {/* Text content */}
+            <div className="w-full px-3 pb-3 -mt-3 relative z-10 flex flex-col items-center">
+                <p className="max-w-full truncate text-center text-base font-bold text-white" title={template.name}>
+                    {template.name}
+                </p>
 
-            {/* Max HP */}
-            <p className="text-sm text-white/80">
-                {template.max_hp} HP
-            </p>
+                {raceClass && (
+                    <p className="max-w-full truncate text-center text-sm italic text-white/70" title={raceClass}>
+                        {raceClass}
+                    </p>
+                )}
 
-            {/* AC */}
-            <div className="mt-1 flex items-center gap-1">
-                <span className="text-sm text-yellow-300">&#128737;</span>
-                <span className="text-sm font-semibold text-white">{template.ac}</span>
+                <span className="mt-1 mb-1 rounded-full bg-black/30 px-2.5 py-0.5 text-sm text-white">
+                    Lv {template.level}
+                </span>
+
+                <p className="text-sm text-white/80">
+                    {template.max_hp} HP
+                </p>
+
+                <div className="mt-1 flex items-center gap-1">
+                    <span className="text-sm text-yellow-300">&#128737;</span>
+                    <span className="text-sm font-semibold text-white">{template.ac}</span>
+                </div>
             </div>
 
         </div>

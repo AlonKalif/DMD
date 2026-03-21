@@ -143,6 +143,7 @@ export interface CharacterTemplate {
     alignment: string;
     size: string;
     photo_path: string;
+    photo_offset_y: number;
     color: string;
     level: number;
     hp: number;
