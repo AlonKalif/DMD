@@ -7,9 +7,10 @@ interface BankGridProps {
     onEdit: (template: CharacterTemplate) => void;
     onDelete: (id: number) => void;
     onDoubleClick: (template: CharacterTemplate) => void;
+    onView: (template: CharacterTemplate) => void;
 }
 
-export function BankGrid({ type, onEdit, onDelete, onDoubleClick }: BankGridProps) {
+export function BankGrid({ type, onEdit, onDelete, onDoubleClick, onView }: BankGridProps) {
     const templates = useAppSelector((state) => state.crawl.templates);
     const searchQuery = useAppSelector((state) =>
         type === 'pc' ? state.crawl.pcSearchQuery : state.crawl.monsterSearchQuery
@@ -40,6 +41,7 @@ export function BankGrid({ type, onEdit, onDelete, onDoubleClick }: BankGridProp
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onDoubleClick={onDoubleClick}
+                    onView={onView}
                 />
             ))}
         </div>

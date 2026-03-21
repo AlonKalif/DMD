@@ -8,9 +8,10 @@ interface CharacterCardProps {
     onEdit: (template: CharacterTemplate) => void;
     onDelete: (id: number) => void;
     onDoubleClick: (template: CharacterTemplate) => void;
+    onView: (template: CharacterTemplate) => void;
 }
 
-export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: CharacterCardProps) {
+export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onView }: CharacterCardProps) {
     const [{ isDragging }, dragRef] = useDrag(() => ({
         type: DND_TYPES.BANK_CHARACTER,
         item: { template },
@@ -35,6 +36,13 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
         >
             {/* Hover action buttons */}
             <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onView(template); }}
+                    className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
+                    title="View Stats"
+                >
+                    &#128065;
+                </button>
                 <button
                     onClick={(e) => { e.stopPropagation(); onEdit(template); }}
                     className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
@@ -91,6 +99,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick }: Cha
                 <span className="text-sm text-yellow-300">&#128737;</span>
                 <span className="text-sm font-semibold text-white">{template.ac}</span>
             </div>
+
         </div>
     );
 }

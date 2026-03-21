@@ -9,7 +9,7 @@ import {
     reviveCombatant,
     selectTemplateForCombatant,
 } from 'features/crawl/crawlSlice';
-import { Combatant, StatusEffect } from 'types/api';
+import { CharacterTemplate, Combatant, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { StatusEffectPicker } from './StatusEffectPicker';
@@ -19,6 +19,7 @@ interface CombatantCardProps {
     combatant: Combatant;
     isActive: boolean;
     showCopyIndex: boolean;
+    onViewTemplate: (template: CharacterTemplate) => void;
 }
 
 function getHpLiquidClass(hp: number, maxHp: number): string {
@@ -30,7 +31,7 @@ function getHpLiquidClass(hp: number, maxHp: number): string {
 }
 
 export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
-    function CombatantCard({ combatant, isActive, showCopyIndex }, ref) {
+    function CombatantCard({ combatant, isActive, showCopyIndex, onViewTemplate }, ref) {
         const dispatch = useAppDispatch();
         const templates = useAppSelector((state) => state.crawl.templates);
         const template = selectTemplateForCombatant(templates, combatant.templateId);
@@ -111,14 +112,25 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </div>
                 )}
 
-                {/* Remove button */}
-                <button
-                    onClick={() => dispatch(removeCombatant(combatant.instanceId))}
-                    className="absolute right-1 top-1 z-20 rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 opacity-0 transition-opacity hover:bg-black/60 group-hover:opacity-100"
-                    title="Remove from battle"
-                >
-                    &#10005;
-                </button>
+                {/* Action buttons */}
+                <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    {template && (
+                        <button
+                            onClick={() => onViewTemplate(template)}
+                            className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
+                            title="View Stats"
+                        >
+                            &#128065;
+                        </button>
+                    )}
+                    <button
+                        onClick={() => dispatch(removeCombatant(combatant.instanceId))}
+                        className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 hover:bg-black/60"
+                        title="Remove from battle"
+                    >
+                        &#10005;
+                    </button>
+                </div>
 
                 {/* Photo */}
                 <div className="mb-1.5 flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-black/20">
@@ -233,6 +245,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                         })}
                     </div>
                 )}
+
             </div>
         );
     }

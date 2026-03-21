@@ -6,9 +6,10 @@ import { CombatantRow } from './CombatantRow';
 
 interface BattleSectionProps {
     onRequestInitiative: (template: CharacterTemplate) => void;
+    onViewTemplate: (template: CharacterTemplate) => void;
 }
 
-export function BattleSection({ onRequestInitiative }: BattleSectionProps) {
+export function BattleSection({ onRequestInitiative, onViewTemplate }: BattleSectionProps) {
     const [{ isOver }, dropRef] = useDrop(() => ({
         accept: DND_TYPES.BANK_CHARACTER,
         drop: (item: { template: CharacterTemplate }) => {
@@ -37,7 +38,7 @@ export function BattleSection({ onRequestInitiative }: BattleSectionProps) {
                     className="logo-gold pointer-events-none absolute inset-0 m-auto h-full max-h-48 w-auto opacity-[0.12] select-none"
                 />
                 <div className="relative z-10">
-                    <CombatantRow />
+                    <CombatantRow onViewTemplate={onViewTemplate} />
                 </div>
             </div>
         </div>

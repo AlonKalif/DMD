@@ -5,10 +5,12 @@ import { CharacterTemplate } from 'types/api';
 import { BattleSection } from 'components/crawl/BattleSection';
 import { CharacterBank } from 'components/crawl/CharacterBank';
 import { InitiativeModal } from 'components/crawl/InitiativeModal';
+import { CharacterViewModal } from 'components/crawl/CharacterViewModal';
 
 export default function DungeonCrawlPage() {
     const dispatch = useAppDispatch();
     const [initiativeTarget, setInitiativeTarget] = useState<CharacterTemplate | null>(null);
+    const [viewingTemplate, setViewingTemplate] = useState<CharacterTemplate | null>(null);
 
     const handleRequestInitiative = (template: CharacterTemplate) => {
         setInitiativeTarget(template);
@@ -19,10 +21,14 @@ export default function DungeonCrawlPage() {
         setInitiativeTarget(null);
     };
 
+    const handleViewTemplate = (template: CharacterTemplate) => {
+        setViewingTemplate(template);
+    };
+
     return (
         <div className="flex h-full flex-col gap-2 p-2 pb-0">
             {/* Battle section — top */}
-            <BattleSection onRequestInitiative={handleRequestInitiative} />
+            <BattleSection onRequestInitiative={handleRequestInitiative} onViewTemplate={handleViewTemplate} />
 
             {/* Flourish Divider */}
             <div className="flex items-center gap-3 py-1">
@@ -33,7 +39,7 @@ export default function DungeonCrawlPage() {
 
             {/* Character Bank — bottom */}
             <div className="flex flex-1 flex-col overflow-hidden">
-                <CharacterBank onRequestInitiative={handleRequestInitiative} />
+                <CharacterBank onRequestInitiative={handleRequestInitiative} onViewTemplate={handleViewTemplate} />
             </div>
 
             {/* Shared initiative modal */}
@@ -42,6 +48,14 @@ export default function DungeonCrawlPage() {
                     template={initiativeTarget}
                     onConfirm={handleInitiativeConfirm}
                     onClose={() => setInitiativeTarget(null)}
+                />
+            )}
+
+            {/* Shared character view modal */}
+            {viewingTemplate && (
+                <CharacterViewModal
+                    template={viewingTemplate}
+                    onClose={() => setViewingTemplate(null)}
                 />
             )}
         </div>

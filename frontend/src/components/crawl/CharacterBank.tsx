@@ -13,9 +13,10 @@ import { TemplateFormModal } from './TemplateFormModal';
 
 interface CharacterBankProps {
     onRequestInitiative: (template: CharacterTemplate) => void;
+    onViewTemplate: (template: CharacterTemplate) => void;
 }
 
-export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
+export function CharacterBank({ onRequestInitiative, onViewTemplate }: CharacterBankProps) {
     const dispatch = useAppDispatch();
     const status = useAppSelector((state) => state.crawl.status);
 
@@ -73,6 +74,7 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onDoubleClick={handleDoubleClick}
+                    onView={onViewTemplate}
                 />
             </div>
 
@@ -87,6 +89,7 @@ export function CharacterBank({ onRequestInitiative }: CharacterBankProps) {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onDoubleClick={handleDoubleClick}
+                    onView={onViewTemplate}
                 />
             </div>
 

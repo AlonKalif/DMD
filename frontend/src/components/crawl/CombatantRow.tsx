@@ -1,8 +1,13 @@
 import { useRef, useEffect, createRef } from 'react';
 import { useAppSelector } from 'app/hooks';
+import { CharacterTemplate } from 'types/api';
 import { CombatantCard } from './CombatantCard';
 
-export function CombatantRow() {
+interface CombatantRowProps {
+    onViewTemplate: (template: CharacterTemplate) => void;
+}
+
+export function CombatantRow({ onViewTemplate }: CombatantRowProps) {
     const combatants = useAppSelector((state) => state.crawl.combatants);
     const activeTurnIndex = useAppSelector((state) => state.crawl.activeTurnIndex);
     const cardRefs = useRef<Map<string, React.RefObject<HTMLDivElement>>>(new Map());
@@ -51,6 +56,7 @@ export function CombatantRow() {
                     combatant={combatant}
                     isActive={idx === activeTurnIndex}
                     showCopyIndex={(templateCounts.get(combatant.templateId) ?? 0) > 1}
+                    onViewTemplate={onViewTemplate}
                 />
             ))}
         </div>

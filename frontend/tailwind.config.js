@@ -14,6 +14,7 @@ module.exports = {
         'wax-red': '#991b1b',
         'ink': '#2c241a',
         'faded-ink': '#6b5e4c',
+        'tome-leather': '#2b1d12',
       },
       fontFamily: {
         'blackletter': ['Cinzel', 'serif'],
