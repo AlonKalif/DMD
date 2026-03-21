@@ -38,7 +38,8 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         const [showPicker, setShowPicker] = useState(false);
 
         const name = template?.name ?? '???';
-        const color = template?.color ?? '#374151';
+        const defaultColor = template?.character_type === 'monster' ? '#5c4033' : '#374151';
+        const color = template?.color ?? defaultColor;
         const photoPath = template?.photo_path;
         const raceClass = [template?.race, template?.class].filter(Boolean).join(' ');
 
@@ -177,7 +178,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
 
                 {/* HP buttons */}
                 <div className="mt-1.5 flex gap-1.5">
-                    {[-5, -1, 1, 5].map((delta) => (
+                    {[-10, -5, -1, 1].map((delta) => (
                         <button
                             key={delta}
                             onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}

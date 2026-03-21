@@ -20,7 +20,8 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onVie
         }),
     }), [template]);
 
-    const bgColor = template.color || '#374151';
+    const defaultColor = template.character_type === 'monster' ? '#5c4033' : '#374151';
+    const bgColor = template.color || defaultColor;
 
     const raceClass = [template.race, template.class].filter(Boolean).join(' ');
 

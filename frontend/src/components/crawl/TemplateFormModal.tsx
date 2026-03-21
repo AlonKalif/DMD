@@ -10,7 +10,7 @@ import {
 import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { API_BASE_URL } from 'config';
 
-const TYPE_COLORS = { pc: '#2d4a3e', monster: '#991b1b' } as const;
+const TYPE_COLORS = { pc: '#2d4a3e', monster: '#5c4033' } as const;
 
 const DEFAULT_ABILITIES: AbilityScores = {
     strength: { score: 10, modifier: 0 }, dexterity: { score: 10, modifier: 0 },
@@ -320,7 +320,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                 <Section title="Combat Stats" defaultOpen>
                     <div className="grid grid-cols-4 gap-3">
                         <Stepper label="Level" value={level} onChange={setLevel} />
-                        <Stepper label="Max HP" value={maxHp} onChange={setMaxHp} step={5} />
+                        <Stepper label="Max HP" value={maxHp} onChange={setMaxHp} />
                         <Stepper label="AC" value={ac} onChange={setAc} />
                         <Stepper label="Speed (ft)" value={speed} onChange={setSpeed} step={10} />
                     </div>
