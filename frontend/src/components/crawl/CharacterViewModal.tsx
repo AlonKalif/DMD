@@ -37,6 +37,14 @@ function StatRow({ label, value }: { label: string; value: string | number }) {
     );
 }
 
+function TaperedRule() {
+    return (
+        <svg className="mt-1.5 mb-1 w-full" viewBox="0 0 100 4" preserveAspectRatio="none" height="6">
+            <polygon points="0,0 100,2 0,4" fill="#991b1b" />
+        </svg>
+    );
+}
+
 function SectionHeader({ title }: { title: string }) {
     return (
         <h3 className="font-blackletter text-sm font-bold uppercase tracking-wider text-wax-red mt-3 mb-1 border-b border-tome-leather/25 pb-0.5">{title}</h3>
@@ -45,8 +53,8 @@ function SectionHeader({ title }: { title: string }) {
 
 export function CharacterViewModal({ template, onClose }: CharacterViewModalProps) {
     const t = template;
-    const raceClass = [t.race, t.class].filter(Boolean).join(' ');
     const hasAbilities = t.abilities && ABILITY_LABELS.some(a => t.abilities[a.key]?.score > 0);
+    const subtitleParts = [t.race, t.class, t.size, t.creature_type, t.alignment].filter(Boolean);
     const nonZeroSkills = SKILL_KEY_MAP.filter(([, key]) => t.skills?.[key] !== 0);
     const speeds: { label: string; value: number }[] = [
         { label: 'Walk', value: t.speed },
@@ -75,29 +83,16 @@ export function CharacterViewModal({ template, onClose }: CharacterViewModalProp
                             &times;
                         </button>
                     </div>
-                    {raceClass && (
-                        <p className="text-sm italic text-tome-leather/60 mt-0.5">{raceClass}</p>
-                    )}
-                    {t.alignment && (
-                        <p className="text-xs text-tome-leather/50 mt-0.5">{t.alignment}</p>
-                    )}
-
-                    {/* Tags row */}
-                    <div className="flex flex-wrap gap-1.5 mt-2">
+                    {/* Subtitle: level pill + traits */}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <span className="rounded-full bg-tome-leather/20 px-2.5 py-0.5 text-xs font-semibold text-tome-leather">
                             Lv {t.level}
                         </span>
-                        {t.size && (
-                            <span className="rounded-full bg-tome-leather/20 px-2.5 py-0.5 text-xs text-tome-leather">
-                                {t.size}
-                            </span>
-                        )}
-                        {t.creature_type && (
-                            <span className="rounded-full bg-tome-leather/20 px-2.5 py-0.5 text-xs text-tome-leather">
-                                {t.creature_type}{t.creature_type_custom ? ` (${t.creature_type_custom})` : ''}
-                            </span>
+                        {subtitleParts.length > 0 && (
+                            <span className="text-sm italic text-tome-leather/70">{subtitleParts.join(', ')}</span>
                         )}
                     </div>
+                    <TaperedRule />
 
                     {/* Core combat stats */}
                     <SectionHeader title="Combat" />
@@ -126,7 +121,7 @@ export function CharacterViewModal({ template, onClose }: CharacterViewModalProp
                     {hasAbilities && (
                         <>
                             <SectionHeader title="Ability Scores" />
-                            <div className="grid grid-cols-6 gap-1.5">
+                            <div className="grid grid-cols-3 gap-1.5">
                                 {ABILITY_LABELS.map(({ key, abbr }) => {
                                     const a = t.abilities[key];
                                     if (!a || a.score === 0) return null;
