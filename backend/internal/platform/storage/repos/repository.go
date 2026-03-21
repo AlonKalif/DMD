@@ -93,6 +93,7 @@ type ImagesRepository interface {
 	CreateImageEntry(asset *images.ImageEntry) error
 	UpdateImageEntry(asset *images.ImageEntry) error
 	DeleteImage(id uint) error
+	RestoreSoftDeletedByPath(path string) (bool, error)
 	GetImageByPath(path string) (*images.ImageEntry, error)
 	BulkCreateImageEntries(assets []*images.ImageEntry) error // Transactional
 	CreatePreset(preset *images.PresetLayout) error

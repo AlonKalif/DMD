@@ -84,6 +84,16 @@ func (r *imagesRepo) DeleteImage(id uint) error {
 	return r.db.Delete(&images.ImageEntry{}, id).Error
 }
 
+func (r *imagesRepo) RestoreSoftDeletedByPath(path string) (bool, error) {
+	res := r.db.Unscoped().Model(&images.ImageEntry{}).
+		Where("file_path = ? AND deleted_at IS NOT NULL", path).
+		Update("deleted_at", nil)
+	if res.Error != nil {
+		return false, res.Error
+	}
+	return res.RowsAffected > 0, nil
+}
+
 func (r *imagesRepo) BulkCreateImageEntries(assets []*images.ImageEntry) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		for _, asset := range assets {

@@ -120,10 +120,15 @@ func (s *Service) removeOrphanedImages(diskFiles map[string]bool, dbImages map[s
 }
 
 // addNewImages creates DB records for new files found on disk.
+// If a soft-deleted record exists for the same path, it is restored instead.
 func (s *Service) addNewImages(diskFiles map[string]bool, dbImages map[string]uint) {
 	for path := range diskFiles {
 		if _, foundInDb := dbImages[path]; !foundInDb {
 			fileName := filepath.Base(path)
+			if restored, err := s.repo.RestoreSoftDeletedByPath(path); err == nil && restored {
+				s.log.Info("Restored previously deleted image record", "file", fileName)
+				continue
+			}
 			img := &images.ImageEntry{
 				Name:     strings.TrimSuffix(fileName, filepath.Ext(fileName)),
 				Type:     images.ImageTypeUnknown,
