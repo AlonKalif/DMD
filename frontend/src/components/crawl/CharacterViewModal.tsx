@@ -101,9 +101,31 @@ export function CharacterViewModal({ template, onClose }: CharacterViewModalProp
                         <StatRow label="Armor Class" value={t.ac} />
                         {t.proficiency_bonus > 0 && <StatRow label="Proficiency" value={formatModifier(t.proficiency_bonus)} />}
                         {t.hit_dice && <StatRow label="Hit Dice" value={t.hit_dice} />}
-                        {t.spell_slots > 0 && <StatRow label="Spell Slots" value={t.spell_slots} />}
-                        {t.rage_slots > 0 && <StatRow label="Rage Slots" value={t.rage_slots} />}
                     </div>
+                    {t.spell_slots?.length > 0 && (
+                        <div className="mt-1">
+                            <span className="text-xs font-semibold text-blue-700">Spell Slots</span>
+                            <div className="flex flex-wrap gap-2 mt-0.5">
+                                {t.spell_slots.map(s => (
+                                    <span key={s.level} className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-800 font-medium">
+                                        Lv {s.level} &times; {s.count}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {t.rage_slots?.length > 0 && (
+                        <div className="mt-1">
+                            <span className="text-xs font-semibold text-orange-700">Rage Slots</span>
+                            <div className="flex flex-wrap gap-2 mt-0.5">
+                                {t.rage_slots.map(s => (
+                                    <span key={s.level} className="rounded bg-orange-100 px-2 py-0.5 text-xs text-orange-800 font-medium">
+                                        Lv {s.level} &times; {s.count}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Speed */}
                     {speeds.length > 0 && (

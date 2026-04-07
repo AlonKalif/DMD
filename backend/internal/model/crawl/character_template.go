@@ -28,8 +28,8 @@ type CharacterTemplate struct {
 	AC               uint `json:"ac"`
 	ProficiencyBonus uint `json:"proficiency_bonus"`
 	HitDice          string `json:"hit_dice"`
-	SpellSlots       uint `json:"spell_slots"`
-	RageSlots        uint `json:"rage_slots"`
+	SpellSlots       ResourceSlotsColumn `json:"spell_slots" gorm:"type:TEXT"`
+	RageSlots        ResourceSlotsColumn `json:"rage_slots" gorm:"type:TEXT"`
 
 	// Speeds (ft)
 	Speed       uint `json:"speed"`

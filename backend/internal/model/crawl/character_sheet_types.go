@@ -119,3 +119,11 @@ type NamedEntry struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
+// ResourceSlot represents a group of resource slots at a given level (e.g. 3 level-1 spell slots).
+type ResourceSlot struct {
+	Level int `json:"level"`
+	Count int `json:"count"`
+}
+
+type ResourceSlotsColumn = jsonColumn[[]ResourceSlot]

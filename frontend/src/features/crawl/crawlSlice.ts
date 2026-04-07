@@ -105,6 +105,9 @@ const crawlSlice = createSlice({
             const nextCopyIndex = existingCopies.length > 0
                 ? Math.max(...existingCopies.map(c => c.copyIndex)) + 1
                 : 1;
+            const toUsage = (slots: { level: number; count: number }[] | null | undefined) =>
+                (slots ?? []).filter(s => s.count > 0).map(s => ({ level: s.level, total: s.count, usedSlots: Array(s.count).fill(false) as boolean[] }));
+
             const combatant: Combatant = {
                 instanceId: crypto.randomUUID(),
                 templateId: template.ID,
@@ -117,6 +120,8 @@ const crawlSlice = createSlice({
                 isInDeathSave: false,
                 deathSaveCount: 0,
                 copyIndex: nextCopyIndex,
+                spellSlotUsage: toUsage(template.spell_slots),
+                rageSlotUsage: toUsage(template.rage_slots),
             };
             state.combatants.push(combatant);
             sortByInitiative(state.combatants);
@@ -221,6 +226,17 @@ const crawlSlice = createSlice({
             state.activeTurnIndex = next;
         },
 
+        toggleSlot(state, action: PayloadAction<{ instanceId: string; slotType: 'spell' | 'rage'; level: number; slotIndex: number }>) {
+            const combatant = state.combatants.find(c => c.instanceId === action.payload.instanceId);
+            if (!combatant) return;
+            const usage = action.payload.slotType === 'spell' ? combatant.spellSlotUsage : combatant.rageSlotUsage;
+            const group = usage.find(g => g.level === action.payload.level);
+            if (!group) return;
+            const idx = action.payload.slotIndex;
+            if (idx < 0 || idx >= group.total) return;
+            group.usedSlots[idx] = !group.usedSlots[idx];
+        },
+
         clearAll(state) {
             state.combatants = [];
             state.activeTurnIndex = -1;
@@ -268,6 +284,7 @@ export const {
     adjustDeathSave,
     reviveCombatant,
     nextTurn,
+    toggleSlot,
     clearAll,
 } = crawlSlice.actions;
 

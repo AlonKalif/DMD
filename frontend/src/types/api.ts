@@ -132,6 +132,11 @@ export const SENSES = [
     'Blindsight', 'Darkvision', 'Tremorsense', 'Truesight', 'Other',
 ] as const;
 
+export interface ResourceSlot {
+    level: number;
+    count: number;
+}
+
 export interface CharacterTemplate {
     ID: number;
     name: string;
@@ -151,8 +156,8 @@ export interface CharacterTemplate {
     ac: number;
     proficiency_bonus: number;
     hit_dice: string;
-    spell_slots: number;
-    rage_slots: number;
+    spell_slots: ResourceSlot[];
+    rage_slots: ResourceSlot[];
     speed: number;
     burrow_speed: number;
     climb_speed: number;
@@ -181,6 +186,12 @@ export const STATUS_EFFECTS = [
 
 export type StatusEffect = typeof STATUS_EFFECTS[number];
 
+export interface SlotUsage {
+    level: number;
+    total: number;
+    usedSlots: boolean[];
+}
+
 export interface Combatant {
     instanceId: string;
     templateId: number;
@@ -193,4 +204,6 @@ export interface Combatant {
     isInDeathSave: boolean;
     deathSaveCount: number;
     copyIndex: number;
+    spellSlotUsage: SlotUsage[];
+    rageSlotUsage: SlotUsage[];
 }

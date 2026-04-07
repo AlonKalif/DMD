@@ -7,6 +7,7 @@ import {
     removeStatusEffect,
     adjustDeathSave,
     reviveCombatant,
+    toggleSlot,
     selectTemplateForCombatant,
 } from 'features/crawl/crawlSlice';
 import { CharacterTemplate, Combatant, StatusEffect } from 'types/api';
@@ -14,6 +15,88 @@ import { API_BASE_URL } from 'config';
 import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { StatusEffectPicker } from './StatusEffectPicker';
 import { GlassVial } from 'components/ui/GlassVial';
+
+function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
+    return (
+        <button onClick={onClick} className="group/slot relative" title={`Level ${level} spell slot`}>
+            <svg width="22" height="26" viewBox="0 0 22 26" className="transition-transform hover:scale-110">
+                <polygon
+                    points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5"
+                    fill={used ? '#1e3a5f' : '#3b82f6'}
+                    stroke={used ? '#4b7099' : '#93c5fd'}
+                    strokeWidth="1"
+                    opacity={used ? 0.4 : 1}
+                />
+                {!used && (
+                    <polygon
+                        points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5"
+                        fill="none"
+                        stroke="#93c5fd"
+                        strokeWidth="0.5"
+                        opacity="0.5"
+                        transform="scale(0.8) translate(2.75 2.6)"
+                    />
+                )}
+            </svg>
+            <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${used ? 'text-blue-300/40 line-through' : 'text-white'}`}>
+                {level}
+            </span>
+        </button>
+    );
+}
+
+function RageSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
+    return (
+        <button onClick={onClick} className="group/slot relative" title={`Level ${level} rage slot`}>
+            <svg width="22" height="26" viewBox="0 0 22 26" className="transition-transform hover:scale-110">
+                <path
+                    d="M11,0 L16,4 L21,7 L19,14 L21,20 L16,24 L11,26 L6,24 L1,20 L3,14 L1,7 L6,4 Z"
+                    fill={used ? '#5c3310' : '#f97316'}
+                    stroke={used ? '#a36830' : '#fdba74'}
+                    strokeWidth="1"
+                    opacity={used ? 0.4 : 1}
+                />
+                {!used && (
+                    <path
+                        d="M11,3 L15,6 L19,8.5 L17.5,14 L19,19 L15,22 L11,23.5 L7,22 L3,19 L4.5,14 L3,8.5 L7,6 Z"
+                        fill="none"
+                        stroke="#fdba74"
+                        strokeWidth="0.5"
+                        opacity="0.5"
+                    />
+                )}
+            </svg>
+            <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${used ? 'text-orange-300/40 line-through' : 'text-white'}`}>
+                {level}
+            </span>
+        </button>
+    );
+}
+
+function SlotRow({ label, usage, slotType, instanceId, dispatch, color }: {
+    label: string; usage: Combatant['spellSlotUsage']; slotType: 'spell' | 'rage';
+    instanceId: string; dispatch: ReturnType<typeof useAppDispatch>; color: string;
+}) {
+    if (usage.length === 0) return null;
+    const Icon = slotType === 'spell' ? SpellSlotIcon : RageSlotIcon;
+    return (
+        <div className="mt-1.5 w-full">
+            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5 text-center" style={{ color }}>{label}</p>
+            <div className="flex flex-wrap justify-center gap-0.5">
+                {usage.map(group =>
+                    Array.from({ length: group.total }).map((_, i) => (
+                        <Icon
+                            key={`${group.level}-${i}`}
+                            level={group.level}
+                            used={group.usedSlots[i]}
+                            onClick={() => dispatch(toggleSlot({ instanceId, slotType, level: group.level, slotIndex: i }))}
+                        />
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}
 
 interface CombatantCardProps {
     combatant: Combatant;
@@ -59,7 +142,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         return (
             <div
                 ref={ref}
-                className={`group relative flex w-48 flex-shrink-0 flex-col items-center overflow-hidden rounded-lg border-2 border-paladin-gold/60 transition-all ${
+                className={`group relative flex w-48 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 transition-all ${
                     isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
@@ -135,7 +218,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
 
                 {/* Image filling top of card with fade */}
                 {photoPath ? (
-                    <div className="relative w-full h-28">
+                    <div className="relative w-full h-28 overflow-hidden rounded-t-md">
                         <img
                             src={`${API_BASE_URL}/static/${photoPath}`}
                             alt={name}
@@ -199,6 +282,9 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                         <span className="text-xs text-yellow-300">&#128737;</span>
                         <span className="text-xs font-semibold text-white">{combatant.ac}</span>
                     </div>
+
+                    <SlotRow label="Spells" usage={combatant.spellSlotUsage} slotType="spell" instanceId={combatant.instanceId} dispatch={dispatch} color="#93c5fd" />
+                    <SlotRow label="Rage" usage={combatant.rageSlotUsage} slotType="rage" instanceId={combatant.instanceId} dispatch={dispatch} color="#fdba74" />
 
                     <div className="relative mt-1">
                         <button

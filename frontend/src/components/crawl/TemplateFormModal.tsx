@@ -4,6 +4,7 @@ import { fetchImages } from 'features/images/imageSlice';
 import {
     CharacterTemplate, MediaAsset, AbilityScores, SkillScores,
     SavingThrow, DamageRelation, LanguageEntry, SenseEntry, NamedEntry,
+    ResourceSlot,
     SIZES, CREATURE_TYPES, CORE_ABILITIES, SKILL_NAMES,
     IMMUNITIES_LIST, DAMAGE_TYPES, LANGUAGES, SENSES,
 } from 'types/api';
@@ -108,6 +109,65 @@ function ImagePickerStrip({ images, selectedImagePath, onSelect }: { images: Med
     );
 }
 
+function SlotPreviewIcon({ level, type }: { level: number; type: 'spell' | 'rage' }) {
+    if (type === 'spell') {
+        return (
+            <svg width="20" height="24" viewBox="0 0 22 26">
+                <polygon points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5" fill="#3b82f6" stroke="#93c5fd" strokeWidth="1" />
+                <polygon points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5" fill="none" stroke="#93c5fd" strokeWidth="0.5" opacity="0.5" transform="scale(0.8) translate(2.75 2.6)" />
+                <text x="11" y="15" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">{level}</text>
+            </svg>
+        );
+    }
+    return (
+        <svg width="20" height="24" viewBox="0 0 22 26">
+            <path d="M11,0 L16,4 L21,7 L19,14 L21,20 L16,24 L11,26 L6,24 L1,20 L3,14 L1,7 L6,4 Z" fill="#f97316" stroke="#fdba74" strokeWidth="1" />
+            <path d="M11,3 L15,6 L19,8.5 L17.5,14 L19,19 L15,22 L11,23.5 L7,22 L3,19 L4.5,14 L3,8.5 L7,6 Z" fill="none" stroke="#fdba74" strokeWidth="0.5" opacity="0.5" />
+            <text x="11" y="15" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">{level}</text>
+        </svg>
+    );
+}
+
+function SlotEditor({ label, slots, onChange, slotType }: { label: string; slots: ResourceSlot[]; onChange: (s: ResourceSlot[]) => void; slotType: 'spell' | 'rage' }) {
+    const addLevel = () => {
+        const nextLevel = slots.length > 0 ? Math.max(...slots.map(s => s.level)) + 1 : 1;
+        onChange([...slots, { level: nextLevel, count: 1 }]);
+    };
+    const remove = (i: number) => onChange(slots.filter((_, j) => j !== i));
+    const update = (i: number, field: 'level' | 'count', val: number) => {
+        const next = [...slots];
+        next[i] = { ...next[i], [field]: Math.max(field === 'level' ? 1 : 0, val) };
+        onChange(next);
+    };
+    return (
+        <div>
+            <label className="mb-1 block text-xs font-medium text-parchment/70">{label}</label>
+            {slots.map((slot, i) => (
+                <div key={i} className="mb-2 rounded-md border border-paladin-gold/15 bg-obsidian/20 p-2">
+                    <div className="flex items-center gap-2 mb-1.5">
+                        <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-parchment/50">Lv</span>
+                            <input type="number" min={1} value={slot.level} onChange={(e) => update(i, 'level', Number(e.target.value))} className="hide-spin w-10 rounded border border-paladin-gold/30 bg-leather-dark px-1.5 py-0.5 text-center text-xs text-parchment focus:outline-none" />
+                        </div>
+                        <div className="flex items-center gap-1">
+                            <button type="button" onClick={() => update(i, 'count', slot.count - 1)} className="flex h-5 w-5 items-center justify-center rounded bg-paladin-gold/20 text-xs font-bold text-parchment/70 hover:bg-paladin-gold/40">&#8722;</button>
+                            <span className="text-xs text-parchment w-4 text-center">{slot.count}</span>
+                            <button type="button" onClick={() => update(i, 'count', slot.count + 1)} className="flex h-5 w-5 items-center justify-center rounded bg-paladin-gold/20 text-xs font-bold text-parchment/70 hover:bg-paladin-gold/40">+</button>
+                        </div>
+                        <button type="button" onClick={() => remove(i)} className="ml-auto shrink-0 rounded bg-wax-red/40 px-1.5 py-0.5 text-[10px] text-parchment hover:bg-wax-red/60">&#10005;</button>
+                    </div>
+                    <div className="flex flex-wrap gap-0.5">
+                        {Array.from({ length: slot.count }).map((_, si) => (
+                            <SlotPreviewIcon key={si} level={slot.level} type={slotType} />
+                        ))}
+                    </div>
+                </div>
+            ))}
+            <button type="button" onClick={addLevel} className="mt-1 rounded-md bg-arcane-purple/30 px-3 py-1 text-xs text-parchment hover:bg-arcane-purple/50 transition-colors">+ Add Level</button>
+        </div>
+    );
+}
+
 const INPUT_CLS = 'w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-sm text-parchment placeholder-faded-ink focus:border-arcane-purple focus:ring-arcane-purple';
 const SELECT_CLS = 'w-full rounded-md border border-paladin-gold/30 bg-leather-dark p-2 text-sm text-parchment focus:border-arcane-purple focus:ring-arcane-purple';
 const PILL_BASE = 'rounded-full px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer select-none';
@@ -143,8 +203,8 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
     const [ac, setAc] = useState(initial?.ac ?? 10);
     const [profBonus, setProfBonus] = useState(initial?.proficiency_bonus ?? 0);
     const [hitDice, setHitDice] = useState(initial?.hit_dice ?? '');
-    const [spellSlots, setSpellSlots] = useState(initial?.spell_slots ?? 0);
-    const [rageSlots, setRageSlots] = useState(initial?.rage_slots ?? 0);
+    const [spellSlots, setSpellSlots] = useState<ResourceSlot[]>(initial?.spell_slots ?? []);
+    const [rageSlots, setRageSlots] = useState<ResourceSlot[]>(initial?.rage_slots ?? []);
     const [speed, setSpeed] = useState(initial?.speed ?? 0);
 
     // Speeds (special)
@@ -369,14 +429,16 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                         <Stepper label="AC" value={ac} onChange={setAc} />
                         <Stepper label="Speed (ft)" value={speed} onChange={setSpeed} step={10} />
                     </div>
-                    <div className="grid grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 gap-3">
                         <Stepper label="Proficiency Bonus" value={profBonus} onChange={setProfBonus} />
-                        <Stepper label="Spell Slots" value={spellSlots} onChange={setSpellSlots} />
-                        <Stepper label="Rage Slots" value={rageSlots} onChange={setRageSlots} />
                         <div>
                             <label className="mb-1 block text-xs font-medium text-parchment/70">Hit Dice</label>
                             <input type="text" value={hitDice} onChange={(e) => setHitDice(e.target.value)} placeholder="e.g. 2d6+5" className={INPUT_CLS} />
                         </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <SlotEditor label="Spell Slots" slots={spellSlots} onChange={setSpellSlots} slotType="spell" />
+                        <SlotEditor label="Rage Slots" slots={rageSlots} onChange={setRageSlots} slotType="rage" />
                     </div>
                 </Section>
 
