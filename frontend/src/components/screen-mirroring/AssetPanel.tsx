@@ -171,9 +171,10 @@ interface AssetPanelProps {
     onLoadPreset: (preset: PresetLayout) => void;
     onDeletePreset: (id: number) => void;
     presetRefreshKey: number;
+    assetRefreshKey: number;
 }
 
-export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey }: AssetPanelProps) {
+export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey, assetRefreshKey }: AssetPanelProps) {
     const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
     const [activeType, setActiveType] = useState('All');
     const [assets, setAssets] = useState<MediaAsset[]>([]);
@@ -215,7 +216,7 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
         };
 
         fetchAssets();
-    }, [activeType, refreshKey]); // Re-run this effect whenever the activeType changes
+    }, [activeType, refreshKey, assetRefreshKey]);
 
     return (
         <div className="leather-card space-y-2 border-y border-paladin-gold/20 p-2">

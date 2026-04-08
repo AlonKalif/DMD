@@ -29,6 +29,7 @@ export default function ScreenMirroringPage() {
     const [isNotificationVisible, setIsNotificationVisible] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [presetRefreshKey, setPresetRefreshKey] = useState(0);
+    const [assetRefreshKey, setAssetRefreshKey] = useState(0);
     const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -275,6 +276,9 @@ export default function ScreenMirroringPage() {
                 },
             });
 
+            // Trigger asset panel refresh
+            setAssetRefreshKey(key => key + 1);
+
             // Show success notification
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
             setNotification('Image uploaded successfully');
@@ -309,6 +313,7 @@ export default function ScreenMirroringPage() {
                 onLoadPreset={handleLoadPreset}
                 onDeletePreset={handleDeletePreset}
                 presetRefreshKey={presetRefreshKey}
+                assetRefreshKey={assetRefreshKey}
             />
             <main className="flex flex-1 min-h-0 items-center justify-center p-4">
                 <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,video/*" />
