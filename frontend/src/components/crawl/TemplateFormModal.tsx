@@ -112,19 +112,22 @@ function ImagePickerStrip({ images, selectedImagePath, onSelect }: { images: Med
 function SlotPreviewIcon({ level, type }: { level: number; type: 'spell' | 'rage' }) {
     if (type === 'spell') {
         return (
-            <svg width="20" height="24" viewBox="0 0 22 26">
-                <polygon points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5" fill="#3b82f6" stroke="#93c5fd" strokeWidth="1" />
-                <polygon points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5" fill="none" stroke="#93c5fd" strokeWidth="0.5" opacity="0.5" transform="scale(0.8) translate(2.75 2.6)" />
-                <text x="11" y="15" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">{level}</text>
-            </svg>
+            <div className="relative">
+                <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-cyan-300" style={{ filter: 'drop-shadow(0 0 5px rgba(96,165,250,0.9))' }}>
+                    <path d="M12 2l2 7h7l-6 4 2 8-5-5-5 5 2-8-6-4h7l2-7z" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center pt-[2px] text-[11px] font-extrabold text-white" style={{ WebkitTextStroke: '2px #0c4a6e', paintOrder: 'stroke fill' } as any}>{level}</span>
+            </div>
         );
     }
     return (
-        <svg width="20" height="24" viewBox="0 0 22 26">
-            <path d="M11,0 L16,4 L21,7 L19,14 L21,20 L16,24 L11,26 L6,24 L1,20 L3,14 L1,7 L6,4 Z" fill="#f97316" stroke="#fdba74" strokeWidth="1" />
-            <path d="M11,3 L15,6 L19,8.5 L17.5,14 L19,19 L15,22 L11,23.5 L7,22 L3,19 L4.5,14 L3,8.5 L7,6 Z" fill="none" stroke="#fdba74" strokeWidth="0.5" opacity="0.5" />
-            <text x="11" y="15" textAnchor="middle" fill="white" fontSize="9" fontWeight="bold">{level}</text>
-        </svg>
+        <div className="relative">
+            <svg width="32" height="32" viewBox="-1 -1 26 26" fill="currentColor" className="text-orange-400" style={{ filter: 'drop-shadow(0 0 5px rgba(249,115,22,0.9))' }}>
+                <path d="M12 2c0 0-4 4.5-4 9.5s3.5 8.5 8 8.5c-1.5-1-2.5-3-2.5-5 0-3.5 4.5-6.5 4.5-6.5C18 12 15 16 15 16s-2-2-2-4 2.5-4 2.5-4C13 8 12 2 12 2z" />
+                <path d="M8 12c0 0-2 2-2 5s2 5 5 5c-1-1-1.5-2.5-1.5-4 0-2 2.5-4 2.5-4s-1-2-4-2z" fill="#000" fillOpacity="0.2" />
+            </svg>
+            <span className="absolute inset-0 flex items-center justify-center pt-[2px] text-[11px] font-extrabold text-white" style={{ WebkitTextStroke: '2px #5c2200', paintOrder: 'stroke fill' } as any}>{level}</span>
+        </div>
     );
 }
 
@@ -352,7 +355,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                                 </>
                             ) : (
                                 <div className="flex h-full w-full items-center justify-center">
-                                    <span className="text-3xl text-parchment/30">&#9876;</span>
+                                    <img src="/dmd_logo.png" alt="" className="h-3/4 w-3/4 object-contain opacity-20" />
                                 </div>
                             )}
                         </div>

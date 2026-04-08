@@ -1,4 +1,4 @@
-import { useState, forwardRef } from 'react';
+import { useState, useRef, forwardRef } from 'react';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import {
     adjustHp,
@@ -16,29 +16,76 @@ import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { StatusEffectPicker } from './StatusEffectPicker';
 import { GlassVial } from 'components/ui/GlassVial';
 
+function HpIcon() {
+    return (
+        <svg width="32" height="32" viewBox="-1 -1 26 26" fill="currentColor" className="text-red-500" style={{ filter: 'drop-shadow(0 0 4px rgba(239,68,68,0.7))' }}>
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            <path d="M12 6.5l-.5-.5C10.5 5 9 4.5 7.5 4.5 5.5 4.5 4 6 4 8c0 2.5 2.5 5 8 10 5.5-5 8-7.5 8-10 0-2-1.5-3.5-3.5-3.5-1.5 0-3 .5-4 1.5l-.5.5z" fill="#000" fillOpacity="0.15" />
+        </svg>
+    );
+}
+
+function AcIcon() {
+    return (
+        <svg width="32" height="32" viewBox="-1 -1 26 26" fill="currentColor" className="text-blue-400" style={{ filter: 'drop-shadow(0 0 4px rgba(96,165,250,0.6))' }}>
+            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z" />
+            <path d="M12 5l-4 1.5v4.59c0 2.8 1.7 5.4 4 6.3 2.3-.9 4-3.5 4-6.3V6.5L12 5z" fill="#000" fillOpacity="0.2" />
+        </svg>
+    );
+}
+
+function InitIcon({ value }: { value: number }) {
+    return (
+        <div className="relative flex-shrink-0">
+            <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-amber-400" style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.7))' }}>
+                <path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" fill="currentColor" fillOpacity="0.15" />
+                <path d="M12 2v20M3 7l18 0M3 17l18 0M12 7l9 10M12 7l-9 10" strokeOpacity="0.4" />
+            </svg>
+            <span
+                className="absolute inset-0 flex items-center justify-center text-[11px] font-extrabold text-white"
+                style={{ WebkitTextStroke: '2px #78350f', paintOrder: 'stroke fill' } as any}
+            >
+                {value}
+            </span>
+        </div>
+    );
+}
+
+function StatsIcon() {
+    return (
+        <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.8" className="text-purple-400" style={{ filter: 'drop-shadow(0 0 4px rgba(192,132,252,0.7))' }}>
+            <path d="M7 3h10a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" fill="currentColor" fillOpacity="0.15" />
+            <path d="M5 17h14M5 7h14" strokeLinecap="round" />
+            <path d="M9 11h6M9 14h4" strokeOpacity="0.5" />
+        </svg>
+    );
+}
+
+function StatusEffectIcon() {
+    return (
+        <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-emerald-400" style={{ filter: 'drop-shadow(0 0 4px rgba(52,211,153,0.7))' }}>
+            <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.1" />
+            <path d="M12 3c-3 3-7 5-9 9 2 4 6 6 9 9 3-3 7-5 9-9-2-4-6-6-9-9z" fill="currentColor" fillOpacity="0.15" strokeLinejoin="round" />
+            <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.5" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+        </svg>
+    );
+}
+
 function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
     return (
-        <button onClick={onClick} className="group/slot relative" title={`Level ${level} spell slot`}>
-            <svg width="22" height="26" viewBox="0 0 22 26" className="transition-transform hover:scale-110">
-                <polygon
-                    points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5"
-                    fill={used ? '#1e3a5f' : '#3b82f6'}
-                    stroke={used ? '#4b7099' : '#93c5fd'}
-                    strokeWidth="1"
-                    opacity={used ? 0.4 : 1}
-                />
-                {!used && (
-                    <polygon
-                        points="11,0 21,6.5 21,19.5 11,26 1,19.5 1,6.5"
-                        fill="none"
-                        stroke="#93c5fd"
-                        strokeWidth="0.5"
-                        opacity="0.5"
-                        transform="scale(0.8) translate(2.75 2.6)"
-                    />
-                )}
+        <button onClick={onClick} className="relative transition-transform hover:scale-110" title={`Level ${level} spell slot`}>
+            <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5"
+                className={used ? 'text-cyan-900' : 'text-cyan-300'}
+                style={used ? undefined : { filter: 'drop-shadow(0 0 5px rgba(96,165,250,0.9))' }}
+                opacity={used ? 0.35 : 1}
+            >
+                <path d="M12 2l2 7h7l-6 4 2 8-5-5-5 5 2-8-6-4h7l2-7z" fill="none" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${used ? 'text-blue-300/40 line-through' : 'text-white'}`}>
+            <span
+                className={`absolute inset-0 flex items-center justify-center pt-[2px] text-[11px] font-extrabold ${used ? 'text-cyan-400/30 line-through' : 'text-white'}`}
+                style={used ? undefined : { WebkitTextStroke: '2px #0c4a6e', paintOrder: 'stroke fill' } as any}
+            >
                 {level}
             </span>
         </button>
@@ -47,53 +94,43 @@ function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean;
 
 function RageSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
     return (
-        <button onClick={onClick} className="group/slot relative" title={`Level ${level} rage slot`}>
-            <svg width="22" height="26" viewBox="0 0 22 26" className="transition-transform hover:scale-110">
-                <path
-                    d="M11,0 L16,4 L21,7 L19,14 L21,20 L16,24 L11,26 L6,24 L1,20 L3,14 L1,7 L6,4 Z"
-                    fill={used ? '#5c3310' : '#f97316'}
-                    stroke={used ? '#a36830' : '#fdba74'}
-                    strokeWidth="1"
-                    opacity={used ? 0.4 : 1}
-                />
-                {!used && (
-                    <path
-                        d="M11,3 L15,6 L19,8.5 L17.5,14 L19,19 L15,22 L11,23.5 L7,22 L3,19 L4.5,14 L3,8.5 L7,6 Z"
-                        fill="none"
-                        stroke="#fdba74"
-                        strokeWidth="0.5"
-                        opacity="0.5"
-                    />
-                )}
+        <button onClick={onClick} className="relative transition-transform hover:scale-110" title={`Level ${level} rage slot`}>
+            <svg width="32" height="32" viewBox="-1 -1 26 26" fill="currentColor"
+                className={used ? 'text-orange-950' : 'text-orange-400'}
+                style={used ? undefined : { filter: 'drop-shadow(0 0 5px rgba(249,115,22,0.9))' }}
+                opacity={used ? 0.35 : 1}
+            >
+                <path d="M12 2c0 0-4 4.5-4 9.5s3.5 8.5 8 8.5c-1.5-1-2.5-3-2.5-5 0-3.5 4.5-6.5 4.5-6.5C18 12 15 16 15 16s-2-2-2-4 2.5-4 2.5-4C13 8 12 2 12 2z" />
+                <path d="M8 12c0 0-2 2-2 5s2 5 5 5c-1-1-1.5-2.5-1.5-4 0-2 2.5-4 2.5-4s-1-2-4-2z" fill="#000" fillOpacity="0.2" />
             </svg>
-            <span className={`absolute inset-0 flex items-center justify-center text-[9px] font-bold ${used ? 'text-orange-300/40 line-through' : 'text-white'}`}>
+            <span
+                className={`absolute inset-0 flex items-center justify-center pt-[2px] text-[11px] font-extrabold ${used ? 'text-orange-300/30 line-through' : 'text-white'}`}
+                style={used ? undefined : { WebkitTextStroke: '2px #5c2200', paintOrder: 'stroke fill' } as any}
+            >
                 {level}
             </span>
         </button>
     );
 }
 
-function SlotRow({ label, usage, slotType, instanceId, dispatch, color }: {
-    label: string; usage: Combatant['spellSlotUsage']; slotType: 'spell' | 'rage';
-    instanceId: string; dispatch: ReturnType<typeof useAppDispatch>; color: string;
+function SlotRow({ usage, slotType, instanceId, dispatch }: {
+    usage: Combatant['spellSlotUsage']; slotType: 'spell' | 'rage';
+    instanceId: string; dispatch: ReturnType<typeof useAppDispatch>;
 }) {
     if (usage.length === 0) return null;
     const Icon = slotType === 'spell' ? SpellSlotIcon : RageSlotIcon;
     return (
-        <div className="mt-1.5 w-full">
-            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5 text-center" style={{ color }}>{label}</p>
-            <div className="flex flex-wrap justify-center gap-0.5">
-                {usage.map(group =>
-                    Array.from({ length: group.total }).map((_, i) => (
-                        <Icon
-                            key={`${group.level}-${i}`}
-                            level={group.level}
-                            used={group.usedSlots[i]}
-                            onClick={() => dispatch(toggleSlot({ instanceId, slotType, level: group.level, slotIndex: i }))}
-                        />
-                    ))
-                )}
-            </div>
+        <div className="flex flex-wrap justify-center gap-0.5">
+            {usage.map(group =>
+                Array.from({ length: group.total }).map((_, i) => (
+                    <Icon
+                        key={`${group.level}-${i}`}
+                        level={group.level}
+                        used={group.usedSlots[i]}
+                        onClick={() => dispatch(toggleSlot({ instanceId, slotType, level: group.level, slotIndex: i }))}
+                    />
+                ))
+            )}
         </div>
     );
 }
@@ -119,6 +156,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         const templates = useAppSelector((state) => state.crawl.templates);
         const template = selectTemplateForCombatant(templates, combatant.templateId);
         const [showPicker, setShowPicker] = useState(false);
+        const effectBtnRef = useRef<HTMLButtonElement>(null);
 
         const name = template?.name ?? '???';
         const defaultColor = template?.character_type === 'monster' ? '#5c4033' : '#374151';
@@ -142,7 +180,7 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
         return (
             <div
                 ref={ref}
-                className={`group relative flex w-48 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 transition-all ${
+                className={`group relative flex w-48 h-80 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 transition-all ${
                     isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
                 }`}
                 style={{
@@ -196,17 +234,8 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </div>
                 )}
 
-                {/* Action buttons */}
-                <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                    {template && (
-                        <button
-                            onClick={() => onViewTemplate(template)}
-                            className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
-                            title="View Stats"
-                        >
-                            &#128065;
-                        </button>
-                    )}
+                {/* Remove button */}
+                <div className="absolute right-1 top-1 z-20 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                         onClick={() => dispatch(removeCombatant(combatant.instanceId))}
                         className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 hover:bg-black/60"
@@ -216,9 +245,9 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </button>
                 </div>
 
-                {/* Image filling top of card with fade */}
+                {/* Image filling top of card — grows to fill available space */}
                 {photoPath ? (
-                    <div className="relative w-full h-28 overflow-hidden rounded-t-md">
+                    <div className="relative w-full flex-1 min-h-0 overflow-hidden rounded-t-md">
                         <img
                             src={`${API_BASE_URL}/static/${photoPath}`}
                             alt={name}
@@ -228,70 +257,86 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                         <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 40%, ${color})` }} />
                     </div>
                 ) : (
-                    <div className="flex h-16 w-full items-center justify-center">
-                        <span className="text-2xl text-white/60">&#9876;</span>
+                    <div className="flex flex-1 min-h-0 w-full items-center justify-center">
+                        <img src="/dmd_logo.png" alt="" className="h-3/4 w-3/4 object-contain opacity-20" />
                     </div>
                 )}
 
-                {/* Name */}
-                <p className="relative z-10 -mt-3 max-w-full truncate text-center text-sm font-bold text-white px-3" title={name}>
-                    {name}
-                    {showCopyIndex && (
-                        <span className="ml-1 text-sm font-bold text-paladin-gold">#{combatant.copyIndex}</span>
-                    )}
-                </p>
-
                 {/* Card content */}
-                <div className="w-full px-3 pb-3 flex flex-col items-center">
+                <div className="relative z-[5] w-full px-2 pb-2 -mt-3 flex flex-col items-center">
+                    {/* Row 1: Init | Name | Stats */}
+                    <div className="flex w-full items-center gap-0.5">
+                        <InitIcon value={combatant.initiative} />
+                        <p className="flex-1 min-w-0 truncate text-center text-base font-bold font-blackletter text-amber-50" title={name} style={{ textShadow: '0 0 6px rgba(212,175,55,0.5), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                            {name}
+                            {showCopyIndex && (
+                                <span className="ml-1 text-paladin-gold/70">#{combatant.copyIndex}</span>
+                            )}
+                        </p>
+                        {template && (
+                            <button
+                                onClick={() => onViewTemplate(template)}
+                                className="flex-shrink-0 transition-transform hover:scale-110"
+                                title="View Stats"
+                            >
+                                <StatsIcon />
+                            </button>
+                        )}
+                    </div>
+
                     {raceClass && (
-                        <p className="max-w-full truncate text-center text-xs italic text-white/70" title={raceClass}>
+                        <p className="max-w-full truncate text-center text-[10px] italic text-white/70" title={raceClass}>
                             {raceClass}
                         </p>
                     )}
 
-                    <span className="mt-0.5 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white">
-                        Init {combatant.initiative}
-                    </span>
+                    {/* Row 2: HP & AC */}
+                    <div className="flex w-full items-center justify-center gap-2 -mt-0.5">
+                        <div className="flex items-center gap-0.5">
+                            <HpIcon />
+                            <span className="text-xs font-semibold text-white">{combatant.hp}/{combatant.max_hp}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                            <AcIcon />
+                            <span className="text-xs font-semibold text-white">{combatant.ac}</span>
+                        </div>
+                    </div>
 
+                    {/* Row 3: Health bar */}
                     <GlassVial
                         percent={hpPercent}
-                        className="mt-1.5 mb-0.5 h-2.5"
+                        className="mt-0.5 mb-1.5 h-2"
                         liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
                     />
-                    <p className="text-xs text-white/80">
-                        {combatant.hp}/{combatant.max_hp} HP
-                    </p>
 
-                    <div className="mt-1.5 flex gap-1.5">
-                        {[-10, -5, -1, 1].map((delta) => (
-                            <button
-                                key={delta}
-                                onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
-                                className={`rounded px-2 py-0.5 text-xs font-bold transition-colors ${
-                                    delta < 0
-                                        ? 'bg-red-700/60 text-red-200 hover:bg-red-600/80'
-                                        : 'bg-green-700/60 text-green-200 hover:bg-green-600/80'
-                                }`}
-                            >
-                                {delta > 0 ? `+${delta}` : delta}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="mt-1.5 flex items-center gap-1">
-                        <span className="text-xs text-yellow-300">&#128737;</span>
-                        <span className="text-xs font-semibold text-white">{combatant.ac}</span>
-                    </div>
-
-                    <SlotRow label="Spells" usage={combatant.spellSlotUsage} slotType="spell" instanceId={combatant.instanceId} dispatch={dispatch} color="#93c5fd" />
-                    <SlotRow label="Rage" usage={combatant.rageSlotUsage} slotType="rage" instanceId={combatant.instanceId} dispatch={dispatch} color="#fdba74" />
-
-                    <div className="relative mt-1">
+                    {/* Row 4: HP adjustment + status effect */}
+                    <div className="flex items-center gap-1">
+                        {[-10, -5, -1, 1].map((delta) => {
+                            const isHeal = delta > 0;
+                            return (
+                                <button
+                                    key={delta}
+                                    onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
+                                    className={`flex h-7 min-w-7 items-center justify-center rounded-full border-2 px-1.5 transition-colors ${
+                                        isHeal
+                                            ? 'border-emerald-500/60 bg-emerald-950/40 hover:bg-emerald-900/60'
+                                            : 'border-rose-500/60 bg-rose-950/40 hover:bg-rose-900/60'
+                                    }`}
+                                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
+                                >
+                                    <span className={`text-[10px] font-bold leading-none ${isHeal ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                        {delta > 0 ? `+${delta}` : delta}
+                                    </span>
+                                </button>
+                            );
+                        })}
                         <button
+                            ref={effectBtnRef}
                             onClick={() => setShowPicker(!showPicker)}
-                            className="rounded bg-black/30 px-2.5 py-0.5 text-xs text-white/70 hover:bg-black/50 hover:text-white"
+                            className="transition-transform hover:scale-110"
+                            title="Add Status Effect"
                         >
-                            + Effect
+                            <StatusEffectIcon />
                         </button>
                         {showPicker && (
                             <StatusEffectPicker
@@ -301,20 +346,29 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                                     dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
                                 }
                                 onClose={() => setShowPicker(false)}
+                                anchorRef={effectBtnRef}
                             />
                         )}
                     </div>
+
+                    {/* Row 5: Resource slots */}
+                    {(combatant.spellSlotUsage.length > 0 || combatant.rageSlotUsage.length > 0) && (
+                        <div className="mt-1 flex flex-wrap justify-center gap-0.5">
+                            <SlotRow usage={combatant.spellSlotUsage} slotType="spell" instanceId={combatant.instanceId} dispatch={dispatch} />
+                            <SlotRow usage={combatant.rageSlotUsage} slotType="rage" instanceId={combatant.instanceId} dispatch={dispatch} />
+                        </div>
+                    )}
                 </div>
 
                 {/* Floating effect labels above card */}
                 {activeEffects.length > 0 && (
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    <div className="absolute -top-9 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {activeEffects.map((effect) => {
                             const effectColor = STATUS_EFFECT_COLORS[effect];
                             return (
                                 <div
                                     key={effect}
-                                    className="group/effect relative whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-semibold text-white cursor-default"
+                                    className="group/effect relative whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold text-white cursor-default"
                                     style={{
                                         backgroundColor: `${effectColor}22`,
                                         boxShadow: `0 0 12px 4px ${effectColor}30`,

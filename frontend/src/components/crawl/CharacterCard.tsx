@@ -73,7 +73,7 @@ export function CharacterCard({ template, onEdit, onDelete, onDoubleClick, onVie
                 </div>
             ) : (
                 <div className="flex h-20 w-full items-center justify-center">
-                    <span className="text-3xl text-white/60">&#9876;</span>
+                    <img src="/dmd_logo.png" alt="" className="h-14 w-14 object-contain opacity-20" />
                 </div>
             )}
 
