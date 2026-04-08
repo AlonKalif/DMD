@@ -2,6 +2,18 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { API_BASE_URL } from 'config';
 
+export interface SpotifyPlaylistTrackItem {
+    id: string;
+    name: string;
+    uri: string;
+    duration_ms: number;
+    artists: Array<{ name: string }>;
+    album: {
+        name: string;
+        images: Array<{ url: string; height: number; width: number }>;
+    };
+}
+
 interface SpotifyState {
     isLoggedIn: boolean;
     accessToken: string | null;
@@ -22,6 +34,10 @@ interface SpotifyState {
     // Playlists
     playlists: SpotifyPlaylist[];
     isFetchingPlaylists: boolean;
+    // Selected playlist tracks
+    selectedPlaylist: SpotifyPlaylist | null;
+    playlistTracks: SpotifyPlaylistTrackItem[];
+    isFetchingTracks: boolean;
 }
 
 interface SpotifyPlaylist {
@@ -55,6 +71,10 @@ const initialState: SpotifyState = {
     // Playlists
     playlists: [],
     isFetchingPlaylists: false,
+    // Selected playlist tracks
+    selectedPlaylist: null,
+    playlistTracks: [],
+    isFetchingTracks: false,
 };
 
 // Check if user is authenticated
@@ -102,6 +122,37 @@ export const fetchPlaylists = createAsyncThunk(
             return response.data.items;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.error || 'Failed to fetch playlists');
+        }
+    }
+);
+
+// Fetch tracks for a specific playlist
+export const fetchPlaylistTracks = createAsyncThunk(
+    'spotify/fetchPlaylistTracks',
+    async (playlistId: string, { getState, rejectWithValue }) => {
+        try {
+            const state = getState() as { spotify: SpotifyState };
+            const token = state.spotify.accessToken;
+
+            const response = await axios.get(
+                `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            const tracks: SpotifyPlaylistTrackItem[] = response.data.items
+                .filter((item: any) => item.track !== null)
+                .map((item: any) => ({
+                    id: item.track.id,
+                    name: item.track.name,
+                    uri: item.track.uri,
+                    duration_ms: item.track.duration_ms,
+                    artists: item.track.artists,
+                    album: item.track.album,
+                }));
+
+            return tracks;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.error || 'Failed to fetch playlist tracks');
         }
     }
 );
@@ -175,6 +226,14 @@ const spotifySlice = createSlice({
         setAuthError(state, action: PayloadAction<string>) {
             state.error = action.payload;
         },
+        selectPlaylist(state, action: PayloadAction<SpotifyPlaylist>) {
+            state.selectedPlaylist = action.payload;
+            state.playlistTracks = [];
+        },
+        clearSelectedPlaylist(state) {
+            state.selectedPlaylist = null;
+            state.playlistTracks = [];
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -225,6 +284,19 @@ const spotifySlice = createSlice({
                 state.isFetchingPlaylists = false;
                 state.error = action.payload as string;
             })
+            // Fetch Playlist Tracks
+            .addCase(fetchPlaylistTracks.pending, (state) => {
+                state.isFetchingTracks = true;
+                state.error = null;
+            })
+            .addCase(fetchPlaylistTracks.fulfilled, (state, action) => {
+                state.isFetchingTracks = false;
+                state.playlistTracks = action.payload;
+            })
+            .addCase(fetchPlaylistTracks.rejected, (state, action) => {
+                state.isFetchingTracks = false;
+                state.error = action.payload as string;
+            })
             // Fetch User Profile
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.displayName = action.payload;
@@ -239,6 +311,6 @@ const spotifySlice = createSlice({
     },
 });
 
-export const { clearError, logout, setPlayerReady, setCurrentTrack, setPlaybackState, setVolume, setAuthError } = spotifySlice.actions;
+export const { clearError, logout, setPlayerReady, setCurrentTrack, setPlaybackState, setVolume, setAuthError, selectPlaylist, clearSelectedPlaylist } = spotifySlice.actions;
 export default spotifySlice.reducer;
 

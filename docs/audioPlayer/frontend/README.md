@@ -43,7 +43,8 @@ The Audio Player frontend provides an in-app Spotify music player for D&D sessio
 
 - **Authenticate** with their Spotify account via an OAuth popup flow.
 - **Browse** their Spotify playlists with cover art, names, and track counts.
-- **Play music** directly in the browser using the Spotify Web Playback SDK.
+- **Explore tracks** within a playlist, viewing individual songs with album art, artist, and duration.
+- **Play music** directly in the browser — either an entire playlist or a specific track within it — using the Spotify Web Playback SDK.
 - **Control playback** with play/pause, previous/next track, seek, and volume controls.
 
 The frontend handles **all audio playback** — the backend only brokers OAuth tokens and stores track/playlist metadata. The Spotify Web Playback SDK turns the browser into a Spotify Connect device, and playback commands are routed through the SDK's client-side API rather than through the DMD backend.
@@ -97,14 +98,14 @@ The frontend handles **all audio playback** — the backend only brokers OAuth t
 └─────────────┼───────────────────────────────────────────────────────────┘  │
               ▼                                                              │
    ┌────────────────────┐                                                    │
-   │  Spotify API        │  ← Playlists fetched directly from Web API        │
+   │  Spotify API        │  ← Playlists + tracks fetched directly from Web API│
    │  (api.spotify.com)  │  ← Playback started via Web API PUT               │
    └────────────────────┘                                                    │
 ```
 
 **Key architectural insight:** The frontend communicates with **two external services**:
 1. **DMD Backend** — for OAuth token management (login, status check, token retrieval, logout).
-2. **Spotify Web API** — directly, using the access token, for fetching playlists and starting playback.
+2. **Spotify Web API** — directly, using the access token, for fetching playlists, playlist tracks, and starting playback.
 
 Audio playback itself is handled by the **Spotify Web Playback SDK** embedded in the browser, which receives audio streams directly from Spotify's servers.
 
@@ -125,7 +126,7 @@ frontend/
     ├── components/spotify/
     │   ├── SpotifyLoginButton.tsx               # OAuth popup login button
     │   ├── SpotifyPlayer.tsx                    # Playback controls + track display
-    │   └── PlaylistPanel.tsx                    # Playlist grid with play-on-click
+    │   └── PlaylistPanel.tsx                    # Playlist grid + track list drill-down
     ├── config.ts                                # API_BASE_URL, SPOTIFY_AUTH_URL
     ├── features/
     │   ├── audioManager/
@@ -255,23 +256,50 @@ SDK fires player_state_changed again → position resyncs to exact value
 
 **File:** `src/components/spotify/PlaylistPanel.tsx`
 
-Displays the user's Spotify playlists in a responsive grid and handles playlist playback.
+A two-view component that lets the user browse playlists and drill down into individual tracks.
 
 **Data fetching:** Dispatches `fetchPlaylists()` when `accessToken` becomes available. This thunk calls the Spotify Web API directly (`GET https://api.spotify.com/v1/me/playlists`).
 
-**Playlist grid:** Renders a 2-column (mobile) / 3-column (md) / 4-column (lg) grid. Each card shows:
+#### View 1: Playlist Grid (default)
+
+Renders when `selectedPlaylist` is `null`. Shows a 2-column (mobile) / 3-column (md) / 4-column (lg) responsive grid. Each card displays:
 - Cover image (or a music note placeholder if no image).
 - Playlist name (truncated).
 - Track count.
 
-**Play on click:** When a playlist card is clicked:
+**Click behavior:** Clicking a playlist card dispatches `selectPlaylist(playlist)` and `fetchPlaylistTracks(playlist.id)`, transitioning to the track list view.
+
+#### View 2: Track List (drill-down)
+
+Renders when `selectedPlaylist` is set. Shows:
+
+| Element | Description |
+|---------|-------------|
+| **Back button** | Chevron + "Back" text. Dispatches `clearSelectedPlaylist()` to return to the grid. |
+| **Playlist header** | Cover thumbnail (small), playlist name in gold blackletter. |
+| **"Play All" button** | Gold button that plays the entire playlist from the first track. |
+| **Track list** | Vertical list inside a `leather-card`. Each row shows: track number, album thumbnail (smallest available image), track name, artist names, and duration (formatted via `formatTime`). |
+
+**Playing a specific track:** Clicking a track row calls `handlePlayTrack`, which starts playback of the playlist context at that track's offset:
+
+```
+PUT /v1/me/player/play?device_id={resolvedDeviceId}
+Body: { context_uri: playlistUri, offset: { uri: trackUri } }
+```
+
+This tells Spotify to start the playlist from that specific song and continue with the rest of the playlist in order.
+
+**Playing all tracks:** The "Play All" button calls `handlePlayAll`, which starts the playlist from the beginning without an offset (same as the previous behavior).
+
+#### Device Resolution (shared by both play actions)
+
+Both `handlePlayAll` and `handlePlayTrack` use a shared `resolveDeviceId` helper that:
 
 1. Fetches the user's Spotify devices via `GET /v1/me/player/devices`.
 2. Looks for the device named `"DMD Spotify Player"` (the SDK player created by `useSpotifyPlayer`).
 3. Falls back to the `deviceId` from Redux if the named device isn't found.
-4. Starts playback via `PUT /v1/me/player/play?device_id=...` with the playlist's `context_uri`.
 
-This two-step device resolution ensures playback targets the DMD browser tab specifically, even if other Spotify clients are active.
+This ensures playback targets the DMD browser tab specifically, even if other Spotify clients are active.
 
 ---
 
@@ -307,14 +335,20 @@ interface SpotifyState {
     // Playlists (from Spotify Web API)
     playlists: SpotifyPlaylist[];
     isFetchingPlaylists: boolean;
+
+    // Selected playlist drill-down
+    selectedPlaylist: SpotifyPlaylist | null;
+    playlistTracks: SpotifyPlaylistTrackItem[];
+    isFetchingTracks: boolean;
 }
 ```
 
-The state is logically divided into three groups:
+The state is logically divided into four groups:
 
 1. **Authentication state** — Managed by async thunks that call the DMD backend.
 2. **Player state** — Managed by synchronous actions dispatched from `useSpotifyPlayer` event listeners.
 3. **Playlist state** — Managed by an async thunk that calls the Spotify Web API directly.
+4. **Selected playlist state** — Tracks the currently selected playlist and its fetched tracks for the drill-down view.
 
 ### 7.2 audioSlice
 
@@ -342,6 +376,7 @@ All async thunks use `createAsyncThunk` from Redux Toolkit and handle pending/fu
 | `checkAuthStatus` | `GET {API_BASE_URL}/api/v1/auth/spotify/status` | `boolean` — sets `isLoggedIn` |
 | `fetchAccessToken` | `GET {API_BASE_URL}/api/v1/auth/spotify/token` | `{ accessToken, tokenExpiry }` — backend auto-refreshes if expired |
 | `fetchPlaylists` | `GET https://api.spotify.com/v1/me/playlists` | `SpotifyPlaylist[]` — called with access token from Redux state |
+| `fetchPlaylistTracks` | `GET https://api.spotify.com/v1/playlists/{id}/tracks?limit=50` | `SpotifyPlaylistTrackItem[]` — filters out null tracks, maps to clean type |
 | `fetchUserProfile` | `GET https://api.spotify.com/v1/me` | `string` (display_name) |
 | `logoutFromSpotify` | `POST {API_BASE_URL}/api/v1/auth/spotify/logout` | void — resets entire slice to `initialState` via `Object.assign` |
 
@@ -360,6 +395,8 @@ Dispatched by the `useSpotifyPlayer` hook and `SpotifyPlayer` component:
 | `setPlaybackState({ isPlaying, position, duration })` | SDK `player_state_changed` + 1s interval | Updates playback progress |
 | `setVolume(number)` | `SpotifyPlayer` volume slider | Updates volume in Redux (also calls `player.setVolume()`) |
 | `setAuthError(message)` | SDK `authentication_error` | Sets error banner text when Spotify session expires |
+| `selectPlaylist(playlist)` | `PlaylistPanel` on playlist card click | Stores selected playlist, clears stale tracks, triggers drill-down view |
+| `clearSelectedPlaylist()` | `PlaylistPanel` Back button | Clears selected playlist and tracks, returns to grid view |
 | `clearError()` | Available but currently unused | Clears the error field |
 | `logout()` | Available but `logoutFromSpotify` thunk preferred | Resets auth state (synchronous version) |
 
@@ -509,22 +546,41 @@ The frontend stores the token in Redux (`state.spotify.accessToken`). It does no
 
 ## 10. Playback Flow
 
-End-to-end flow when a user clicks a playlist card:
+### Browsing and selecting a track
+
+The user first selects a playlist, then picks a specific track (or plays all):
 
 ```
 PlaylistPanel: user clicks playlist card
   │
-  ▼
-handlePlayPlaylist(playlistUri)
+  ├── dispatch(selectPlaylist(playlist))      → stores playlist in Redux
+  ├── dispatch(fetchPlaylistTracks(id))       → GET /v1/playlists/{id}/tracks
   │
-  ├── 1. GET https://api.spotify.com/v1/me/player/devices
-  │        Headers: Authorization: Bearer {accessToken}
+  ▼
+PlaylistPanel re-renders: track list view
+  │
+  ├── Option A: user clicks "Play All"
+  │     └── handlePlayAll()
+  │           Body: { context_uri: playlistUri }
+  │
+  └── Option B: user clicks a specific track
+        └── handlePlayTrack(track)
+              Body: { context_uri: playlistUri, offset: { uri: trackUri } }
+```
+
+### Starting playback (shared by both options)
+
+```
+handlePlayAll() or handlePlayTrack()
+  │
+  ├── 1. resolveDeviceId()
+  │        GET https://api.spotify.com/v1/me/player/devices
   │        → Find device with name "DMD Spotify Player"
   │        → Fall back to deviceId from Redux
   │
   ├── 2. PUT https://api.spotify.com/v1/me/player/play?device_id={resolvedDeviceId}
-  │        Body: { context_uri: playlistUri }
   │        Headers: Authorization: Bearer {accessToken}
+  │        Body: { context_uri, offset? }
   │        → Spotify starts streaming to the browser SDK player
   │
   └── 3. SDK fires player_state_changed
@@ -538,7 +594,7 @@ handlePlayPlaylist(playlistUri)
                  └── Play/pause button shows "pause" icon
 ```
 
-For transport controls (play/pause, next, previous, seek, volume):
+### Transport controls (play/pause, next, previous, seek, volume)
 
 ```
 SpotifyPlayer: user clicks control
@@ -576,10 +632,11 @@ These are ambient declarations (no `import`/`export`) that are available globall
 
 | Interface | Fields |
 |-----------|--------|
-| `SpotifyState` | Full state shape — 17 fields across auth, player, and playlist groups |
+| `SpotifyState` | Full state shape — 20 fields across auth, player, playlist, and selected playlist groups |
 | `SpotifyPlaylist` | `id`, `name`, `description`, `images[]`, `tracks.total`, `uri` |
+| `SpotifyPlaylistTrackItem` | `id`, `name`, `uri`, `duration_ms`, `artists[]`, `album` (with `images[]`) — exported for use by `PlaylistPanel` |
 
-`SpotifyTrack` is reused from the SDK type declarations (ambient global).
+`SpotifyTrack` is reused from the SDK type declarations (ambient global). `SpotifyPlaylistTrackItem` is a separate, lighter type used for playlist track listings (it has a simpler shape than the SDK's `SpotifyTrack`).
 
 ---
 
@@ -660,6 +717,7 @@ The two constants exist separately because OAuth redirect URIs are strict about 
 | **Two-step device resolution for playback** | Fetching devices and matching by name (`"DMD Spotify Player"`) before playing ensures the correct device is targeted even when the user has other Spotify clients open. |
 | **Local position advancement (1s interval)** | The SDK only fires `player_state_changed` on discrete events. The 1-second interval provides smooth progress bar movement between events, resyncing to the exact position whenever the SDK fires next. |
 | **Error banner with "Reconnect"** | When the SDK fires `authentication_error`, the UI shows an actionable banner. "Reconnect" triggers logout + clears state, allowing the user to re-authenticate cleanly. |
+| **Playlist drill-down with track selection** | Clicking a playlist shows its tracks instead of immediately playing. This gives the DM precise control over which song to start, critical for setting the right mood at the right moment during a session. "Play All" remains available for when an entire playlist fits. |
 | **audioSlice as a stub** | Reserved for a future generic audio manager that could unify multiple sources. Currently all real state lives in `spotifySlice`. |
 | **Separate API_BASE_URL and SPOTIFY_AUTH_URL** | OAuth redirect URIs are strict about hostname matching. The auth URL uses `127.0.0.1` while general API calls use `localhost`. Both resolve to the same backend in development. |
 
