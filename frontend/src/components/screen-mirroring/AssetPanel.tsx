@@ -17,9 +17,10 @@ export const ItemTypes = {
 interface DraggableAssetProps {
     asset: MediaAsset;
     onEdit: (asset: MediaAsset) => void;
+    onDelete: (asset: MediaAsset) => void;
 }
 
-function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
+function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
     const assetUrl = `${API_BASE_URL}/static/${asset.file_path.replace(/^public\//, '')}`;
 
     const [{ isDragging }, drag] = useDrag(() => ({
@@ -43,27 +44,33 @@ function DraggableAsset({ asset, onEdit }: DraggableAssetProps) {
                 alt={asset.name}
                 className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-arcane-purple"
             />
+            {/* Delete Button */}
+            <div
+                onClick={() => onDelete(asset)}
+                className="absolute top-1 left-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-wax-red"
+                title="Delete Image"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
             {/* Edit Button */}
             <div
                 onClick={() => onEdit(asset)}
                 className="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-arcane-purple"
                 title="Edit Type"
             >
-                {/* Simple "tag" SVG icon */}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 15h2m4 0h.01M17 3l-4.5 4.5" />
                 </svg>
             </div>
-            {/* --- START: NEW TYPE DISPLAY --- */}
-            {displayType && ( // Only show if there's a type to display
+            {displayType && (
                 <div
-                    // Position at bottom-left, hide by default, show on hover
                     className={clsx(
                         "absolute bottom-1 left-1 z-10 rounded-full px-2 py-0.5 text-xs font-semibold text-white",
                         "bg-black/70 opacity-0 transition-opacity duration-200",
                         "group-hover:opacity-100",
-                        // Optional: Different color for 'Uncategorized'
                         displayType === 'Uncategorized' ? 'bg-faded-ink' : 'bg-paladin-gold text-ink'
                     )}
                 >
@@ -121,9 +128,10 @@ interface AssetSelectionBarProps {
     assets: MediaAsset[];
     onBrowseClick: () => void;
     onEditAsset: (asset: MediaAsset) => void;
+    onDeleteAsset: (asset: MediaAsset) => void;
 }
 
-export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetSelectionBarProps) {
+export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset, onDeleteAsset }: AssetSelectionBarProps) {
     const scrollRef = useHorizontalScroll();
 
     return (
@@ -139,6 +147,7 @@ export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset }: AssetS
                         key={asset.ID}
                         asset={asset}
                         onEdit={onEditAsset}
+                        onDelete={onDeleteAsset}
                     />
                 ))}
 
@@ -186,11 +195,21 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
     const handleSaveAsset = async (updatedAsset: MediaAsset) => {
         try {
             await axios.put(`${API_BASE_URL}/api/v1/images/images/${updatedAsset.ID}`, updatedAsset);
-            setEditingAsset(null); // Close the modal
-            setRefreshKey(key => key + 1); // Trigger a refresh of assets and types
+            setEditingAsset(null);
+            setRefreshKey(key => key + 1);
         } catch (error) {
             console.error("Failed to save asset:", error);
-            // Here you could add user-facing error handling
+        }
+    };
+
+    const handleDeleteAsset = async (asset: MediaAsset) => {
+        setAssets(prev => prev.filter(a => a.ID !== asset.ID));
+        try {
+            await axios.delete(`${API_BASE_URL}/api/v1/images/images/${asset.ID}`);
+            setRefreshKey(key => key + 1);
+        } catch (error) {
+            console.error("Failed to delete asset:", error);
+            setRefreshKey(key => key + 1);
         }
     };
 
@@ -248,7 +267,8 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
             <AssetSelectionBar
                 assets={assets}
                 onBrowseClick={onBrowseClick}
-                        onEditAsset={setEditingAsset}
+                onEditAsset={setEditingAsset}
+                onDeleteAsset={handleDeleteAsset}
             />
             {editingAsset && (
                 <EditAssetModal

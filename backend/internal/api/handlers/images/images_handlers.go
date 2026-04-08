@@ -9,6 +9,7 @@ import (
 	"dmd/backend/internal/model/images"
 	"dmd/backend/internal/platform/storage/repos"
 	"dmd/backend/internal/platform/storage/repos/images_repo"
+	imagesSvc "dmd/backend/internal/services/images"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -22,16 +23,18 @@ import (
 
 type ImagesHandler struct {
 	handlers.BaseHandler
-	repo repos.ImagesRepository
-	log  *slog.Logger
+	repo         repos.ImagesRepository
+	imageService *imagesSvc.Service
+	log          *slog.Logger
 }
 
 // Refactor. Handler should use the image service instead of image repo
 func NewImagesHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &ImagesHandler{
-		BaseHandler: handlers.NewBaseHandler(path),
-		repo:        images_repo.NewImagesRepository(rs.DbConnection),
-		log:         rs.Log,
+		BaseHandler:  handlers.NewBaseHandler(path),
+		repo:         images_repo.NewImagesRepository(rs.DbConnection),
+		imageService: rs.ImageService,
+		log:          rs.Log,
 	}
 }
 
@@ -81,8 +84,8 @@ func (h *ImagesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, err)
 		return
 	}
-	if err = h.repo.DeleteImage(id); err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete images asset", err))
+	if err = h.imageService.DeleteImageFile(id); err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete image", err))
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

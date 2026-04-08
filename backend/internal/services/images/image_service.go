@@ -45,6 +45,28 @@ func (s *Service) GetImagesPath() string {
 	return s.imagesPath
 }
 
+// DeleteImageFile removes the physical image file from disk.
+// The filesystem watcher will detect the removal and automatically
+// sync the database (soft-delete the record) and broadcast the update.
+func (s *Service) DeleteImageFile(id uint) error {
+	img, err := s.repo.GetImageByID(id)
+	if err != nil {
+		return err
+	}
+
+	// FilePath is stored relative to 'public/' (e.g. "images/dark_castle.jpg").
+	// imagesPath is "public/images", so the file is at "public/" + FilePath.
+	parentDir := filepath.Dir(s.imagesPath)
+	fullPath := filepath.Join(parentDir, img.FilePath)
+
+	if err := os.Remove(fullPath); err != nil {
+		return err
+	}
+
+	s.log.Info("Image file deleted from disk", "path", fullPath)
+	return nil
+}
+
 // SyncImageEntriesWithDatabase performs a two-way sync between the filesystem and the database.
 func (s *Service) SyncImageEntriesWithDatabase() {
 
