@@ -6,4 +6,4 @@ export const SPOTIFY_AUTH_URL = process.env.REACT_APP_SPOTIFY_AUTH_URL || 'http:
 
 // export const DEFAULT_PLAYER_WINDOW_IMG = '/Red_Dragon_5eR.webp'
 // export const DEFAULT_PLAYER_WINDOW_IMG = 'https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3bjczZjJsbjY2ZnpxNTRmcTAzOG9iNnM3M216aXpyNWszaTR5eWFoMiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/iBlgTxSS20NLdCxvDW/giphy.gif'
-export const DEFAULT_PLAYER_WINDOW_IMG = '/party.jpeg'
+export const DEFAULT_PLAYER_WINDOW_IMG = '/dmd_logo_ember_full_screen.png'
