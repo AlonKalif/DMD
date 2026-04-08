@@ -8,6 +8,7 @@ const (
 	ImageTypeUnknown = "unknown"
 	ImageTypeMap     = "map"
 	ImageTypeImage   = "image"
+	ImageTypePDF     = "pdf"
 )
 
 // ImageEntry represents a single visual asset (map, image, etc.) in the database.

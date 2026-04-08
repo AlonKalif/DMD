@@ -3,6 +3,7 @@
   "db_path": "dmd.db",
   "assets_path": "public",
   "images_path": "public/images",
+  "pdf_path": "public/pdf",
   "audios_path": "public/audio",
   "spotify_client_id": "YOUR_SPOTIFY_CLIENT_ID",
   "spotify_client_secret": "YOUR_SPOTIFY_CLIENT_SECRET",

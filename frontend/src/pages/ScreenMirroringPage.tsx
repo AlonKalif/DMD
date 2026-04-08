@@ -10,7 +10,7 @@ import axios from 'axios';
 
 export type LayoutType = 'single' | 'dual' | 'quad';
 export type LayoutStatus = 'empty' | 'staged' | 'live';
-export interface ImageSlotState { slotId: number; url: string | null; zoom: number; imageId: number | null;}
+export interface ImageSlotState { slotId: number; url: string | null; zoom: number; imageId: number | null; page: number; positionY: number; }
 export interface LayoutState { layout: LayoutType; status: LayoutStatus; slots: ImageSlotState[]; }
 interface DropItem { id: number; url: string; }
 
@@ -19,7 +19,7 @@ const createInitialLayoutState = (layout: LayoutType): LayoutState => {
     return {
         layout,
         status: 'empty',
-        slots: Array.from({ length: slotCount }, (_, i) => ({ slotId: i, url: null, zoom: 1, imageId: null })),
+        slots: Array.from({ length: slotCount }, (_, i) => ({ slotId: i, url: null, zoom: 1, imageId: null, page: 1, positionY: 0 })),
     };
 };
 
@@ -65,6 +65,8 @@ export default function ScreenMirroringPage() {
             if (targetSlot) {
                 targetSlot.url = item.url;
                 targetSlot.imageId = item.id;
+                targetSlot.page = 1;
+                targetSlot.positionY = 0;
             }
             return { ...prevState, slots: newSlots, status: 'staged' };
         });
@@ -72,9 +74,8 @@ export default function ScreenMirroringPage() {
 
     const handleClearSlot = (slotId: number) => {
         setLayoutState(prevState => {
-            // Create a new slots array with the target slot cleared
             const newSlots = prevState.slots.map(s =>
-                s.slotId === slotId ? { ...s, url: null, imageId: null } : s
+                s.slotId === slotId ? { ...s, url: null, imageId: null, page: 1, positionY: 0 } : s
             );
 
             // Check if any slots are still filled
@@ -144,8 +145,59 @@ export default function ScreenMirroringPage() {
         });
     };
 
+    const handlePageChange = (slotId: number, direction: 'next' | 'prev', numPages: number) => {
+        setLayoutState(prevState => {
+            const newSlots = prevState.slots.map(s => {
+                if (s.slotId === slotId) {
+                    let newPage = s.page;
+                    if (direction === 'next') {
+                        newPage = Math.min(s.page + 1, numPages);
+                    } else {
+                        newPage = Math.max(1, s.page - 1);
+                    }
+                    return { ...s, page: newPage };
+                }
+                return s;
+            });
+
+            if (prevState.status === 'live') {
+                const liveState = { ...prevState, slots: newSlots };
+                channel.postMessage({ type: 'show_layout', payload: liveState });
+            }
+
+            return { ...prevState, slots: newSlots };
+        });
+    };
+
+    const handlePositionChange = (slotId: number, direction: 'up' | 'down' | 'reset') => {
+        const POSITION_INCREMENT = 5;
+
+        setLayoutState(prevState => {
+            const newSlots = prevState.slots.map(s => {
+                if (s.slotId === slotId) {
+                    let newPosY = s.positionY;
+                    if (direction === 'up') {
+                        newPosY -= POSITION_INCREMENT;
+                    } else if (direction === 'down') {
+                        newPosY += POSITION_INCREMENT;
+                    } else {
+                        newPosY = 0;
+                    }
+                    return { ...s, positionY: newPosY };
+                }
+                return s;
+            });
+
+            if (prevState.status === 'live') {
+                const liveState = { ...prevState, slots: newSlots };
+                channel.postMessage({ type: 'show_layout', payload: liveState });
+            }
+
+            return { ...prevState, slots: newSlots };
+        });
+    };
+
     const handleMoveAsset = (sourceSlotId: number, targetSlotId: number) => {
-        // Prevent dropping an item onto itself
         if (sourceSlotId === targetSlotId) return;
 
         setLayoutState(prevState => {
@@ -154,16 +206,19 @@ export default function ScreenMirroringPage() {
             const targetSlot = newSlots.find(s => s.slotId === targetSlotId);
 
             if (sourceSlot && targetSlot) {
-                // Swap the content (URL, zoom level, and imageId) between the two slots
-                const sourceContent = { url: sourceSlot.url, zoom: sourceSlot.zoom, imageId: sourceSlot.imageId };
-                const targetContent = { url: targetSlot.url, zoom: targetSlot.zoom, imageId: targetSlot.imageId };
+                const sourceContent = { url: sourceSlot.url, zoom: sourceSlot.zoom, imageId: sourceSlot.imageId, page: sourceSlot.page, positionY: sourceSlot.positionY };
+                const targetContent = { url: targetSlot.url, zoom: targetSlot.zoom, imageId: targetSlot.imageId, page: targetSlot.page, positionY: targetSlot.positionY };
 
                 sourceSlot.url = targetContent.url;
                 sourceSlot.zoom = targetContent.zoom;
                 sourceSlot.imageId = targetContent.imageId;
+                sourceSlot.page = targetContent.page;
+                sourceSlot.positionY = targetContent.positionY;
                 targetSlot.url = sourceContent.url;
                 targetSlot.zoom = sourceContent.zoom;
                 targetSlot.imageId = sourceContent.imageId;
+                targetSlot.page = sourceContent.page;
+                targetSlot.positionY = sourceContent.positionY;
             }
 
             // If the layout is live, send an update to the player window immediately
@@ -189,6 +244,8 @@ export default function ScreenMirroringPage() {
                         image_id: slot.imageId,
                         slot_id: slot.slotId,
                         zoom: slot.zoom,
+                        page: slot.page,
+                        position_y: slot.positionY,
                     })),
             };
 
@@ -217,9 +274,10 @@ export default function ScreenMirroringPage() {
             url: null,
             zoom: 1,
             imageId: null,
+            page: 1,
+            positionY: 0,
         }));
 
-        // Fill in slots from preset (with safety check)
         const presetSlots = preset.slots || [];
         presetSlots.forEach(presetSlot => {
             const slot = newSlots.find(s => s.slotId === presetSlot.slot_id);
@@ -227,6 +285,8 @@ export default function ScreenMirroringPage() {
                 slot.url = `${API_BASE_URL}/static/${presetSlot.image.file_path.replace(/^public\//, '')}`;
                 slot.zoom = presetSlot.zoom;
                 slot.imageId = presetSlot.image_id;
+                slot.page = presetSlot.page || 1;
+                slot.positionY = presetSlot.position_y || 0;
             }
         });
 
@@ -254,11 +314,10 @@ export default function ScreenMirroringPage() {
             return;
         }
 
-        // Validate that it's an image
-        if (!file.type.startsWith('image/')) {
-            console.error('Selected file is not an image');
+        if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+            console.error('Selected file is not a supported type');
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
-            setNotification('Please select an image file');
+            setNotification('Please select an image or PDF file');
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
             return;
@@ -281,14 +340,14 @@ export default function ScreenMirroringPage() {
 
             // Show success notification
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
-            setNotification('Image uploaded successfully');
+            setNotification('File uploaded successfully');
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
 
         } catch (error) {
             console.error('Failed to upload file:', error);
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
-            setNotification('Failed to upload image');
+            setNotification('Failed to upload file');
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
         } finally {
@@ -316,13 +375,15 @@ export default function ScreenMirroringPage() {
                 assetRefreshKey={assetRefreshKey}
             />
             <main className="flex flex-1 min-h-0 items-center justify-center p-4">
-                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,video/*" />
+                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,.pdf" />
                 <StagingArea
                     layoutState={layoutState}
                     onLayoutChange={handleLayoutChange}
                     onDropAsset={handleDropAsset}
                     onClearSlot={handleClearSlot}
                     onZoomChange={handleZoomChange}
+                    onPageChange={handlePageChange}
+                    onPositionChange={handlePositionChange}
                     onMoveAsset={handleMoveAsset}
                     onSavePreset={handleSavePreset}
                     isSaving={isSaving}

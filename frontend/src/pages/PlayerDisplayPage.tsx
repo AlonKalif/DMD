@@ -1,11 +1,13 @@
 // /src/pages/PlayerDisplayPage.tsx
 import { useCallback, useEffect, useMemo } from 'react';
 import clsx from 'clsx';
+import { Document, Page } from 'react-pdf';
 import { BroadcastMessage } from '../hooks/useBroadcastChannel';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
 import { setCurrentLayout, clearLayout } from 'features/display/displaySlice';
 import { DEFAULT_PLAYER_WINDOW_IMG } from 'config';
 import { LayoutState } from './ScreenMirroringPage';
+import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
 
 export default function PlayerDisplayPage() {
     const dispatch = useAppDispatch();
@@ -60,15 +62,32 @@ export default function PlayerDisplayPage() {
             ) : (
                 // Dynamic grid rendering
                 <div className={clsx('grid h-full w-full gap-2', gridClasses[currentLayout.layout])}>
-                    {currentLayout.slots.map(({ slotId, url, zoom }) => (
+                    {currentLayout.slots.map(({ slotId, url, zoom, page, positionY }) => (
                         <div key={slotId} className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-gray-900">
                             {url ? (
-                                <img
-                                    src={url}
-                                    alt={`Content for slot ${slotId + 1}`}
-                                    className="max-h-full max-w-full object-contain transition-transform duration-200"
-                                    style={{ transform: `scale(${zoom})` }}
-                                />
+                                isPdfUrl(url) ? (
+                                    <div style={{ transform: `translateY(${positionY || 0}%)` }}>
+                                        <Document
+                                            file={url}
+                                            loading={<div className="text-gray-400 text-sm">Loading PDF...</div>}
+                                            error={<div className="text-red-400 text-sm">Failed to load PDF</div>}
+                                        >
+                                            <Page
+                                                pageNumber={page || 1}
+                                                scale={zoom}
+                                                renderTextLayer={false}
+                                                renderAnnotationLayer={false}
+                                            />
+                                        </Document>
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={url}
+                                        alt={`Content for slot ${slotId + 1}`}
+                                        className="max-h-full max-w-full object-contain transition-transform duration-200"
+                                        style={{ transform: `scale(${zoom}) translateY(${positionY || 0}%)` }}
+                                    />
+                                )
                             ) : null}
                         </div>
                     ))}

@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useHorizontalScroll } from 'hooks/useHorizontalScroll';
 import { EditAssetModal } from 'components/screen-mirroring/EditAssetModal';
 import { PresetPanel } from 'components/screen-mirroring/PresetPanel';
+import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
+import { Document, Page } from 'react-pdf';
 import axios from 'axios';
 import clsx from 'clsx';
 
@@ -22,6 +24,7 @@ interface DraggableAssetProps {
 
 function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
     const assetUrl = `${API_BASE_URL}/static/${asset.file_path.replace(/^public\//, '')}`;
+    const isPdf = isPdfUrl(assetUrl);
 
     const [{ isDragging }, drag] = useDrag(() => ({
         type: ItemTypes.ASSET,
@@ -39,16 +42,34 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
             className="group relative flex-shrink-0"
             style={{ opacity: isDragging ? 0.5 : 1 }}
         >
-            <img
-                src={assetUrl}
-                alt={asset.name}
-                className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-arcane-purple"
-            />
+            {isPdf ? (
+                <div className="relative h-28 w-28 overflow-hidden rounded-md ring-2 ring-transparent group-hover:ring-arcane-purple">
+                    <Document
+                        file={assetUrl}
+                        loading={<div className="flex h-28 w-28 items-center justify-center bg-leather-dark text-faded-ink text-xs">PDF</div>}
+                        error={<div className="flex h-28 w-28 items-center justify-center bg-leather-dark text-red-400 text-xs">Error</div>}
+                    >
+                        <Page pageNumber={1} width={112} renderTextLayer={false} renderAnnotationLayer={false} />
+                    </Document>
+                    {/* Darkened overlay with filename on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                        <span className="px-1 text-center text-xs font-semibold text-white drop-shadow-lg line-clamp-3">
+                            {asset.name}.pdf
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                <img
+                    src={assetUrl}
+                    alt={asset.name}
+                    className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-arcane-purple"
+                />
+            )}
             {/* Delete Button */}
             <div
                 onClick={() => onDelete(asset)}
                 className="absolute top-1 left-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-wax-red"
-                title="Delete Image"
+                title="Delete asset"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -65,7 +86,7 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 15h2m4 0h.01M17 3l-4.5 4.5" />
                 </svg>
             </div>
-            {displayType && (
+            {!isPdf && displayType && (
                 <div
                     className={clsx(
                         "absolute bottom-1 left-1 z-10 rounded-full px-2 py-0.5 text-xs font-semibold text-white",

@@ -14,6 +14,8 @@ export interface PresetLayoutSlot {
     image_id: number;
     slot_id: number;
     zoom: number;
+    page: number;
+    position_y: number;
     image: MediaAsset;
 }
 

@@ -8,6 +8,7 @@ import (
 	"dmd/backend/internal/platform/storage"
 	"dmd/backend/internal/platform/storage/repos/images_repo"
 	"dmd/backend/internal/services/images"
+	"dmd/backend/internal/services/pdf"
 	"dmd/backend/internal/services/spotify"
 	"dmd/backend/internal/services/websocket"
 	"encoding/json"
@@ -26,6 +27,7 @@ type Server struct {
 	server         *http.Server
 	wsManager      *websocket.Manager
 	imgService     *images.Service
+	pdfService     *pdf.Service
 	spotifyService *spotify.Service
 }
 
@@ -41,6 +43,7 @@ func New() *Server {
 	// Initialize services.
 	wsManager := websocket.NewManager(log)
 	imgService := initImagesService(log, db, wsManager, configs.ImagesPath)
+	pdfService := initPdfService(log, db, wsManager, configs.PdfPath)
 	spotifyService := initSpotifyService(log, db, configs.SpotifyClientID, configs.SpotifyClientSecret, configs.SpotifyRedirectURI)
 
 	// Initialize router
@@ -49,6 +52,7 @@ func New() *Server {
 		DbConnection:   db,
 		WsManager:      wsManager,
 		ImageService:   imgService,
+		PdfService:     pdfService,
 		SpotifyService: spotifyService,
 	}, configs.AssetsPath)
 
@@ -60,6 +64,7 @@ func New() *Server {
 		server:         httpServer,
 		wsManager:      wsManager,
 		imgService:     imgService,
+		pdfService:     pdfService,
 		spotifyService: spotifyService,
 	}
 }
@@ -68,6 +73,7 @@ func New() *Server {
 func (s *Server) RunServer() {
 	go s.wsManager.Run()
 	s.imgService.RunImagesDirWatcher()
+	s.pdfService.RunPdfDirWatcher()
 
 	s.log.Info("Starting server", "addr", s.server.Addr)
 	if err := s.server.ListenAndServe(); err != nil {
@@ -99,6 +105,12 @@ func initImagesService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manag
 	imgRepo := images_repo.NewImagesRepository(db)
 	imgService := images.NewService(log, imgRepo, wsManager, imagesPath)
 	return imgService
+}
+
+func initPdfService(log *slog.Logger, db *gorm.DB, wsManager *websocket.Manager, pdfPath string) *pdf.Service {
+	pdfRepo := images_repo.NewImagesRepository(db)
+	pdfService := pdf.NewService(log, pdfRepo, wsManager, pdfPath)
+	return pdfService
 }
 
 func initSpotifyService(log *slog.Logger, db *gorm.DB, clientID, clientSecret, redirectURI string) *spotify.Service {
@@ -153,6 +165,7 @@ func newDefaultConfigs() ServerConfig {
 		DBPath:              "dmd.db",
 		AssetsPath:          "public",
 		ImagesPath:          "public/images",
+		PdfPath:             "public/pdf",
 		AudioPath:           "public/audio",
 		SpotifyClientID:     "",
 		SpotifyClientSecret: "",
@@ -166,6 +179,7 @@ type ServerConfig struct {
 	AssetsPath          string `json:"assets_path"`
 	ImagesPath          string `json:"images_path"`
 	AudioPath           string `json:"audios_path"`
+	PdfPath             string `json:"pdf_path"`
 	SpotifyClientID     string `json:"spotify_client_id"`
 	SpotifyClientSecret string `json:"spotify_client_secret"`
 	SpotifyRedirectURI  string `json:"spotify_redirect_uri"`

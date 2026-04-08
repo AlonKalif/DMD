@@ -13,6 +13,8 @@ interface StagingAreaProps {
     onDropAsset: (slotId: number, item: DropItem) => void;
     onClearSlot: (slotId: number) => void;
     onZoomChange: (slotId: number, direction: 'in' | 'out' | 'reset') => void;
+    onPageChange: (slotId: number, direction: 'next' | 'prev', numPages: number) => void;
+    onPositionChange: (slotId: number, direction: 'up' | 'down' | 'reset') => void;
     onMoveAsset: (sourceSlotId: number, targetSlotId: number) => void;
     onSavePreset: () => void;
     isSaving: boolean;
@@ -20,7 +22,7 @@ interface StagingAreaProps {
     isNotificationVisible: boolean;
 }
 
-export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onMoveAsset, onSavePreset, isSaving, notification, isNotificationVisible  }: StagingAreaProps) {
+export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onPageChange, onPositionChange, onMoveAsset, onSavePreset, isSaving, notification, isNotificationVisible  }: StagingAreaProps) {
     const { layout, status, slots } = layoutState;
 
     // Dynamic grid classes based on the layout
@@ -83,6 +85,8 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
                         onDropAsset={onDropAsset}
                         onClearSlot={onClearSlot}
                         onZoomChange={onZoomChange}
+                        onPageChange={onPageChange}
+                        onPositionChange={onPositionChange}
                         onMoveAsset={onMoveAsset}
                     />
                 ))}

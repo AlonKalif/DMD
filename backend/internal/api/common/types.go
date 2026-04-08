@@ -2,6 +2,7 @@ package common
 
 import (
 	assetsService "dmd/backend/internal/services/images"
+	pdfService "dmd/backend/internal/services/pdf"
 	spotifyService "dmd/backend/internal/services/spotify"
 	wsService "dmd/backend/internal/services/websocket"
 	"log/slog"
@@ -25,5 +26,6 @@ type RoutingServices struct {
 	DbConnection   *gorm.DB
 	WsManager      *wsService.Manager
 	ImageService   *assetsService.Service
+	PdfService     *pdfService.Service
 	SpotifyService *spotifyService.Service
 }

@@ -10,11 +10,13 @@ import (
 	"dmd/backend/internal/platform/storage/repos"
 	"dmd/backend/internal/platform/storage/repos/images_repo"
 	imagesSvc "dmd/backend/internal/services/images"
+	pdfSvc "dmd/backend/internal/services/pdf"
 	"encoding/json"
 	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -25,15 +27,16 @@ type ImagesHandler struct {
 	handlers.BaseHandler
 	repo         repos.ImagesRepository
 	imageService *imagesSvc.Service
+	pdfService   *pdfSvc.Service
 	log          *slog.Logger
 }
 
-// Refactor. Handler should use the image service instead of image repo
 func NewImagesHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &ImagesHandler{
 		BaseHandler:  handlers.NewBaseHandler(path),
 		repo:         images_repo.NewImagesRepository(rs.DbConnection),
 		imageService: rs.ImageService,
+		pdfService:   rs.PdfService,
 		log:          rs.Log,
 	}
 }
@@ -84,8 +87,21 @@ func (h *ImagesHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		utils.RespondWithError(w, err)
 		return
 	}
-	if err = h.imageService.DeleteImageFile(id); err != nil {
-		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete image", err))
+
+	entry, err := h.repo.GetImageByID(id)
+	if err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to find asset", err))
+		return
+	}
+
+	if strings.HasPrefix(entry.FilePath, "pdf/") {
+		err = h.pdfService.DeletePdfFile(id)
+	} else {
+		err = h.imageService.DeleteImageFile(id)
+	}
+
+	if err != nil {
+		utils.RespondWithError(w, errors2.NewInternalError("Failed to delete asset", err))
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

@@ -1,6 +1,8 @@
 // /src/components/screen-mirroring/PresetItem.tsx
 import { PresetLayout } from 'types/api';
 import { API_BASE_URL } from 'config';
+import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
+import { Document, Page } from 'react-pdf';
 import clsx from 'clsx';
 
 interface PresetItemProps {
@@ -47,18 +49,36 @@ export function PresetItem({ preset, onLoad, onDelete }: PresetItemProps) {
                 {/* Mini preview grid */}
                 <div className={clsx('grid h-full w-full gap-0.5', gridClasses[preset.layout_type])}>
                     {slots.map((slot) => {
-                        const imageUrl = `${API_BASE_URL}/static/${slot.image.file_path.replace(/^public\//, '')}`;
+                        const assetUrl = `${API_BASE_URL}/static/${slot.image.file_path.replace(/^public\//, '')}`;
+                        const isPdf = isPdfUrl(assetUrl);
                         return (
                             <div
                                 key={slot.ID}
                                 className="relative overflow-hidden rounded-sm bg-leather-dark"
                             >
-                                <img
-                                    src={imageUrl}
-                                    alt={slot.image.name}
-                                    className="h-full w-full object-cover"
-                                    style={{ transform: `scale(${slot.zoom})` }}
-                                />
+                                {isPdf ? (
+                                    <div className="flex h-full w-full items-center justify-center">
+                                        <Document
+                                            file={assetUrl}
+                                            loading={<div className="text-faded-ink text-[8px]">PDF</div>}
+                                            error={<div className="text-red-400 text-[8px]">Err</div>}
+                                        >
+                                            <Page
+                                                pageNumber={slot.page || 1}
+                                                width={60}
+                                                renderTextLayer={false}
+                                                renderAnnotationLayer={false}
+                                            />
+                                        </Document>
+                                    </div>
+                                ) : (
+                                    <img
+                                        src={assetUrl}
+                                        alt={slot.image.name}
+                                        className="h-full w-full object-cover"
+                                        style={{ transform: `scale(${slot.zoom})` }}
+                                    />
+                                )}
                             </div>
                         );
                     })}

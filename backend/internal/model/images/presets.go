@@ -26,5 +26,7 @@ type PresetLayoutSlot struct {
 	ImageID        uint       `gorm:"not null" json:"image_id"`         // Foreign key to the ImageEntry (include in JSON for frontend)
 	SlotID         int        `gorm:"not null" json:"slot_id"`          // The position in the grid (0, 1, 2, 3)
 	Zoom           float64    `gorm:"not null" json:"zoom"`             // The saved zoom level
+	Page           int        `gorm:"not null;default:1" json:"page"`   // The saved page number (for PDFs)
+	PositionY      float64    `gorm:"not null;default:0" json:"position_y"` // Vertical offset in percentage (negative = up, positive = down)
 	Image          ImageEntry `gorm:"foreignKey:ImageID" json:"image"`  // Defines the "belongs to" relationship
 }

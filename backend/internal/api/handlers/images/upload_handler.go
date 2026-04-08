@@ -6,6 +6,7 @@ import (
 	"dmd/backend/internal/api/common/utils"
 	"dmd/backend/internal/api/handlers"
 	"dmd/backend/internal/services/images"
+	"dmd/backend/internal/services/pdf"
 	"fmt"
 	"io"
 	"log/slog"
@@ -18,6 +19,7 @@ import (
 type UploadHandler struct {
 	handlers.BaseHandler
 	imageService *images.Service
+	pdfService   *pdf.Service
 	log          *slog.Logger
 }
 
@@ -25,6 +27,7 @@ func NewUploadHandler(rs *common.RoutingServices, path string) common.IHandler {
 	return &UploadHandler{
 		BaseHandler:  handlers.NewBaseHandler(path),
 		imageService: rs.ImageService,
+		pdfService:   rs.PdfService,
 		log:          rs.Log,
 	}
 }
@@ -46,25 +49,34 @@ func (h *UploadHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	// Validate file type by checking content type
 	contentType := header.Header.Get("Content-Type")
-	validTypes := map[string]bool{
+	validImageTypes := map[string]bool{
 		"image/jpeg": true,
 		"image/jpg":  true,
 		"image/png":  true,
 		"image/gif":  true,
 		"image/webp": true,
 	}
+	isPdf := contentType == "application/pdf"
 
-	if !validTypes[contentType] {
-		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid file type. Only images (jpg, jpeg, png, gif, webp) are allowed", nil))
+	if !validImageTypes[contentType] && !isPdf {
+		utils.RespondWithError(w, errors2.NewBadRequestError("Invalid file type. Only images (jpg, jpeg, png, gif, webp) and PDF files are allowed", nil))
 		return
+	}
+
+	// Route to the correct destination directory
+	var destDir string
+	if isPdf {
+		destDir = h.pdfService.GetPdfPath()
+	} else {
+		destDir = h.imageService.GetImagesPath()
 	}
 
 	// Generate unique filename if file already exists
 	originalFilename := header.Filename
-	uniqueFilename := h.generateUniqueFilename(originalFilename)
+	uniqueFilename := h.generateUniqueFilename(originalFilename, destDir)
 
 	// Construct the full save path
-	savePath := filepath.Join(h.imageService.GetImagesPath(), uniqueFilename)
+	savePath := filepath.Join(destDir, uniqueFilename)
 
 	// Create the destination file
 	dst, err := os.Create(savePath)
@@ -104,22 +116,19 @@ func (h *UploadHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // generateUniqueFilename generates a unique filename if the file already exists
 // Example: image.jpg -> image_1.jpg -> image_2.jpg
-func (h *UploadHandler) generateUniqueFilename(filename string) string {
+func (h *UploadHandler) generateUniqueFilename(filename string, destDir string) string {
 	ext := filepath.Ext(filename)
 	baseName := strings.TrimSuffix(filename, ext)
-	
-	// Check if file exists
-	testPath := filepath.Join(h.imageService.GetImagesPath(), filename)
+
+	testPath := filepath.Join(destDir, filename)
 	if _, err := os.Stat(testPath); os.IsNotExist(err) {
-		// File doesn't exist, use original name
 		return filename
 	}
 
-	// File exists, generate unique name with counter
 	counter := 1
 	for {
 		newFilename := fmt.Sprintf("%s_%d%s", baseName, counter, ext)
-		testPath := filepath.Join(h.imageService.GetImagesPath(), newFilename)
+		testPath := filepath.Join(destDir, newFilename)
 		if _, err := os.Stat(testPath); os.IsNotExist(err) {
 			return newFilename
 		}
