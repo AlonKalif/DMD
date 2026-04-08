@@ -49,13 +49,13 @@ export default function PlayerDisplayPage() {
     };
 
     return (
-        <div id="player-root-container" className="flex h-screen w-screen items-center justify-center bg-black p-4">
+        <div id="player-root-container" className="flex h-screen w-screen items-center justify-center overflow-hidden bg-black p-4">
             {!currentLayout ? (
                 // Default view when no layout is active
                 <img
                     src={DEFAULT_PLAYER_WINDOW_IMG}
                     alt="Player display waiting for content"
-                    className="max-h-[220vh] w-auto rounded-lg object-contain"
+                    className="max-h-full max-w-full rounded-lg object-cover"
                 />
             ) : (
                 // Dynamic grid rendering
