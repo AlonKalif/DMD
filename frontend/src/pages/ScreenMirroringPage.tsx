@@ -30,6 +30,8 @@ export default function ScreenMirroringPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [presetRefreshKey, setPresetRefreshKey] = useState(0);
     const [assetRefreshKey, setAssetRefreshKey] = useState(0);
+    const [isPanelExpanded, setIsPanelExpanded] = useState(false);
+    const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
     const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -366,8 +368,14 @@ export default function ScreenMirroringPage() {
                 onHideFromPlayersClick={handleHideFromPlayers}
                 onPlayerWindowClose={handlePlayerWindowClose}
                 onSyncWithPlayerClick={handleSyncWithPlayer}
+                isPanelExpanded={isPanelExpanded}
+                onTogglePanel={() => setIsPanelExpanded(prev => !prev)}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
             />
             <AssetPanel
+                isExpanded={isPanelExpanded}
+                activeTab={activeTab}
                 onBrowseClick={() => fileInputRef.current?.click()}
                 onLoadPreset={handleLoadPreset}
                 onDeletePreset={handleDeletePreset}

@@ -2,8 +2,7 @@
 import { MediaAsset, PresetLayout } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { useDrag } from 'react-dnd';
-import { useEffect, useState } from 'react';
-import { useHorizontalScroll } from 'hooks/useHorizontalScroll';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { EditAssetModal } from 'components/screen-mirroring/EditAssetModal';
 import { PresetPanel } from 'components/screen-mirroring/PresetPanel';
 import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
@@ -51,7 +50,6 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
                     >
                         <Page pageNumber={1} width={112} renderTextLayer={false} renderAnnotationLayer={false} />
                     </Document>
-                    {/* Darkened overlay with filename on hover */}
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                         <span className="px-1 text-center text-xs font-semibold text-white drop-shadow-lg line-clamp-3">
                             {asset.name}.pdf
@@ -65,7 +63,6 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
                     className="h-28 w-28 rounded-md object-cover ring-2 ring-transparent group-hover:ring-arcane-purple"
                 />
             )}
-            {/* Delete Button */}
             <div
                 onClick={() => onDelete(asset)}
                 className="absolute top-1 left-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-wax-red"
@@ -75,7 +72,6 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
-            {/* Edit Button */}
             <div
                 onClick={() => onEdit(asset)}
                 className="absolute top-1 right-1 z-10 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-black/50 text-parchment opacity-0 transition-opacity group-hover:opacity-100 hover:bg-arcane-purple"
@@ -105,36 +101,33 @@ function DraggableAsset({ asset, onEdit, onDelete }: DraggableAssetProps) {
 interface FilterPillsProps {
     activeType: string;
     onTypeSelect: (type: string) => void;
-    refreshKey: number
+    refreshKey: number;
 }
 
 function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps) {
     const [types, setTypes] = useState<string[]>([]);
-    const scrollRef = useHorizontalScroll();
 
     useEffect(() => {
-        // Fetch the list of types from the backend when the component mounts
         const fetchTypes = async () => {
             try {
                 const response = await axios.get<string[]>(`${API_BASE_URL}/api/v1/images/types`);
-                // Add "All" to the beginning of the list
                 setTypes(['All', ...response.data]);
             } catch (error) {
                 console.error("Failed to fetch image types:", error);
-                setTypes(['All']); // Fallback
+                setTypes(['All']);
             }
         };
         fetchTypes();
-    }, [refreshKey]); // Empty array ensures this runs only once
+    }, [refreshKey]);
 
     return (
-        <div ref={scrollRef} className="scrollbar-hide flex items-center space-x-2 overflow-x-auto pb-2">
+        <div className="flex flex-shrink-0 flex-col items-start gap-1 overflow-y-auto pr-2 max-h-28 no-scrollbar">
             {types.map(type => (
                 <button
                     key={type}
                     onClick={() => onTypeSelect(type)}
                     className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
+                        "flex-shrink-0 whitespace-nowrap rounded-full px-3 py-0.5 text-xs font-semibold text-parchment transition-colors",
                         activeType === type ? 'bg-paladin-gold text-ink' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
                     )}
                 >
@@ -145,23 +138,73 @@ function FilterPills({ activeType, onTypeSelect, refreshKey }: FilterPillsProps)
     );
 }
 
-interface AssetSelectionBarProps {
+function ScrollableAssetStrip({ assets, onEditAsset, onDeleteAsset }: {
     assets: MediaAsset[];
-    onBrowseClick: () => void;
     onEditAsset: (asset: MediaAsset) => void;
     onDeleteAsset: (asset: MediaAsset) => void;
-}
+}) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
 
-export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset, onDeleteAsset }: AssetSelectionBarProps) {
-    const scrollRef = useHorizontalScroll();
+    const checkScroll = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        setCanScrollLeft(el.scrollLeft > 0);
+        setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    }, []);
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        checkScroll();
+        el.addEventListener('scroll', checkScroll);
+        const observer = new ResizeObserver(checkScroll);
+        observer.observe(el);
+        return () => {
+            el.removeEventListener('scroll', checkScroll);
+            observer.disconnect();
+        };
+    }, [checkScroll, assets]);
+
+    const scroll = (direction: 'left' | 'right') => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const amount = 240;
+        el.scrollBy({ left: direction === 'left' ? -amount : amount, behavior: 'smooth' });
+    };
+
+    // Wheel-to-horizontal-scroll
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const onWheel = (e: WheelEvent) => {
+            if (e.deltaY === 0) return;
+            e.preventDefault();
+            el.scrollBy({ left: e.deltaY, behavior: 'auto' });
+        };
+        el.addEventListener('wheel', onWheel, { passive: false });
+        return () => el.removeEventListener('wheel', onWheel);
+    }, []);
 
     return (
-        <div className="flex flex-shrink-0 items-center">
+        <div className="group/scroll relative flex-1 min-w-0">
+            {/* Left arrow */}
+            {canScrollLeft && (
+                <button
+                    onClick={() => scroll('left')}
+                    className="absolute left-0 top-0 bottom-0 z-10 flex w-8 items-center justify-center bg-gradient-to-r from-leather-dark/90 to-transparent opacity-0 transition-opacity group-hover/scroll:opacity-100"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-parchment" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+            )}
 
-            {/* Images Array */}
+            {/* Scrollable strip — no visible scrollbar */}
             <div
                 ref={scrollRef}
-                className="flex flex-grow items-center space-x-2 overflow-x-auto py-0.5 px-0.5 scrollbar-hide scrollbar-track-gray-700 scrollbar-thumb-gray-500 hover:scrollbar-thumb-blue-500"
+                className="flex items-center space-x-2 overflow-x-auto py-0.5 px-0.5 no-scrollbar"
             >
                 {assets.map((asset) => (
                     <DraggableAsset
@@ -171,32 +214,31 @@ export function AssetSelectionBar({ assets, onBrowseClick, onEditAsset, onDelete
                         onDelete={onDeleteAsset}
                     />
                 ))}
-
                 {assets.length === 0 && (
                     <div className="flex h-28 items-center justify-center">
-                        <p className="text-faded-ink">No media assets found.</p>
+                        <p className="text-faded-ink text-sm">No assets found.</p>
                     </div>
                 )}
             </div>
 
-            {/* Browse Button */}
-            <div className="flex-shrink-0 pl-2">
+            {/* Right arrow */}
+            {canScrollRight && (
                 <button
-                    onClick={onBrowseClick}
-                    className="flex h-28 w-28 flex-col items-center justify-center rounded-md border-2 border-dashed border-paladin-gold/30 text-faded-ink transition-colors hover:border-arcane-purple hover:text-arcane-purple"
-                    title="Browse for a local file"
+                    onClick={() => scroll('right')}
+                    className="absolute right-0 top-0 bottom-0 z-10 flex w-8 items-center justify-center bg-gradient-to-l from-leather-dark/90 to-transparent opacity-0 transition-opacity group-hover/scroll:opacity-100"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-parchment" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
-                    <span className="mt-1 text-sm font-semibold">Browse</span>
                 </button>
-            </div>
+            )}
         </div>
     );
 }
 
 interface AssetPanelProps {
+    isExpanded: boolean;
+    activeTab: 'assets' | 'presets';
     onBrowseClick: () => void;
     onLoadPreset: (preset: PresetLayout) => void;
     onDeletePreset: (id: number) => void;
@@ -204,9 +246,7 @@ interface AssetPanelProps {
     assetRefreshKey: number;
 }
 
-export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey, assetRefreshKey }: AssetPanelProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
+export function AssetPanel({ isExpanded, activeTab, onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey, assetRefreshKey }: AssetPanelProps) {
     const [activeType, setActiveType] = useState('All');
     const [assets, setAssets] = useState<MediaAsset[]>([]);
 
@@ -253,78 +293,54 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
         fetchAssets();
     }, [activeType, refreshKey, assetRefreshKey]);
 
+    if (!isExpanded) return null;
+
     return (
-        <div className="leather-card border-y border-paladin-gold/20">
-            {/* Collapsed bar: always visible */}
-            <div className="flex items-center gap-2 px-2 py-1">
-                <button
-                    onClick={() => setIsExpanded(prev => !prev)}
-                    className="flex items-center gap-1.5 rounded-full bg-faded-ink/30 px-3 py-0.5 text-xs font-semibold text-parchment transition-colors hover:bg-faded-ink/50"
-                    title={isExpanded ? 'Collapse asset panel' : 'Expand asset panel'}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className={clsx("h-3.5 w-3.5 transition-transform duration-200", isExpanded && "rotate-180")}
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                    {isExpanded ? 'Collapse' : 'Assets & Presets'}
-                </button>
+        <div className="leather-card border-y border-paladin-gold/20 px-2 py-1.5">
+            {activeTab === 'assets' ? (
+                <>
+                    <div className="flex items-center gap-2">
+                        {/* Filter pills — vertical scrollable on the left */}
+                        <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
 
-                {/* Tab pills in the collapsed bar */}
-                {isExpanded && (
-                    <>
-                        <button
-                            onClick={() => setActiveTab('assets')}
-                            className={clsx(
-                                "flex-shrink-0 rounded-full px-3 py-0.5 text-xs font-semibold text-parchment transition-colors",
-                                activeTab === 'assets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
-                            )}
-                        >
-                            Assets
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('presets')}
-                            className={clsx(
-                                "flex-shrink-0 rounded-full px-3 py-0.5 text-xs font-semibold text-parchment transition-colors",
-                                activeTab === 'presets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
-                            )}
-                        >
-                            Presets
-                        </button>
-                    </>
-                )}
-            </div>
+                        {/* Divider */}
+                        <div className="h-24 w-px flex-shrink-0 bg-paladin-gold/20" />
 
-            {/* Expanded content */}
-            {isExpanded && (
-                <div className="space-y-2 px-2 pb-2">
-                    {activeTab === 'assets' ? (
-                        <>
-                            <AssetSelectionBar
-                                assets={assets}
-                                onBrowseClick={onBrowseClick}
-                                onEditAsset={setEditingAsset}
-                                onDeleteAsset={handleDeleteAsset}
-                            />
-                            {editingAsset && (
-                                <EditAssetModal
-                                    asset={editingAsset}
-                                    onClose={() => setEditingAsset(null)}
-                                    onSave={handleSaveAsset}
-                                />
-                            )}
-                            <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
-                        </>
-                    ) : (
-                        <PresetPanel
-                            onLoadPreset={onLoadPreset}
-                            onDeletePreset={onDeletePreset}
-                            refreshKey={presetRefreshKey}
+                        {/* Scrollable image strip with hover arrows */}
+                        <ScrollableAssetStrip
+                            assets={assets}
+                            onEditAsset={setEditingAsset}
+                            onDeleteAsset={handleDeleteAsset}
+                        />
+
+                        {/* Browse button on the right */}
+                        <div className="flex-shrink-0 pl-1">
+                            <button
+                                onClick={onBrowseClick}
+                                className="flex h-28 w-20 flex-col items-center justify-center rounded-md border-2 border-dashed border-paladin-gold/30 text-faded-ink transition-colors hover:border-arcane-purple hover:text-arcane-purple"
+                                title="Browse for a local file"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span className="mt-0.5 text-xs font-semibold">Browse</span>
+                            </button>
+                        </div>
+                    </div>
+                    {editingAsset && (
+                        <EditAssetModal
+                            asset={editingAsset}
+                            onClose={() => setEditingAsset(null)}
+                            onSave={handleSaveAsset}
                         />
                     )}
-                </div>
+                </>
+            ) : (
+                <PresetPanel
+                    onLoadPreset={onLoadPreset}
+                    onDeletePreset={onDeletePreset}
+                    refreshKey={presetRefreshKey}
+                />
             )}
         </div>
     );

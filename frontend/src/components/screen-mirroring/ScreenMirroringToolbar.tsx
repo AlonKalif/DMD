@@ -10,6 +10,10 @@ interface ScreenMirroringToolbarProps {
     onHideFromPlayersClick: () => void;
     onPlayerWindowClose: () => void;
     onSyncWithPlayerClick: () => void;
+    isPanelExpanded: boolean;
+    onTogglePanel: () => void;
+    activeTab: 'assets' | 'presets';
+    onTabChange: (tab: 'assets' | 'presets') => void;
 }
 
 export function ScreenMirroringToolbar({
@@ -18,6 +22,10 @@ export function ScreenMirroringToolbar({
        onHideFromPlayersClick,
        onPlayerWindowClose,
        onSyncWithPlayerClick,
+       isPanelExpanded,
+       onTogglePanel,
+       activeTab,
+       onTabChange,
     }: ScreenMirroringToolbarProps) {
     const [playerWindow, setPlayerWindow] = useState<Window | null>(() => {
         if (playerWindowRef && !playerWindowRef.closed) {
@@ -153,6 +161,48 @@ export function ScreenMirroringToolbar({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
                 </svg>
             </button>
+
+            {/* Divider */}
+            <div className="mx-1 h-5 w-px bg-paladin-gold/20" />
+
+            {/* Panel toggle + tab switcher */}
+            <button
+                onClick={onTogglePanel}
+                className="flex items-center gap-1 rounded-full bg-faded-ink/30 px-2.5 py-0.5 text-xs font-semibold text-parchment transition-colors hover:bg-faded-ink/50"
+                title={isPanelExpanded ? 'Collapse asset panel' : 'Expand asset panel'}
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={clsx("h-3.5 w-3.5 transition-transform duration-200", isPanelExpanded && "rotate-180")}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+                {isPanelExpanded ? 'Collapse' : 'Assets'}
+            </button>
+
+            {isPanelExpanded && (
+                <>
+                    <button
+                        onClick={() => onTabChange('assets')}
+                        className={clsx(
+                            "rounded-full px-2.5 py-0.5 text-xs font-semibold text-parchment transition-colors",
+                            activeTab === 'assets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
+                        )}
+                    >
+                        Assets
+                    </button>
+                    <button
+                        onClick={() => onTabChange('presets')}
+                        className={clsx(
+                            "rounded-full px-2.5 py-0.5 text-xs font-semibold text-parchment transition-colors",
+                            activeTab === 'presets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
+                        )}
+                    >
+                        Presets
+                    </button>
+                </>
+            )}
 
             <div className="ml-auto flex items-center gap-2">
                 <img src="/dmd_logo.png" alt="DMD" className="logo-gold h-6 w-6" />
