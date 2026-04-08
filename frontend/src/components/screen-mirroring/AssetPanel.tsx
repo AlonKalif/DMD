@@ -205,13 +205,13 @@ interface AssetPanelProps {
 }
 
 export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, presetRefreshKey, assetRefreshKey }: AssetPanelProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
     const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
     const [activeType, setActiveType] = useState('All');
     const [assets, setAssets] = useState<MediaAsset[]>([]);
-    // const [isLoading, setIsLoading] = useState(false);
 
     const [editingAsset, setEditingAsset] = useState<MediaAsset | null>(null);
-    const [refreshKey, setRefreshKey] = useState(0); // Used to trigger a data refresh
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const handleSaveAsset = async (updatedAsset: MediaAsset) => {
         try {
@@ -236,9 +236,7 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
 
     useEffect(() => {
         const fetchAssets = async () => {
-            // setIsLoading(true);
             let url = `${API_BASE_URL}/api/v1/images/images`;
-            // If the filter is not "All", add the query parameter
             if (activeType !== 'All') {
                 url += `?type=${activeType}`;
             }
@@ -248,64 +246,85 @@ export function AssetPanel({ onBrowseClick, onLoadPreset, onDeletePreset, preset
                 setAssets(response.data);
             } catch (error) {
                 console.error(`Failed to fetch assets for type ${activeType}:`, error);
-                setAssets([]); // Clear assets on error
+                setAssets([]);
             }
-            // finally {
-            //     setIsLoading(false);
-            // }
         };
 
         fetchAssets();
     }, [activeType, refreshKey, assetRefreshKey]);
 
     return (
-        <div className="leather-card space-y-2 border-y border-paladin-gold/20 p-2">
-            {/* Tab Switcher */}
-            <div className="flex items-center space-x-2 pb-2">
+        <div className="leather-card border-y border-paladin-gold/20">
+            {/* Collapsed bar: always visible */}
+            <div className="flex items-center gap-2 px-2 py-1">
                 <button
-                    onClick={() => setActiveTab('assets')}
-                    className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
-                        activeTab === 'assets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
-                    )}
+                    onClick={() => setIsExpanded(prev => !prev)}
+                    className="flex items-center gap-1.5 rounded-full bg-faded-ink/30 px-3 py-0.5 text-xs font-semibold text-parchment transition-colors hover:bg-faded-ink/50"
+                    title={isExpanded ? 'Collapse asset panel' : 'Expand asset panel'}
                 >
-                    Assets
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className={clsx("h-3.5 w-3.5 transition-transform duration-200", isExpanded && "rotate-180")}
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                    {isExpanded ? 'Collapse' : 'Assets & Presets'}
                 </button>
-                <button
-                    onClick={() => setActiveTab('presets')}
-                    className={clsx(
-                        "flex-shrink-0 rounded-full px-4 py-1 text-sm font-semibold text-parchment transition-colors",
-                        activeTab === 'presets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
-                    )}
-                >
-                    Presets
-                </button>
+
+                {/* Tab pills in the collapsed bar */}
+                {isExpanded && (
+                    <>
+                        <button
+                            onClick={() => setActiveTab('assets')}
+                            className={clsx(
+                                "flex-shrink-0 rounded-full px-3 py-0.5 text-xs font-semibold text-parchment transition-colors",
+                                activeTab === 'assets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
+                            )}
+                        >
+                            Assets
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('presets')}
+                            className={clsx(
+                                "flex-shrink-0 rounded-full px-3 py-0.5 text-xs font-semibold text-parchment transition-colors",
+                                activeTab === 'presets' ? 'bg-arcane-purple' : 'bg-faded-ink/30 hover:bg-faded-ink/50'
+                            )}
+                        >
+                            Presets
+                        </button>
+                    </>
+                )}
             </div>
 
-            {/* Conditionally render based on active tab */}
-            {activeTab === 'assets' ? (
-                <>
-            <AssetSelectionBar
-                assets={assets}
-                onBrowseClick={onBrowseClick}
-                onEditAsset={setEditingAsset}
-                onDeleteAsset={handleDeleteAsset}
-            />
-            {editingAsset && (
-                <EditAssetModal
-                    asset={editingAsset}
-                    onClose={() => setEditingAsset(null)}
-                    onSave={handleSaveAsset}
-                />
-            )}
-            <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
-                </>
-            ) : (
-                <PresetPanel
-                    onLoadPreset={onLoadPreset}
-                    onDeletePreset={onDeletePreset}
-                    refreshKey={presetRefreshKey}
-                />
+            {/* Expanded content */}
+            {isExpanded && (
+                <div className="space-y-2 px-2 pb-2">
+                    {activeTab === 'assets' ? (
+                        <>
+                            <AssetSelectionBar
+                                assets={assets}
+                                onBrowseClick={onBrowseClick}
+                                onEditAsset={setEditingAsset}
+                                onDeleteAsset={handleDeleteAsset}
+                            />
+                            {editingAsset && (
+                                <EditAssetModal
+                                    asset={editingAsset}
+                                    onClose={() => setEditingAsset(null)}
+                                    onSave={handleSaveAsset}
+                                />
+                            )}
+                            <FilterPills activeType={activeType} onTypeSelect={setActiveType} refreshKey={refreshKey} />
+                        </>
+                    ) : (
+                        <PresetPanel
+                            onLoadPreset={onLoadPreset}
+                            onDeletePreset={onDeletePreset}
+                            refreshKey={presetRefreshKey}
+                        />
+                    )}
+                </div>
             )}
         </div>
     );
