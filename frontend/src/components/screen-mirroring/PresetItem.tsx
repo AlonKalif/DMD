@@ -2,6 +2,8 @@
 import { PresetLayout } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
+import { ItemTypes } from 'components/screen-mirroring/AssetPanel';
+import { useDrag } from 'react-dnd';
 import { Document, Page } from 'react-pdf';
 import clsx from 'clsx';
 
@@ -12,24 +14,34 @@ interface PresetItemProps {
 }
 
 export function PresetItem({ preset, onLoad, onDelete }: PresetItemProps) {
+    const [{ isDragging }, drag] = useDrag(() => ({
+        type: ItemTypes.PRESET,
+        item: { preset },
+        collect: (monitor) => ({
+            isDragging: !!monitor.isDragging(),
+        }),
+    }), [preset]);
+
     const handleDelete = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent triggering onLoad
+        e.stopPropagation();
         onDelete(preset.ID);
     };
 
-    // Grid classes based on layout type
     const gridClasses = {
         single: 'grid-cols-1 grid-rows-1',
         dual: 'grid-cols-2 grid-rows-1',
         quad: 'grid-cols-2 grid-rows-2',
     };
 
-    // Safety check for slots
     const slots = preset.slots || [];
 
     return (
-        <div className="group relative flex h-32 w-32 flex-shrink-0">
-            {/* Delete button - positioned outside the main container */}
+        <div
+            ref={drag}
+            className="group relative flex h-32 w-32 flex-shrink-0"
+            style={{ opacity: isDragging ? 0.5 : 1 }}
+        >
+            {/* Delete button */}
             <button
                 onClick={handleDelete}
                 className="absolute -top-2 -right-2 z-20 flex h-6 w-6 items-center justify-center rounded-full bg-leather-dark text-parchment opacity-0 transition-all hover:bg-wax-red group-hover:opacity-100"

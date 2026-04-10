@@ -1,9 +1,7 @@
-// /src/components/screen-mirroring/PresetPanel.tsx
 import { useEffect, useState } from 'react';
 import { PresetLayout } from 'types/api';
 import { API_BASE_URL } from 'config';
 import { PresetItem } from './PresetItem';
-import { useHorizontalScroll } from 'hooks/useHorizontalScroll';
 import axios from 'axios';
 
 interface PresetPanelProps {
@@ -14,7 +12,6 @@ interface PresetPanelProps {
 
 export function PresetPanel({ onLoadPreset, onDeletePreset, refreshKey }: PresetPanelProps) {
     const [presets, setPresets] = useState<PresetLayout[]>([]);
-    const scrollRef = useHorizontalScroll();
 
     useEffect(() => {
         const fetchPresets = async () => {
@@ -31,20 +28,15 @@ export function PresetPanel({ onLoadPreset, onDeletePreset, refreshKey }: Preset
     }, [refreshKey]);
 
     const handleDelete = async (id: number) => {
-        // Optimistically remove from UI
         setPresets(prevPresets => prevPresets.filter(p => p.ID !== id));
-        // Call parent handler for API call
         onDeletePreset(id);
     };
 
     return (
-        <div
-            ref={scrollRef}
-            className="scrollbar-hide flex items-center space-x-2 overflow-x-auto py-0.5 px-0.5"
-        >
+        <div className="flex flex-col items-center gap-2 overflow-y-auto p-2 no-scrollbar">
             {presets.length === 0 ? (
-                <div className="flex h-32 w-full items-center justify-center">
-                    <p className="text-faded-ink">No saved presets. Save your first layout!</p>
+                <div className="flex flex-1 items-center justify-center py-8">
+                    <p className="text-faded-ink text-xs text-center">No saved presets.<br/>Save your first layout!</p>
                 </div>
             ) : (
                 presets.map((preset) => (
@@ -59,4 +51,3 @@ export function PresetPanel({ onLoadPreset, onDeletePreset, refreshKey }: Preset
         </div>
     );
 }
-

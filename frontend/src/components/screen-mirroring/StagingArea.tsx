@@ -2,11 +2,15 @@
 
 import { useRef, useState, useEffect } from 'react';
 import clsx from 'clsx';
+import { useDrop } from 'react-dnd';
 import { LayoutState, LayoutType } from 'pages/ScreenMirroringPage';
+import { PresetLayout } from 'types/api';
+import { ItemTypes } from './AssetPanel';
 import { LayoutSelector } from './LayoutSelector';
 import { ImageSlot } from './ImageSlot';
 
 interface DropItem { id: number; url: string; }
+interface PresetDropItem { preset: PresetLayout; }
 
 const ASPECT_RATIO = 16 / 9;
 
@@ -14,6 +18,7 @@ interface StagingAreaProps {
     layoutState: LayoutState;
     onLayoutChange: (layout: LayoutType) => void;
     onDropAsset: (slotId: number, item: DropItem) => void;
+    onLoadPreset: (preset: PresetLayout) => void;
     onClearSlot: (slotId: number) => void;
     onZoomChange: (slotId: number, direction: 'in' | 'out' | 'reset') => void;
     onPageChange: (slotId: number, direction: 'next' | 'prev', numPages: number) => void;
@@ -25,10 +30,20 @@ interface StagingAreaProps {
     isNotificationVisible: boolean;
 }
 
-export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearSlot, onZoomChange, onPageChange, onPositionChange, onMoveAsset, onSavePreset, isSaving, notification, isNotificationVisible  }: StagingAreaProps) {
+export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onLoadPreset, onClearSlot, onZoomChange, onPageChange, onPositionChange, onMoveAsset, onSavePreset, isSaving, notification, isNotificationVisible  }: StagingAreaProps) {
     const { layout, status, slots } = layoutState;
     const containerRef = useRef<HTMLDivElement>(null);
     const [boxSize, setBoxSize] = useState<{ width: number; height: number } | null>(null);
+
+    const [{ isPresetOver }, presetDrop] = useDrop(() => ({
+        accept: ItemTypes.PRESET,
+        drop: (item: PresetDropItem) => {
+            onLoadPreset(item.preset);
+        },
+        collect: (monitor) => ({
+            isPresetOver: !!monitor.isOver(),
+        }),
+    }), [onLoadPreset]);
 
     useEffect(() => {
         const el = containerRef.current;
@@ -59,10 +74,17 @@ export function StagingArea({ layoutState, onLayoutChange, onDropAsset, onClearS
     };
 
     return (
-        <div ref={containerRef} className="flex h-full w-full items-center justify-center">
+        <div
+            ref={(node) => {
+                presetDrop(node);
+                (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+            }}
+            className="flex h-full w-full items-center justify-center"
+        >
             <div
                 className={clsx(
                     'relative flex items-center justify-center rounded-lg border-4 p-2 transition-colors duration-300',
+                    isPresetOver && 'ring-4 ring-paladin-gold/60',
                     status === 'empty' && 'border-faded-ink/40 border-dashed',
                     status === 'staged' && !isSaving && 'border-arcane-purple border-solid',
                     status === 'live' && !isSaving && 'border-paladin-gold border-solid',

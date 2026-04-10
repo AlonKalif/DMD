@@ -1,5 +1,5 @@
 // /src/components/screen-mirroring/ImageSlot.tsx
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { ImageSlotState } from 'pages/ScreenMirroringPage';
 import { useDrop, useDrag } from 'react-dnd';
 import { ItemTypes } from './AssetPanel';
@@ -23,10 +23,41 @@ interface ImageSlotProps {
 
 export function ImageSlot({ slot, onDropAsset, onClearSlot, onZoomChange, onPageChange, onPositionChange, onMoveAsset }: ImageSlotProps) {
     const [numPages, setNumPages] = useState<number>(1);
+    const [pdfPageSize, setPdfPageSize] = useState<{ width: number; height: number } | null>(null);
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const observerRef = useRef<ResizeObserver | null>(null);
 
-    const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
-        setNumPages(numPages);
-    }, []);
+    const onDocumentLoadSuccess = useCallback(async (pdf: any) => {
+        setNumPages(pdf.numPages);
+        const page = await pdf.getPage(slot.page || 1);
+        const viewport = page.getViewport({ scale: 1 });
+        setPdfPageSize({ width: viewport.width, height: viewport.height });
+    }, [slot.page]);
+
+    const attachContainerRef = useCallback((node: HTMLDivElement | null) => {
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+            observerRef.current = null;
+        }
+        containerRef.current = node;
+        if (node) {
+            const observer = new ResizeObserver((entries) => {
+                const { width, height } = entries[0].contentRect;
+                setContainerSize({ width, height });
+            });
+            observer.observe(node);
+            observerRef.current = observer;
+        }
+    }, [slot.slotId]);
+
+    const pdfScale = (() => {
+        if (!pdfPageSize || !containerSize) return slot.zoom;
+        const scaleX = containerSize.width / pdfPageSize.width;
+        const scaleY = containerSize.height / pdfPageSize.height;
+        const baseScale = Math.min(scaleX, scaleY);
+        return baseScale * slot.zoom;
+    })();
 
     const [{ isDragging }, drag] = useDrag(() => ({
         type: ItemTypes.SLOT,
@@ -68,9 +99,12 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot, onZoomChange, onPage
                 <>
                     {isPdf ? (
                         <div
-                            ref={drag}
+                            ref={(node) => {
+                                drag(node);
+                                attachContainerRef(node);
+                            }}
                             className={clsx(
-                                "flex items-center justify-center max-h-full max-w-full overflow-hidden",
+                                "flex h-full w-full items-center justify-center overflow-hidden",
                                 isDragging ? "cursor-grabbing opacity-50" : "cursor-grab"
                             )}
                             style={{ transform: `translateY(${slot.positionY}%)` }}
@@ -83,7 +117,7 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot, onZoomChange, onPage
                             >
                                 <Page
                                     pageNumber={slot.page}
-                                    scale={slot.zoom}
+                                    scale={pdfScale}
                                     renderTextLayer={false}
                                     renderAnnotationLayer={false}
                                 />

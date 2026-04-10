@@ -1,7 +1,8 @@
 // /src/pages/ScreenMirroringPage.tsx
 import {useState, useRef, useEffect} from 'react';
-import { ScreenMirroringToolbar } from 'components/screen-mirroring/ScreenMirroringToolbar';
-import { AssetPanel } from 'components/screen-mirroring/AssetPanel';
+import { LeftSidebar } from 'components/screen-mirroring/LeftSidebar';
+import { RightSidebar } from 'components/screen-mirroring/RightSidebar';
+import { ControlBar } from 'components/screen-mirroring/ControlBar';
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
 import { StagingArea } from 'components/screen-mirroring/StagingArea';
 import { API_BASE_URL } from 'config';
@@ -30,15 +31,13 @@ export default function ScreenMirroringPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [presetRefreshKey, setPresetRefreshKey] = useState(0);
     const [assetRefreshKey, setAssetRefreshKey] = useState(0);
-    const [isPanelExpanded, setIsPanelExpanded] = useState(false);
-    const [activeTab, setActiveTab] = useState<'assets' | 'presets'>('assets');
     const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleChannelMessage = (message: BroadcastMessage) => {
         if (message.type === 'response_current_content' && message.payload) {
             setLayoutState(message.payload as LayoutState);
-        } else if(message.type === 'response_is_empty') { // Handles case where player window is open but empty
+        } else if(message.type === 'response_is_empty') {
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
             setNotification('No Images Shown On Players Window.');
             setIsNotificationVisible(true);
@@ -48,16 +47,27 @@ export default function ScreenMirroringPage() {
 
     const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
 
-    // This effect runs when the component mounts to automatically sync with an open player window.
     useEffect(() => {
-        // As soon as the channel is ready, ask the player window for its current state.
         if (channel) {
             channel.postMessage({ type: 'request_current_content' });
         }
-    }, [channel]); // The dependency array ensures this runs once the channel is initialized.
+    }, [channel]);
 
     const handleLayoutChange = (newLayout: LayoutType) => {
         setLayoutState(createInitialLayoutState(newLayout));
+    };
+
+    const handleClickAsset = (item: DropItem) => {
+        setLayoutState(prevState => {
+            const emptySlot = prevState.slots.find(s => !s.url);
+            const target = emptySlot || prevState.slots[0];
+            const newSlots = prevState.slots.map(s =>
+                s.slotId === target.slotId
+                    ? { ...s, url: item.url, imageId: item.id, page: 1, positionY: 0, zoom: 1 }
+                    : s
+            );
+            return { ...prevState, slots: newSlots, status: 'staged' };
+        });
     };
 
     const handleDropAsset = (slotId: number, item: DropItem) => {
@@ -79,14 +89,10 @@ export default function ScreenMirroringPage() {
             const newSlots = prevState.slots.map(s =>
                 s.slotId === slotId ? { ...s, url: null, imageId: null, page: 1, positionY: 0 } : s
             );
-
-            // Check if any slots are still filled
             const isAnySlotStillFilled = newSlots.some(s => s.url !== null);
-
             return {
                 ...prevState,
                 slots: newSlots,
-                // If no slots are filled, revert status to 'empty'
                 status: isAnySlotStillFilled ? 'staged' : 'empty',
             };
         });
@@ -128,16 +134,15 @@ export default function ScreenMirroringPage() {
                     if (direction === 'in') {
                         newZoom += ZOOM_INCREMENT;
                     } else if (direction === 'out') {
-                        newZoom = Math.max(0.1, newZoom - ZOOM_INCREMENT); // Prevent zooming out to zero or negative
+                        newZoom = Math.max(0.1, newZoom - ZOOM_INCREMENT);
                     } else {
-                        newZoom = 1; // Reset to 100%
+                        newZoom = 1;
                     }
-                    return { ...s, zoom: parseFloat(newZoom.toFixed(2)) }; // Keep precision to 2 decimal places
+                    return { ...s, zoom: parseFloat(newZoom.toFixed(2)) };
                 }
                 return s;
             });
 
-            // If the layout is live, send an update to the player window immediately
             if (prevState.status === 'live') {
                 const liveState = { ...prevState, slots: newSlots };
                 channel.postMessage({ type: 'show_layout', payload: liveState });
@@ -223,7 +228,6 @@ export default function ScreenMirroringPage() {
                 targetSlot.positionY = sourceContent.positionY;
             }
 
-            // If the layout is live, send an update to the player window immediately
             if (prevState.status === 'live') {
                 const liveState = { ...prevState, slots: newSlots };
                 channel.postMessage({ type: 'show_layout', payload: liveState });
@@ -237,7 +241,6 @@ export default function ScreenMirroringPage() {
         setIsSaving(true);
         
         try {
-            // Convert layoutState to PresetLayout format for backend (using snake_case)
             const presetData = {
                 layout_type: layoutState.layout,
                 slots: layoutState.slots
@@ -252,11 +255,8 @@ export default function ScreenMirroringPage() {
             };
 
             await axios.post(`${API_BASE_URL}/api/v1/images/presets`, presetData);
-            
-            // Trigger preset refresh
             setPresetRefreshKey(key => key + 1);
             
-            // Keep green flash for 500ms
             setTimeout(() => {
                 setIsSaving(false);
             }, 500);
@@ -267,10 +267,8 @@ export default function ScreenMirroringPage() {
     };
 
     const handleLoadPreset = (preset: PresetLayout) => {
-        // Convert PresetLayout to LayoutState format
         const slotCount = preset.layout_type === 'quad' ? 4 : preset.layout_type === 'dual' ? 2 : 1;
         
-        // Create initial empty slots
         const newSlots: ImageSlotState[] = Array.from({ length: slotCount }, (_, i) => ({
             slotId: i,
             url: null,
@@ -302,7 +300,6 @@ export default function ScreenMirroringPage() {
     const handleDeletePreset = async (id: number) => {
         try {
             await axios.delete(`${API_BASE_URL}/api/v1/images/presets/${id}`);
-            // Trigger preset refresh
             setPresetRefreshKey(key => key + 1);
         } catch (error) {
             console.error('Failed to delete preset:', error);
@@ -326,21 +323,17 @@ export default function ScreenMirroringPage() {
         }
 
         try {
-            // Create FormData and append the file
             const formData = new FormData();
             formData.append('file', file);
 
-            // Upload to backend
             await axios.post(`${API_BASE_URL}/api/v1/images/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
-            // Trigger asset panel refresh
             setAssetRefreshKey(key => key + 1);
 
-            // Show success notification
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
             setNotification('File uploaded successfully');
             setIsNotificationVisible(true);
@@ -353,7 +346,6 @@ export default function ScreenMirroringPage() {
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
         } finally {
-            // Reset file input to allow re-uploading the same file
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
@@ -361,44 +353,44 @@ export default function ScreenMirroringPage() {
     };
 
     return (
-        <div className="flex h-screen flex-col">
-            <ScreenMirroringToolbar
-                previewStatus={layoutState.status}
-                onShowToPlayersClick={handleShowToPlayers}
-                onHideFromPlayersClick={handleHideFromPlayers}
-                onPlayerWindowClose={handlePlayerWindowClose}
-                onSyncWithPlayerClick={handleSyncWithPlayer}
-                isPanelExpanded={isPanelExpanded}
-                onTogglePanel={() => setIsPanelExpanded(prev => !prev)}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-            />
-            <AssetPanel
-                isExpanded={isPanelExpanded}
-                activeTab={activeTab}
+        <div className="flex h-full flex-row">
+            <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,.pdf" />
+            <LeftSidebar
                 onBrowseClick={() => fileInputRef.current?.click()}
+                onClickAsset={handleClickAsset}
+                assetRefreshKey={assetRefreshKey}
+            />
+            <div className="flex flex-1 min-w-0 flex-col">
+                <ControlBar
+                    previewStatus={layoutState.status}
+                    onShowToPlayersClick={handleShowToPlayers}
+                    onHideFromPlayersClick={handleHideFromPlayers}
+                    onPlayerWindowClose={handlePlayerWindowClose}
+                    onSyncWithPlayerClick={handleSyncWithPlayer}
+                />
+                <main className="flex flex-1 min-h-0 items-center justify-center p-2">
+                    <StagingArea
+                        layoutState={layoutState}
+                        onLayoutChange={handleLayoutChange}
+                        onDropAsset={handleDropAsset}
+                        onLoadPreset={handleLoadPreset}
+                        onClearSlot={handleClearSlot}
+                        onZoomChange={handleZoomChange}
+                        onPageChange={handlePageChange}
+                        onPositionChange={handlePositionChange}
+                        onMoveAsset={handleMoveAsset}
+                        onSavePreset={handleSavePreset}
+                        isSaving={isSaving}
+                        notification={notification}
+                        isNotificationVisible={isNotificationVisible}
+                    />
+                </main>
+            </div>
+            <RightSidebar
                 onLoadPreset={handleLoadPreset}
                 onDeletePreset={handleDeletePreset}
                 presetRefreshKey={presetRefreshKey}
-                assetRefreshKey={assetRefreshKey}
             />
-            <main className="flex flex-1 min-h-0 items-center justify-center p-4">
-                <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,.pdf" />
-                <StagingArea
-                    layoutState={layoutState}
-                    onLayoutChange={handleLayoutChange}
-                    onDropAsset={handleDropAsset}
-                    onClearSlot={handleClearSlot}
-                    onZoomChange={handleZoomChange}
-                    onPageChange={handlePageChange}
-                    onPositionChange={handlePositionChange}
-                    onMoveAsset={handleMoveAsset}
-                    onSavePreset={handleSavePreset}
-                    isSaving={isSaving}
-                    notification={notification}
-                    isNotificationVisible={isNotificationVisible}
-                />
-            </main>
         </div>
     );
 }

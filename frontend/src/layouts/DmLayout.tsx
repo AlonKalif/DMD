@@ -44,8 +44,8 @@ export default function DmLayout() {
             <div className="d20-background" aria-hidden="true">
                 {"pentagon ".repeat(200)}
             </div>
-            <div className="relative z-10 flex flex-col min-h-screen pb-10">
-                <div className="flex-1">
+            <div className="relative z-10 flex flex-col h-screen pb-10">
+                <div className="flex-1 min-h-0">
                     <Outlet />
                 </div>
                 <BottomNavBar />

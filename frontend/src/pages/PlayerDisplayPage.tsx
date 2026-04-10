@@ -1,5 +1,5 @@
 // /src/pages/PlayerDisplayPage.tsx
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { Document, Page } from 'react-pdf';
 import { BroadcastMessage } from '../hooks/useBroadcastChannel';
@@ -8,6 +8,59 @@ import { setCurrentLayout, clearLayout } from 'features/display/displaySlice';
 import { DEFAULT_PLAYER_WINDOW_IMG } from 'config';
 import { LayoutState } from './ScreenMirroringPage';
 import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
+
+function PlayerPdfSlot({ url, zoom, page, positionY }: { url: string; zoom: number; page: number; positionY: number }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [pdfPageSize, setPdfPageSize] = useState<{ width: number; height: number } | null>(null);
+    const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
+
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const observer = new ResizeObserver((entries) => {
+            const { width, height } = entries[0].contentRect;
+            setContainerSize({ width, height });
+        });
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
+
+    const onDocumentLoadSuccess = useCallback(async (pdf: any) => {
+        const p = await pdf.getPage(page || 1);
+        const viewport = p.getViewport({ scale: 1 });
+        setPdfPageSize({ width: viewport.width, height: viewport.height });
+    }, [page]);
+
+    const pdfScale = (() => {
+        if (!pdfPageSize || !containerSize) return zoom;
+        const scaleX = containerSize.width / pdfPageSize.width;
+        const scaleY = containerSize.height / pdfPageSize.height;
+        const baseScale = Math.min(scaleX, scaleY);
+        return baseScale * zoom;
+    })();
+
+    return (
+        <div
+            ref={containerRef}
+            className="flex h-full w-full items-center justify-center overflow-hidden"
+            style={{ transform: `translateY(${positionY || 0}%)` }}
+        >
+            <Document
+                file={url}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={<div className="text-gray-400 text-sm">Loading PDF...</div>}
+                error={<div className="text-red-400 text-sm">Failed to load PDF</div>}
+            >
+                <Page
+                    pageNumber={page || 1}
+                    scale={pdfScale}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
+                />
+            </Document>
+        </div>
+    );
+}
 
 export default function PlayerDisplayPage() {
     const dispatch = useAppDispatch();
@@ -66,20 +119,7 @@ export default function PlayerDisplayPage() {
                         <div key={slotId} className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-gray-900">
                             {url ? (
                                 isPdfUrl(url) ? (
-                                    <div style={{ transform: `translateY(${positionY || 0}%)` }}>
-                                        <Document
-                                            file={url}
-                                            loading={<div className="text-gray-400 text-sm">Loading PDF...</div>}
-                                            error={<div className="text-red-400 text-sm">Failed to load PDF</div>}
-                                        >
-                                            <Page
-                                                pageNumber={page || 1}
-                                                scale={zoom}
-                                                renderTextLayer={false}
-                                                renderAnnotationLayer={false}
-                                            />
-                                        </Document>
-                                    </div>
+                                    <PlayerPdfSlot url={url} zoom={zoom} page={page || 1} positionY={positionY || 0} />
                                 ) : (
                                     <img
                                         src={url}
