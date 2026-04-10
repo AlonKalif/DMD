@@ -26,7 +26,7 @@ export default function DungeonCrawlPage() {
     };
 
     return (
-        <div className="flex h-full flex-col gap-2 p-2 pb-0">
+        <div className="flex min-h-full flex-col gap-2 p-2 pb-2">
             {/* Battle section — top */}
             <BattleSection onRequestInitiative={handleRequestInitiative} onViewTemplate={handleViewTemplate} />
 
@@ -38,9 +38,7 @@ export default function DungeonCrawlPage() {
             </div>
 
             {/* Character Bank — bottom */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-                <CharacterBank onRequestInitiative={handleRequestInitiative} onViewTemplate={handleViewTemplate} />
-            </div>
+            <CharacterBank onRequestInitiative={handleRequestInitiative} onViewTemplate={handleViewTemplate} />
 
             {/* Shared initiative modal */}
             {initiativeTarget && (

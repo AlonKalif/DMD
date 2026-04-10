@@ -353,7 +353,7 @@ export default function ScreenMirroringPage() {
     };
 
     return (
-        <div className="flex h-full flex-row">
+        <div className="flex h-full flex-row overflow-hidden">
             <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,.pdf" />
             <LeftSidebar
                 onBrowseClick={() => fileInputRef.current?.click()}

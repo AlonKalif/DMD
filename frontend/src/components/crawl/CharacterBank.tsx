@@ -65,9 +65,9 @@ export function CharacterBank({ onRequestInitiative, onViewTemplate }: Character
     };
 
     return (
-        <div className="flex flex-1 gap-3 overflow-hidden">
+        <div className="flex flex-1 gap-3">
             {/* PC section */}
-            <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-paladin-gold/20">
+            <div className="flex flex-1 flex-col rounded-lg border border-paladin-gold/20">
                 <BankToolbar type="pc" onNewTemplate={() => handleNewTemplate('pc')} />
                 <BankGrid
                     type="pc"
@@ -82,7 +82,7 @@ export function CharacterBank({ onRequestInitiative, onViewTemplate }: Character
             <div className="w-px bg-paladin-gold/20" />
 
             {/* Monster section */}
-            <div className="flex flex-1 flex-col overflow-hidden rounded-lg border border-paladin-gold/20">
+            <div className="flex flex-1 flex-col rounded-lg border border-paladin-gold/20">
                 <BankToolbar type="monster" onNewTemplate={() => handleNewTemplate('monster')} />
                 <BankGrid
                     type="monster"

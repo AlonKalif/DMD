@@ -45,7 +45,7 @@ export default function DmLayout() {
                 {"pentagon ".repeat(200)}
             </div>
             <div className="relative z-10 flex flex-col h-screen pb-10">
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 overflow-y-auto">
                     <Outlet />
                 </div>
                 <BottomNavBar />
