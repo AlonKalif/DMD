@@ -1,6 +1,6 @@
 import { useAppSelector } from 'app/hooks';
 import { CharacterTemplate } from 'types/api';
-import { CharacterCard } from './CharacterCard';
+import { CreatureCard } from './CreatureCard';
 
 interface BankGridProps {
     type: 'pc' | 'monster';
@@ -35,13 +35,14 @@ export function BankGrid({ type, onEdit, onDelete, onDoubleClick, onView }: Bank
     return (
         <div className="flex flex-wrap gap-3 overflow-y-auto p-3">
             {filtered.map((tmpl) => (
-                <CharacterCard
+                <CreatureCard
                     key={tmpl.ID}
                     template={tmpl}
+                    mode="bank"
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onDoubleClick={onDoubleClick}
-                    onView={onView}
+                    onViewTemplate={onView}
                 />
             ))}
         </div>

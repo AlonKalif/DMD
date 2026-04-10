@@ -328,7 +328,7 @@ export function TemplateFormModal({ initial, characterType, onSave, onClose }: T
                 <div className="flex gap-4">
                     {/* Card preview on the left */}
                     <div className="flex flex-col items-center gap-1.5">
-                        {/* Matches CharacterCard: w-40 image area is h-32 (ratio 5:4) */}
+                        {/* Matches CreatureCard: w-48 image area (ratio 5:4) */}
                         <div
                             ref={previewRef}
                             className="relative w-32 aspect-[5/4] flex-shrink-0 overflow-hidden rounded-lg border-2 border-paladin-gold/60 cursor-ns-resize select-none"

@@ -1,5 +1,6 @@
 import { useState, useRef, forwardRef } from 'react';
-import { useAppDispatch, useAppSelector } from 'app/hooks';
+import { useDrag } from 'react-dnd';
+import { useAppDispatch } from 'app/hooks';
 import {
     adjustHp,
     removeCombatant,
@@ -8,13 +9,15 @@ import {
     adjustDeathSave,
     reviveCombatant,
     toggleSlot,
-    selectTemplateForCombatant,
 } from 'features/crawl/crawlSlice';
-import { CharacterTemplate, Combatant, StatusEffect } from 'types/api';
+import { CharacterTemplate, Combatant, ResourceSlot, StatusEffect } from 'types/api';
 import { API_BASE_URL } from 'config';
+import { DND_TYPES } from './dndTypes';
 import { STATUS_EFFECT_COLORS } from './statusEffects';
 import { StatusEffectPicker } from './StatusEffectPicker';
 import { GlassVial } from 'components/ui/GlassVial';
+
+// ── SVG Icon Components ────────────────────────────────────────────────
 
 function HpIcon() {
     return (
@@ -34,19 +37,21 @@ function AcIcon() {
     );
 }
 
-function InitIcon({ value }: { value: number }) {
+function InitIcon({ value }: { value?: number }) {
     return (
         <div className="relative flex-shrink-0">
             <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-amber-400" style={{ filter: 'drop-shadow(0 0 4px rgba(245,158,11,0.7))' }}>
                 <path d="M12 2l9 5v10l-9 5-9-5V7l9-5z" fill="currentColor" fillOpacity="0.15" />
                 <path d="M12 2v20M3 7l18 0M3 17l18 0M12 7l9 10M12 7l-9 10" strokeOpacity="0.4" />
             </svg>
-            <span
-                className="absolute inset-0 flex items-center justify-center text-[11px] font-extrabold text-white"
-                style={{ WebkitTextStroke: '2px #78350f', paintOrder: 'stroke fill' } as any}
-            >
-                {value}
-            </span>
+            {value !== undefined && (
+                <span
+                    className="absolute inset-0 flex items-center justify-center text-[11px] font-extrabold text-white"
+                    style={{ WebkitTextStroke: '2px #78350f', paintOrder: 'stroke fill' } as any}
+                >
+                    {value}
+                </span>
+            )}
         </div>
     );
 }
@@ -72,9 +77,10 @@ function StatusEffectIcon() {
     );
 }
 
-function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
+function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick?: () => void }) {
+    const Tag = onClick ? 'button' : 'div';
     return (
-        <button onClick={onClick} className="relative transition-transform hover:scale-110" title={`Level ${level} spell slot`}>
+        <Tag onClick={onClick} className={`relative ${onClick ? 'transition-transform hover:scale-110' : ''}`} title={`Level ${level} spell slot`}>
             <svg width="32" height="32" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.5"
                 className={used ? 'text-cyan-900' : 'text-cyan-300'}
                 style={used ? undefined : { filter: 'drop-shadow(0 0 5px rgba(96,165,250,0.9))' }}
@@ -88,13 +94,14 @@ function SpellSlotIcon({ level, used, onClick }: { level: number; used: boolean;
             >
                 {level}
             </span>
-        </button>
+        </Tag>
     );
 }
 
-function RageSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick: () => void }) {
+function RageSlotIcon({ level, used, onClick }: { level: number; used: boolean; onClick?: () => void }) {
+    const Tag = onClick ? 'button' : 'div';
     return (
-        <button onClick={onClick} className="relative transition-transform hover:scale-110" title={`Level ${level} rage slot`}>
+        <Tag onClick={onClick} className={`relative ${onClick ? 'transition-transform hover:scale-110' : ''}`} title={`Level ${level} rage slot`}>
             <svg width="32" height="32" viewBox="-1 -1 26 26" fill="currentColor"
                 className={used ? 'text-orange-950' : 'text-orange-400'}
                 style={used ? undefined : { filter: 'drop-shadow(0 0 5px rgba(249,115,22,0.9))' }}
@@ -109,7 +116,7 @@ function RageSlotIcon({ level, used, onClick }: { level: number; used: boolean; 
             >
                 {level}
             </span>
-        </button>
+        </Tag>
     );
 }
 
@@ -135,12 +142,21 @@ function SlotRow({ usage, slotType, instanceId, dispatch }: {
     );
 }
 
-interface CombatantCardProps {
-    combatant: Combatant;
-    isActive: boolean;
-    showCopyIndex: boolean;
-    onViewTemplate: (template: CharacterTemplate) => void;
+function BankSlotRow({ slots, slotType }: { slots: ResourceSlot[]; slotType: 'spell' | 'rage' }) {
+    if (!slots || slots.length === 0) return null;
+    const Icon = slotType === 'spell' ? SpellSlotIcon : RageSlotIcon;
+    return (
+        <div className="flex flex-wrap justify-center gap-0.5">
+            {slots.map(slot =>
+                Array.from({ length: slot.count }).map((_, i) => (
+                    <Icon key={`${slot.level}-${i}`} level={slot.level} used={false} />
+                ))
+            )}
+        </div>
+    );
 }
+
+// ── Helpers ─────────────────────────────────────────────────────────────
 
 function getHpLiquidClass(hp: number, maxHp: number): string {
     if (maxHp <= 0) return '';
@@ -150,46 +166,88 @@ function getHpLiquidClass(hp: number, maxHp: number): string {
     return '';
 }
 
-export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
-    function CombatantCard({ combatant, isActive, showCopyIndex, onViewTemplate }, ref) {
+// ── Props ───────────────────────────────────────────────────────────────
+
+type CardMode = 'bank' | 'combat';
+
+interface CreatureCardProps {
+    template: CharacterTemplate;
+    mode: CardMode;
+    onEdit?: (t: CharacterTemplate) => void;
+    onDelete?: (id: number) => void;
+    onDoubleClick?: (t: CharacterTemplate) => void;
+    combatant?: Combatant;
+    isActive?: boolean;
+    showCopyIndex?: boolean;
+    onViewTemplate: (t: CharacterTemplate) => void;
+}
+
+// ── Component ───────────────────────────────────────────────────────────
+
+export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
+    function CreatureCard(
+        { template, mode, onEdit, onDelete, onDoubleClick, combatant, isActive, showCopyIndex, onViewTemplate },
+        ref,
+    ) {
         const dispatch = useAppDispatch();
-        const templates = useAppSelector((state) => state.crawl.templates);
-        const template = selectTemplateForCombatant(templates, combatant.templateId);
         const [showPicker, setShowPicker] = useState(false);
         const effectBtnRef = useRef<HTMLButtonElement>(null);
 
-        const name = template?.name ?? '???';
-        const defaultColor = template?.character_type === 'monster' ? '#5c4033' : '#374151';
-        const color = template?.color ?? defaultColor;
-        const photoPath = template?.photo_path;
-        const raceClass = [template?.race, template?.class].filter(Boolean).join(' ');
+        const isCombat = mode === 'combat';
+        const isBank = mode === 'bank';
 
-        const hpPercent = combatant.max_hp > 0
-            ? Math.round((combatant.hp / combatant.max_hp) * 100)
-            : 0;
+        // useDrag must be called unconditionally (rules of hooks)
+        const [{ isDragging }, dragRef] = useDrag(() => ({
+            type: DND_TYPES.BANK_CHARACTER,
+            item: { template },
+            collect: (monitor) => ({
+                isDragging: monitor.isDragging(),
+            }),
+        }), [template]);
 
-        const activeEffects = combatant.statusEffects;
+        const name = template.name;
+        const defaultColor = template.character_type === 'monster' ? '#5c4033' : '#374151';
+        const color = template.color || defaultColor;
+        const photoPath = template.photo_path;
+        const raceClass = [template.race, template.class].filter(Boolean).join(' ');
+
+        const hp = combatant?.hp ?? template.max_hp;
+        const maxHp = combatant?.max_hp ?? template.max_hp;
+        const ac = combatant?.ac ?? template.ac;
+
+        const hpPercent = maxHp > 0 ? Math.round((hp / maxHp) * 100) : 0;
+
+        const activeEffects = combatant?.statusEffects ?? [];
         const effectColors = activeEffects.map((e) => STATUS_EFFECT_COLORS[e]);
 
-        const blendedShadow = effectColors.length > 0
+        const blendedShadow = isCombat && effectColors.length > 0
             ? effectColors
                 .map((c) => `0 0 12px 3px ${c}aa, 0 0 24px 6px ${c}44`)
                 .join(', ')
             : '0 4px 6px -1px rgba(0,0,0,0.3)';
 
+        // Merge forwarded ref + drag ref for bank mode
+        const setRef = (el: HTMLDivElement | null) => {
+            if (typeof ref === 'function') ref(el);
+            else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+            if (isBank) (dragRef as any)(el);
+        };
+
         return (
             <div
-                ref={ref}
+                ref={setRef}
                 className={`group relative flex w-48 h-80 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 transition-all ${
-                    isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''
-                }`}
+                    isBank ? 'cursor-grab active:cursor-grabbing hover:scale-105' : ''
+                } ${isCombat && isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''}`}
                 style={{
                     backgroundColor: color,
                     boxShadow: blendedShadow,
+                    opacity: isBank && isDragging ? 0.5 : 1,
                 }}
+                onDoubleClick={isBank && onDoubleClick ? () => onDoubleClick(template) : undefined}
             >
-                {/* Dead overlay */}
-                {combatant.isDead && (
+                {/* ── Combat-only: Dead overlay ──────────────────────── */}
+                {isCombat && combatant?.isDead && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-lg bg-black/70">
                         <span className="text-4xl">&#9760;</span>
                         <button
@@ -201,8 +259,8 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </div>
                 )}
 
-                {/* Death save overlay (PC only) */}
-                {combatant.isInDeathSave && !combatant.isDead && (
+                {/* ── Combat-only: Death save overlay ────────────────── */}
+                {isCombat && combatant?.isInDeathSave && !combatant.isDead && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-black/80">
                         <p className="text-xs font-semibold text-white/60">
                             {name}
@@ -234,25 +292,45 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </div>
                 )}
 
-                {/* Remove button */}
-                <div className="absolute right-1 top-1 z-20 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                        onClick={() => dispatch(removeCombatant(combatant.instanceId))}
-                        className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 hover:bg-black/60"
-                        title="Remove from battle"
-                    >
-                        &#10005;
-                    </button>
+                {/* ── Hover action buttons (top-right) ───────────────── */}
+                <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    {isBank && onEdit && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onEdit(template); }}
+                            className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-white hover:bg-black/60"
+                            title="Edit"
+                        >
+                            &#9998;
+                        </button>
+                    )}
+                    {isBank && onDelete && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(template.ID); }}
+                            className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 hover:bg-black/60"
+                            title="Delete"
+                        >
+                            &#10005;
+                        </button>
+                    )}
+                    {isCombat && combatant && (
+                        <button
+                            onClick={() => dispatch(removeCombatant(combatant.instanceId))}
+                            className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-red-300 hover:bg-black/60"
+                            title="Remove from battle"
+                        >
+                            &#10005;
+                        </button>
+                    )}
                 </div>
 
-                {/* Image filling top of card — grows to fill available space */}
+                {/* ── Image area ──────────────────────────────────────── */}
                 {photoPath ? (
                     <div className="relative w-full flex-1 min-h-0 overflow-hidden rounded-t-md">
                         <img
                             src={`${API_BASE_URL}/static/${photoPath}`}
                             alt={name}
                             className="h-full w-full object-cover"
-                            style={{ objectPosition: `center ${template?.photo_offset_y ?? 50}%` }}
+                            style={{ objectPosition: `center ${template.photo_offset_y ?? 50}%` }}
                         />
                         <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom, transparent 40%, ${color})` }} />
                     </div>
@@ -262,26 +340,28 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     </div>
                 )}
 
-                {/* Card content */}
+                {/* ── Card content ────────────────────────────────────── */}
                 <div className="relative z-[5] w-full px-2 pb-2 -mt-3 flex flex-col items-center">
                     {/* Row 1: Init | Name | Stats */}
                     <div className="flex w-full items-center gap-0.5">
-                        <InitIcon value={combatant.initiative} />
-                        <p className="flex-1 min-w-0 truncate text-center text-base font-bold font-blackletter text-amber-50" title={name} style={{ textShadow: '0 0 6px rgba(212,175,55,0.5), 0 1px 3px rgba(0,0,0,0.8)' }}>
+                        <InitIcon value={isCombat ? combatant?.initiative : undefined} />
+                        <p
+                            className="flex-1 min-w-0 truncate text-center text-base font-bold font-blackletter text-amber-50"
+                            title={name}
+                            style={{ textShadow: '0 0 6px rgba(212,175,55,0.5), 0 1px 3px rgba(0,0,0,0.8)' }}
+                        >
                             {name}
-                            {showCopyIndex && (
+                            {isCombat && showCopyIndex && combatant && (
                                 <span className="ml-1 text-paladin-gold/70">#{combatant.copyIndex}</span>
                             )}
                         </p>
-                        {template && (
-                            <button
-                                onClick={() => onViewTemplate(template)}
-                                className="flex-shrink-0 transition-transform hover:scale-110"
-                                title="View Stats"
-                            >
-                                <StatsIcon />
-                            </button>
-                        )}
+                        <button
+                            onClick={() => onViewTemplate(template)}
+                            className="flex-shrink-0 transition-transform hover:scale-110"
+                            title="View Stats"
+                        >
+                            <StatsIcon />
+                        </button>
                     </div>
 
                     {raceClass && (
@@ -294,11 +374,11 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     <div className="flex w-full items-center justify-center gap-2 -mt-0.5">
                         <div className="flex items-center gap-0.5">
                             <HpIcon />
-                            <span className="text-xs font-semibold text-white">{combatant.hp}/{combatant.max_hp}</span>
+                            <span className="text-xs font-semibold text-white">{hp}/{maxHp}</span>
                         </div>
                         <div className="flex items-center gap-0.5">
                             <AcIcon />
-                            <span className="text-xs font-semibold text-white">{combatant.ac}</span>
+                            <span className="text-xs font-semibold text-white">{ac}</span>
                         </div>
                     </div>
 
@@ -306,62 +386,70 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                     <GlassVial
                         percent={hpPercent}
                         className="mt-0.5 mb-1.5 h-2"
-                        liquidClassName={getHpLiquidClass(combatant.hp, combatant.max_hp)}
+                        liquidClassName={getHpLiquidClass(hp, maxHp)}
                     />
 
-                    {/* Row 4: HP adjustment + status effect */}
-                    <div className="flex items-center gap-1">
-                        {[-10, -5, -1, 1].map((delta) => {
-                            const isHeal = delta > 0;
-                            return (
-                                <button
-                                    key={delta}
-                                    onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
-                                    className={`flex h-7 min-w-7 items-center justify-center rounded-full border-2 px-1.5 transition-colors ${
-                                        isHeal
-                                            ? 'border-emerald-500/60 bg-emerald-950/40 hover:bg-emerald-900/60'
-                                            : 'border-rose-500/60 bg-rose-950/40 hover:bg-rose-900/60'
-                                    }`}
-                                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
-                                >
-                                    <span className={`text-[10px] font-bold leading-none ${isHeal ? 'text-emerald-400' : 'text-rose-400'}`}>
-                                        {delta > 0 ? `+${delta}` : delta}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                        <button
-                            ref={effectBtnRef}
-                            onClick={() => setShowPicker(!showPicker)}
-                            className="transition-transform hover:scale-110"
-                            title="Add Status Effect"
-                        >
-                            <StatusEffectIcon />
-                        </button>
-                        {showPicker && (
-                            <StatusEffectPicker
-                                appliedEffects={combatant.statusEffects}
-                                immunities={template?.immunities ?? []}
-                                onAdd={(effect: StatusEffect) =>
-                                    dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
-                                }
-                                onClose={() => setShowPicker(false)}
-                                anchorRef={effectBtnRef}
-                            />
-                        )}
-                    </div>
+                    {/* Row 4: HP adjustment + status effect (combat only) */}
+                    {isCombat && combatant && (
+                        <div className="flex items-center gap-1">
+                            {[-10, -5, -1, 1].map((delta) => {
+                                const isHeal = delta > 0;
+                                return (
+                                    <button
+                                        key={delta}
+                                        onClick={() => dispatch(adjustHp({ instanceId: combatant.instanceId, delta }))}
+                                        className={`flex h-7 min-w-7 items-center justify-center rounded-full border-2 px-1.5 transition-colors ${
+                                            isHeal
+                                                ? 'border-emerald-500/60 bg-emerald-950/40 hover:bg-emerald-900/60'
+                                                : 'border-rose-500/60 bg-rose-950/40 hover:bg-rose-900/60'
+                                        }`}
+                                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
+                                    >
+                                        <span className={`text-[10px] font-bold leading-none ${isHeal ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            {delta > 0 ? `+${delta}` : delta}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                            <button
+                                ref={effectBtnRef}
+                                onClick={() => setShowPicker(!showPicker)}
+                                className="transition-transform hover:scale-110"
+                                title="Add Status Effect"
+                            >
+                                <StatusEffectIcon />
+                            </button>
+                            {showPicker && (
+                                <StatusEffectPicker
+                                    appliedEffects={combatant.statusEffects}
+                                    immunities={template.immunities ?? []}
+                                    onAdd={(effect: StatusEffect) =>
+                                        dispatch(addStatusEffect({ instanceId: combatant.instanceId, effect }))
+                                    }
+                                    onClose={() => setShowPicker(false)}
+                                    anchorRef={effectBtnRef}
+                                />
+                            )}
+                        </div>
+                    )}
 
                     {/* Row 5: Resource slots */}
-                    {(combatant.spellSlotUsage.length > 0 || combatant.rageSlotUsage.length > 0) && (
+                    {isCombat && combatant && (combatant.spellSlotUsage.length > 0 || combatant.rageSlotUsage.length > 0) && (
                         <div className="mt-1 flex flex-wrap justify-center gap-0.5">
                             <SlotRow usage={combatant.spellSlotUsage} slotType="spell" instanceId={combatant.instanceId} dispatch={dispatch} />
                             <SlotRow usage={combatant.rageSlotUsage} slotType="rage" instanceId={combatant.instanceId} dispatch={dispatch} />
                         </div>
                     )}
+                    {isBank && (template.spell_slots?.length > 0 || template.rage_slots?.length > 0) && (
+                        <div className="mt-1 flex flex-wrap justify-center gap-0.5">
+                            <BankSlotRow slots={template.spell_slots} slotType="spell" />
+                            <BankSlotRow slots={template.rage_slots} slotType="rage" />
+                        </div>
+                    )}
                 </div>
 
-                {/* Floating effect labels above card */}
-                {activeEffects.length > 0 && (
+                {/* ── Combat-only: Floating effect labels above card ── */}
+                {isCombat && activeEffects.length > 0 && combatant && (
                     <div className="absolute -top-9 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {activeEffects.map((effect) => {
                             const effectColor = STATUS_EFFECT_COLORS[effect];
@@ -387,7 +475,6 @@ export const CombatantCard = forwardRef<HTMLDivElement, CombatantCardProps>(
                         })}
                     </div>
                 )}
-
             </div>
         );
     }
