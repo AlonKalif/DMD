@@ -45,7 +45,7 @@ export default function AudioPlayerPage() {
     }
 
     return (
-        <div className="flex h-full flex-col space-y-6 overflow-y-auto p-8">
+        <div className="flex h-full flex-col space-y-6 overflow-y-auto fantasy-scrollbar p-8">
             <div className="flex items-center gap-4">
                 <h1 className="text-3xl font-bold font-blackletter gold-gradient-text">Spotify Music Player</h1>
                 {displayName && (
