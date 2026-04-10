@@ -26,8 +26,20 @@ func (j *jsonColumn[T]) Scan(value interface{}) error {
 		bytes = v
 	case string:
 		bytes = []byte(v)
+	case int64, float64:
+		// Legacy rows may store a plain number (e.g. spell_slots = 0).
+		// Return the zero value of T instead of failing.
+		var zero T
+		j.Data = zero
+		return nil
 	default:
 		return fmt.Errorf("jsonColumn.Scan: unsupported type %T", value)
+	}
+	// A bare number like "0" is not valid JSON for array/object types — treat as zero value.
+	if len(bytes) > 0 && bytes[0] != '[' && bytes[0] != '{' && bytes[0] != '"' {
+		var zero T
+		j.Data = zero
+		return nil
 	}
 	return json.Unmarshal(bytes, &j.Data)
 }
