@@ -84,7 +84,7 @@ export default function PlayerDisplayPage() {
                                     <img
                                         src={url}
                                         alt={`Content for slot ${slotId + 1}`}
-                                        className="max-h-full max-w-full object-contain transition-transform duration-200"
+                                        className="h-full w-full object-contain transition-transform duration-200"
                                         style={{ transform: `scale(${zoom}) translateY(${positionY || 0}%)` }}
                                     />
                                 )

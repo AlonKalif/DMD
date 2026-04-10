@@ -95,7 +95,7 @@ export function ImageSlot({ slot, onDropAsset, onClearSlot, onZoomChange, onPage
                             src={slot.url}
                             alt={`Staged content for slot ${slot.slotId + 1}`}
                             className={clsx(
-                                "max-h-full max-w-full object-contain transition-transform duration-200",
+                                "h-full w-full object-contain transition-transform duration-200",
                                 isDragging ? "cursor-grabbing opacity-50" : "cursor-grab"
                             )}
                             style={{ transform: `scale(${slot.zoom}) translateY(${slot.positionY}%)` }}
