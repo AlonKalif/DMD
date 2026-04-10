@@ -266,7 +266,10 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                             {name}
                             {showCopyIndex && <span className="ml-1 text-paladin-gold">#{combatant.copyIndex}</span>}
                         </p>
-                        <p className="font-blackletter text-lg font-bold text-wax-red" style={{ textShadow: '0 0 10px rgba(153,27,27,0.6)' }}>
+                        <p
+                            className="font-blackletter text-2xl font-bold text-wax-red"
+                            style={{ textShadow: '0 0 10px rgba(153,27,27,0.6)', WebkitTextStroke: '0.7px rgba(255, 2, 2, 0.57)', paintOrder: 'stroke fill' } as any}
+                        >
                             Death Save
                         </p>
                         <span className={`text-3xl font-bold ${
@@ -278,15 +281,17 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                         <div className="flex gap-3">
                             <button
                                 onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: -1 }))}
-                                className="rounded bg-red-700/60 px-4 py-1 text-sm font-bold text-red-200 hover:bg-red-600/80"
+                                className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-rose-500/60 bg-rose-950/40 px-2.5 transition-colors hover:bg-rose-900/60"
+                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
                             >
-                                -1
+                                <span className="text-sm font-bold leading-none text-rose-400">-1</span>
                             </button>
                             <button
                                 onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: 1 }))}
-                                className="rounded bg-green-700/60 px-4 py-1 text-sm font-bold text-green-200 hover:bg-green-600/80"
+                                className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-emerald-500/60 bg-emerald-950/40 px-2.5 transition-colors hover:bg-emerald-900/60"
+                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
                             >
-                                +1
+                                <span className="text-sm font-bold leading-none text-emerald-400">+1</span>
                             </button>
                         </div>
                     </div>

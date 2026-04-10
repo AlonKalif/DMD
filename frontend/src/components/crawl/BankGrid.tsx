@@ -33,7 +33,7 @@ export function BankGrid({ type, onEdit, onDelete, onDoubleClick, onView }: Bank
     }
 
     return (
-        <div className="flex flex-wrap gap-3 p-3">
+        <div className="flex flex-wrap gap-2 p-2">
             {filtered.map((tmpl) => (
                 <CreatureCard
                     key={tmpl.ID}
