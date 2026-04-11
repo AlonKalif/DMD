@@ -166,9 +166,31 @@ function getHpLiquidClass(hp: number, maxHp: number): string {
     return '';
 }
 
+function getHpBandClass(hp: number, maxHp: number): string {
+    if (maxHp <= 0) return 'bg-gray-700';
+    const ratio = hp / maxHp;
+    if (ratio > 2 / 3) return 'bg-gradient-to-r from-green-800 via-green-500 to-green-800 shadow-[0_0_10px_rgba(34,197,94,0.5)]';
+    if (ratio > 1 / 3) return 'bg-gradient-to-r from-orange-800 via-orange-500 to-orange-800 shadow-[0_0_10px_rgba(249,115,22,0.5)]';
+    return 'bg-gradient-to-r from-red-900 via-red-600 to-red-900 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
+}
+
+function PlayerSlotRow({ usage, slotType }: { usage: Combatant['spellSlotUsage']; slotType: 'spell' | 'rage' }) {
+    if (usage.length === 0) return null;
+    const Icon = slotType === 'spell' ? SpellSlotIcon : RageSlotIcon;
+    return (
+        <div className="flex flex-wrap justify-center gap-0.5">
+            {usage.map(group =>
+                Array.from({ length: group.total }).map((_, i) => (
+                    <Icon key={`${group.level}-${i}`} level={group.level} used={group.usedSlots[i]} />
+                ))
+            )}
+        </div>
+    );
+}
+
 // ── Props ───────────────────────────────────────────────────────────────
 
-type CardMode = 'bank' | 'combat';
+type CardMode = 'bank' | 'combat' | 'player';
 
 interface CreatureCardProps {
     template: CharacterTemplate;
@@ -179,7 +201,7 @@ interface CreatureCardProps {
     combatant?: Combatant;
     isActive?: boolean;
     showCopyIndex?: boolean;
-    onViewTemplate: (t: CharacterTemplate) => void;
+    onViewTemplate?: (t: CharacterTemplate) => void;
 }
 
 // ── Component ───────────────────────────────────────────────────────────
@@ -195,6 +217,8 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
 
         const isCombat = mode === 'combat';
         const isBank = mode === 'bank';
+        const isPlayer = mode === 'player';
+        const showsCombatData = isCombat || isPlayer;
 
         // useDrag must be called unconditionally (rules of hooks)
         const [{ isDragging }, dragRef] = useDrag(() => ({
@@ -220,7 +244,7 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
         const activeEffects = combatant?.statusEffects ?? [];
         const effectColors = activeEffects.map((e) => STATUS_EFFECT_COLORS[e]);
 
-        const blendedShadow = isCombat && effectColors.length > 0
+        const blendedShadow = showsCombatData && effectColors.length > 0
             ? effectColors
                 .map((c) => `0 0 12px 3px ${c}aa, 0 0 24px 6px ${c}44`)
                 .join(', ')
@@ -238,7 +262,7 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                 ref={setRef}
                 className={`group relative flex w-48 h-80 flex-shrink-0 flex-col items-center rounded-lg border-2 border-paladin-gold/60 transition-all ${
                     isBank ? 'cursor-grab active:cursor-grabbing hover:scale-105' : ''
-                } ${isCombat && isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''}`}
+                } ${showsCombatData && isActive ? 'outline outline-3 outline-offset-4 outline-paladin-gold scale-105' : ''}`}
                 style={{
                     backgroundColor: color,
                     boxShadow: blendedShadow,
@@ -246,21 +270,23 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                 }}
                 onDoubleClick={isBank && onDoubleClick ? () => onDoubleClick(template) : undefined}
             >
-                {/* ── Combat-only: Dead overlay ──────────────────────── */}
-                {isCombat && combatant?.isDead && (
+                {/* ── Dead overlay (combat + player) ────────────────── */}
+                {showsCombatData && combatant?.isDead && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-lg bg-black/70">
                         <span className="text-4xl">&#9760;</span>
-                        <button
-                            onClick={() => dispatch(reviveCombatant(combatant.instanceId))}
-                            className="rounded bg-green-700/60 px-3 py-1 text-xs font-bold text-green-200 opacity-0 transition-opacity hover:bg-green-600/80 group-hover:opacity-100"
-                        >
-                            Revive
-                        </button>
+                        {isCombat && (
+                            <button
+                                onClick={() => dispatch(reviveCombatant(combatant.instanceId))}
+                                className="rounded bg-green-700/60 px-3 py-1 text-xs font-bold text-green-200 opacity-0 transition-opacity hover:bg-green-600/80 group-hover:opacity-100"
+                            >
+                                Revive
+                            </button>
+                        )}
                     </div>
                 )}
 
-                {/* ── Combat-only: Death save overlay ────────────────── */}
-                {isCombat && combatant?.isInDeathSave && !combatant.isDead && (
+                {/* ── Death save overlay (combat + player) ──────────── */}
+                {showsCombatData && combatant?.isInDeathSave && !combatant.isDead && (
                     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg bg-black/80">
                         <p className="text-xs font-semibold text-white/60">
                             {name}
@@ -272,33 +298,37 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                         >
                             Death Save
                         </p>
-                        <span className={`text-3xl font-bold ${
-                            combatant.deathSaveCount > 0 ? 'text-green-400' :
-                            combatant.deathSaveCount < 0 ? 'text-red-400' : 'text-white'
-                        }`}>
-                            {combatant.deathSaveCount > 0 ? `+${combatant.deathSaveCount}` : combatant.deathSaveCount}
-                        </span>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: -1 }))}
-                                className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-rose-500/60 bg-rose-950/40 px-2.5 transition-colors hover:bg-rose-900/60"
-                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
-                            >
-                                <span className="text-sm font-bold leading-none text-rose-400">-1</span>
-                            </button>
-                            <button
-                                onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: 1 }))}
-                                className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-emerald-500/60 bg-emerald-950/40 px-2.5 transition-colors hover:bg-emerald-900/60"
-                                style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
-                            >
-                                <span className="text-sm font-bold leading-none text-emerald-400">+1</span>
-                            </button>
-                        </div>
+                        {isCombat && (
+                            <>
+                                <span className={`text-3xl font-bold ${
+                                    combatant.deathSaveCount > 0 ? 'text-green-400' :
+                                    combatant.deathSaveCount < 0 ? 'text-red-400' : 'text-white'
+                                }`}>
+                                    {combatant.deathSaveCount > 0 ? `+${combatant.deathSaveCount}` : combatant.deathSaveCount}
+                                </span>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: -1 }))}
+                                        className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-rose-500/60 bg-rose-950/40 px-2.5 transition-colors hover:bg-rose-900/60"
+                                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
+                                    >
+                                        <span className="text-sm font-bold leading-none text-rose-400">-1</span>
+                                    </button>
+                                    <button
+                                        onClick={() => dispatch(adjustDeathSave({ instanceId: combatant.instanceId, delta: 1 }))}
+                                        className="flex h-8 min-w-8 items-center justify-center rounded-full border-2 border-emerald-500/60 bg-emerald-950/40 px-2.5 transition-colors hover:bg-emerald-900/60"
+                                        style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}
+                                    >
+                                        <span className="text-sm font-bold leading-none text-emerald-400">+1</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 
-                {/* ── Hover action buttons (top-right) ───────────────── */}
-                <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                {/* ── Hover action buttons (top-right, hidden in player mode) */}
+                {!isPlayer && <div className="absolute right-1 top-1 z-20 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                     {isBank && onEdit && (
                         <button
                             onClick={(e) => { e.stopPropagation(); onEdit(template); }}
@@ -326,7 +356,7 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                             &#10005;
                         </button>
                     )}
-                </div>
+                </div>}
 
                 {/* ── Image area ──────────────────────────────────────── */}
                 {photoPath ? (
@@ -349,24 +379,26 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                 <div className="relative z-[5] w-full px-2 pb-2 -mt-3 flex flex-col items-center">
                     {/* Row 1: Init | Name | Stats */}
                     <div className="flex w-full items-center gap-0.5">
-                        <InitIcon value={isCombat ? combatant?.initiative : undefined} />
+                        <InitIcon value={showsCombatData ? combatant?.initiative : undefined} />
                         <p
                             className="flex-1 min-w-0 truncate text-center text-base font-bold font-blackletter text-amber-50"
                             title={name}
                             style={{ textShadow: '0 0 6px rgba(212,175,55,0.5), 0 1px 3px rgba(0,0,0,0.8)' }}
                         >
                             {name}
-                            {isCombat && showCopyIndex && combatant && (
+                            {showsCombatData && showCopyIndex && combatant && (
                                 <span className="ml-1 text-paladin-gold/70">#{combatant.copyIndex}</span>
                             )}
                         </p>
-                        <button
-                            onClick={() => onViewTemplate(template)}
-                            className="flex-shrink-0 transition-transform hover:scale-110"
-                            title="View Stats"
-                        >
-                            <StatsIcon />
-                        </button>
+                        {!isPlayer && onViewTemplate && (
+                            <button
+                                onClick={() => onViewTemplate(template)}
+                                className="flex-shrink-0 transition-transform hover:scale-110"
+                                title="View Stats"
+                            >
+                                <StatsIcon />
+                            </button>
+                        )}
                     </div>
 
                     {raceClass && (
@@ -375,24 +407,30 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                         </p>
                     )}
 
-                    {/* Row 2: HP & AC */}
-                    <div className="flex w-full items-center justify-center gap-2 -mt-0.5">
-                        <div className="flex items-center gap-0.5">
-                            <HpIcon />
-                            <span className="text-xs font-semibold text-white">{hp}/{maxHp}</span>
+                    {/* Row 2: HP & AC (hidden in player mode) */}
+                    {!isPlayer && (
+                        <div className="flex w-full items-center justify-center gap-2 -mt-0.5">
+                            <div className="flex items-center gap-0.5">
+                                <HpIcon />
+                                <span className="text-xs font-semibold text-white">{hp}/{maxHp}</span>
+                            </div>
+                            <div className="flex items-center gap-0.5">
+                                <AcIcon />
+                                <span className="text-xs font-semibold text-white">{ac}</span>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-0.5">
-                            <AcIcon />
-                            <span className="text-xs font-semibold text-white">{ac}</span>
-                        </div>
-                    </div>
+                    )}
 
-                    {/* Row 3: Health bar */}
-                    <GlassVial
-                        percent={hpPercent}
-                        className="mt-0.5 mb-1.5 h-2"
-                        liquidClassName={getHpLiquidClass(hp, maxHp)}
-                    />
+                    {/* Row 3: Health bar (full-width color band in player mode) */}
+                    {isPlayer ? (
+                        <div className={`mt-0.5 mb-1.5 h-2 w-full rounded-full ${getHpBandClass(hp, maxHp)}`} />
+                    ) : (
+                        <GlassVial
+                            percent={hpPercent}
+                            className="mt-0.5 mb-1.5 h-2"
+                            liquidClassName={getHpLiquidClass(hp, maxHp)}
+                        />
+                    )}
 
                     {/* Row 4: HP adjustment + status effect (combat only) */}
                     {isCombat && combatant && (
@@ -445,6 +483,12 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                             <SlotRow usage={combatant.rageSlotUsage} slotType="rage" instanceId={combatant.instanceId} dispatch={dispatch} />
                         </div>
                     )}
+                    {isPlayer && combatant && (combatant.spellSlotUsage.length > 0 || combatant.rageSlotUsage.length > 0) && (
+                        <div className="mt-1 flex flex-wrap justify-center gap-0.5">
+                            <PlayerSlotRow usage={combatant.spellSlotUsage} slotType="spell" />
+                            <PlayerSlotRow usage={combatant.rageSlotUsage} slotType="rage" />
+                        </div>
+                    )}
                     {isBank && (template.spell_slots?.length > 0 || template.rage_slots?.length > 0) && (
                         <div className="mt-1 flex flex-wrap justify-center gap-0.5">
                             <BankSlotRow slots={template.spell_slots} slotType="spell" />
@@ -453,8 +497,8 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                     )}
                 </div>
 
-                {/* ── Combat-only: Floating effect labels above card ── */}
-                {isCombat && activeEffects.length > 0 && combatant && (
+                {/* ── Floating effect labels above card (combat + player) */}
+                {showsCombatData && activeEffects.length > 0 && combatant && (
                     <div className="absolute -top-9 left-1/2 -translate-x-1/2 flex gap-1.5">
                         {activeEffects.map((effect) => {
                             const effectColor = STATUS_EFFECT_COLORS[effect];
@@ -469,12 +513,14 @@ export const CreatureCard = forwardRef<HTMLDivElement, CreatureCardProps>(
                                     }}
                                 >
                                     {effect}
-                                    <button
-                                        onClick={() => dispatch(removeStatusEffect({ instanceId: combatant.instanceId, effect }))}
-                                        className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[9px] text-white/80 hover:bg-red-700 hover:text-white group-hover/effect:flex"
-                                    >
-                                        &times;
-                                    </button>
+                                    {isCombat && (
+                                        <button
+                                            onClick={() => dispatch(removeStatusEffect({ instanceId: combatant.instanceId, effect }))}
+                                            className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[9px] text-white/80 hover:bg-red-700 hover:text-white group-hover/effect:flex"
+                                        >
+                                            &times;
+                                        </button>
+                                    )}
                                 </div>
                             );
                         })}

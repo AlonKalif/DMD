@@ -1,12 +1,12 @@
 // /src/pages/ScreenMirroringPage.tsx
-import {useState, useRef, useEffect} from 'react';
+import {useState, useRef, useEffect, useCallback} from 'react';
 import { LeftSidebar } from 'components/screen-mirroring/LeftSidebar';
 import { RightSidebar } from 'components/screen-mirroring/RightSidebar';
 import { ControlBar } from 'components/screen-mirroring/ControlBar';
 import { useBroadcastChannel, BroadcastMessage } from 'hooks/useBroadcastChannel';
 import { StagingArea } from 'components/screen-mirroring/StagingArea';
 import { API_BASE_URL } from 'config';
-import { PresetLayout } from 'types/api';
+import { BattleDisplayPayload, PresetLayout } from 'types/api';
 import axios from 'axios';
 
 export type LayoutType = 'single' | 'dual' | 'quad';
@@ -31,19 +31,33 @@ export default function ScreenMirroringPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [presetRefreshKey, setPresetRefreshKey] = useState(0);
     const [assetRefreshKey, setAssetRefreshKey] = useState(0);
+    const [battlePreview, setBattlePreview] = useState<BattleDisplayPayload | null>(null);
     const notificationTimerRef = useRef<NodeJS.Timeout>();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleChannelMessage = (message: BroadcastMessage) => {
+    const handleChannelMessage = useCallback((message: BroadcastMessage) => {
         if (message.type === 'response_current_content' && message.payload) {
+            setBattlePreview(null);
             setLayoutState(message.payload as LayoutState);
-        } else if(message.type === 'response_is_empty') {
+        } else if (message.type === 'response_is_battle' && message.payload) {
+            setBattlePreview(message.payload as BattleDisplayPayload);
+        } else if (message.type === 'response_is_empty') {
+            setBattlePreview(null);
             if (notificationTimerRef.current) clearTimeout(notificationTimerRef.current);
             setNotification('No Images Shown On Players Window.');
             setIsNotificationVisible(true);
             notificationTimerRef.current = setTimeout(() => setIsNotificationVisible(false), 2500);
+        } else if (message.type === 'player_content_changed') {
+            const contentType = message.payload?.contentType;
+            if (contentType === 'battle') {
+                // Don't auto-update battlePreview here; wait for sync
+            } else if (contentType === 'idle') {
+                setBattlePreview(null);
+            } else if (contentType === 'layout') {
+                setBattlePreview(null);
+            }
         }
-    };
+    }, []);
 
     const channel = useBroadcastChannel('dmd-channel', handleChannelMessage);
 
@@ -58,6 +72,7 @@ export default function ScreenMirroringPage() {
     };
 
     const handleClickAsset = (item: DropItem) => {
+        setBattlePreview(null);
         setLayoutState(prevState => {
             const emptySlot = prevState.slots.find(s => !s.url);
             const target = emptySlot || prevState.slots[0];
@@ -71,6 +86,7 @@ export default function ScreenMirroringPage() {
     };
 
     const handleDropAsset = (slotId: number, item: DropItem) => {
+        setBattlePreview(null);
         setLayoutState(prevState => {
             const newSlots = [...prevState.slots];
             const targetSlot = newSlots.find(s => s.slotId === slotId);
@@ -101,6 +117,7 @@ export default function ScreenMirroringPage() {
     const handleShowToPlayers = () => {
         const isAnySlotFilled = layoutState.slots.some(slot => slot.url);
         if (layoutState.status === 'staged' && isAnySlotFilled) {
+            setBattlePreview(null);
             const liveState = { ...layoutState, status: 'live' as LayoutStatus };
             channel.postMessage({ type: 'show_layout', payload: liveState });
             setLayoutState(liveState);
@@ -267,6 +284,7 @@ export default function ScreenMirroringPage() {
     };
 
     const handleLoadPreset = (preset: PresetLayout) => {
+        setBattlePreview(null);
         const slotCount = preset.layout_type === 'quad' ? 4 : preset.layout_type === 'dual' ? 2 : 1;
         
         const newSlots: ImageSlotState[] = Array.from({ length: slotCount }, (_, i) => ({
@@ -373,6 +391,7 @@ export default function ScreenMirroringPage() {
                         layoutState={layoutState}
                         onLayoutChange={handleLayoutChange}
                         onDropAsset={handleDropAsset}
+                        onDropAssetToFirstSlot={handleClickAsset}
                         onLoadPreset={handleLoadPreset}
                         onClearSlot={handleClearSlot}
                         onZoomChange={handleZoomChange}
@@ -383,6 +402,7 @@ export default function ScreenMirroringPage() {
                         isSaving={isSaving}
                         notification={notification}
                         isNotificationVisible={isNotificationVisible}
+                        battlePreview={battlePreview}
                     />
                 </main>
             </div>

@@ -7,9 +7,11 @@ import { CombatantRow } from './CombatantRow';
 interface BattleSectionProps {
     onRequestInitiative: (template: CharacterTemplate) => void;
     onViewTemplate: (template: CharacterTemplate) => void;
+    isBattleShown: boolean;
+    onToggleBattleDisplay: () => void;
 }
 
-export function BattleSection({ onRequestInitiative, onViewTemplate }: BattleSectionProps) {
+export function BattleSection({ onRequestInitiative, onViewTemplate, isBattleShown, onToggleBattleDisplay }: BattleSectionProps) {
     const [{ isOver }, dropRef] = useDrop(() => ({
         accept: DND_TYPES.BANK_CHARACTER,
         drop: (item: { template: CharacterTemplate }) => {
@@ -29,7 +31,7 @@ export function BattleSection({ onRequestInitiative, onViewTemplate }: BattleSec
                     : ''
             }`}
         >
-            <BattleToolbar />
+            <BattleToolbar isBattleShown={isBattleShown} onToggleBattleDisplay={onToggleBattleDisplay} />
             <div className="relative min-h-[200px]">
                 <img
                     src="/dmd_logo.png"

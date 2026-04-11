@@ -4,10 +4,12 @@ import clsx from 'clsx';
 import { Document, Page } from 'react-pdf';
 import { BroadcastMessage } from '../hooks/useBroadcastChannel';
 import { useAppDispatch, useAppSelector } from '../app/hooks';
-import { setCurrentLayout, clearLayout } from 'features/display/displaySlice';
+import { setCurrentLayout, clearLayout, setBattleState, clearBattle } from 'features/display/displaySlice';
 import { DEFAULT_PLAYER_WINDOW_IMG } from 'config';
 import { LayoutState } from './ScreenMirroringPage';
+import { BattleDisplayPayload } from 'types/api';
 import { isPdfUrl } from 'components/screen-mirroring/ImageSlot';
+import { PlayerBattleView } from 'components/crawl/PlayerBattleView';
 
 function PlayerPdfSlot({ url, zoom, page, positionY }: { url: string; zoom: number; page: number; positionY: number }) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -64,29 +66,43 @@ function PlayerPdfSlot({ url, zoom, page, positionY }: { url: string; zoom: numb
 
 export default function PlayerDisplayPage() {
     const dispatch = useAppDispatch();
+    const displayMode = useAppSelector((state) => state.display.displayMode);
     const currentLayout = useAppSelector((state) => state.display.currentLayout);
+    const battleState = useAppSelector((state) => state.display.battleState);
 
     const channel = useMemo(() => new BroadcastChannel('dmd-channel'), []);
+
+    const broadcastContentChanged = useCallback((contentType: 'layout' | 'battle' | 'idle') => {
+        channel.postMessage({ type: 'player_content_changed', payload: { contentType } });
+    }, [channel]);
 
     const handleBroadcastMessage = useCallback((message: BroadcastMessage) => {
         if (message.type === 'show_layout') {
             dispatch(setCurrentLayout(message.payload as LayoutState));
+            broadcastContentChanged('layout');
         }
         if (message.type === 'clear_layout') {
             dispatch(clearLayout());
+            broadcastContentChanged('idle');
+        }
+        if (message.type === 'show_battle') {
+            dispatch(setBattleState(message.payload as BattleDisplayPayload));
+            broadcastContentChanged('battle');
+        }
+        if (message.type === 'clear_battle') {
+            dispatch(clearBattle());
+            broadcastContentChanged('idle');
         }
         if (message.type === 'request_current_content') {
-            if (currentLayout) {
-                channel.postMessage({
-                    type: 'response_current_content',
-                    payload: currentLayout,
-                });
+            if (displayMode === 'battle' && battleState) {
+                channel.postMessage({ type: 'response_is_battle', payload: battleState });
+            } else if (displayMode === 'layout' && currentLayout) {
+                channel.postMessage({ type: 'response_current_content', payload: currentLayout });
             } else {
-                // Respond that the window is empty
                 channel.postMessage({ type: 'response_is_empty' });
             }
         }
-    }, [dispatch, currentLayout, channel]);
+    }, [dispatch, displayMode, currentLayout, battleState, channel, broadcastContentChanged]);
 
     useEffect(() => {
         const handler = (event: MessageEvent<BroadcastMessage>) => {
@@ -96,7 +112,6 @@ export default function PlayerDisplayPage() {
         return () => { channel.onmessage = null; };
     }, [channel, handleBroadcastMessage]);
 
-    // Define grid classes based on the layout type
     const gridClasses = {
         single: 'grid-cols-1 grid-rows-1',
         dual: 'grid-cols-2 grid-rows-1',
@@ -105,15 +120,19 @@ export default function PlayerDisplayPage() {
 
     return (
         <div id="player-root-container" className="flex h-screen w-screen items-center justify-center overflow-hidden bg-black p-4">
-            {!currentLayout ? (
-                // Default view when no layout is active
-                <img
-                    src={DEFAULT_PLAYER_WINDOW_IMG}
-                    alt="Player display waiting for content"
-                    className="max-h-full max-w-full rounded-lg object-cover"
-                />
-            ) : (
-                // Dynamic grid rendering
+            {displayMode === 'battle' && battleState ? (
+                <div className="relative h-full w-full">
+                    <img
+                        src={DEFAULT_PLAYER_WINDOW_IMG}
+                        alt=""
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-0 m-auto max-h-full max-w-full rounded-lg object-cover opacity-30 select-none"
+                    />
+                    <div className="relative z-10 h-full w-full">
+                        <PlayerBattleView battleState={battleState} />
+                    </div>
+                </div>
+            ) : displayMode === 'layout' && currentLayout ? (
                 <div className={clsx('grid h-full w-full gap-2', gridClasses[currentLayout.layout])}>
                     {currentLayout.slots.map(({ slotId, url, zoom, page, positionY }) => (
                         <div key={slotId} className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-gray-900">
@@ -132,6 +151,12 @@ export default function PlayerDisplayPage() {
                         </div>
                     ))}
                 </div>
+            ) : (
+                <img
+                    src={DEFAULT_PLAYER_WINDOW_IMG}
+                    alt="Player display waiting for content"
+                    className="max-h-full max-w-full rounded-lg object-cover"
+                />
             )}
         </div>
     );

@@ -1,7 +1,12 @@
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { nextTurn, clearAll, selectTemplateForCombatant } from 'features/crawl/crawlSlice';
 
-export function BattleToolbar() {
+interface BattleToolbarProps {
+    isBattleShown: boolean;
+    onToggleBattleDisplay: () => void;
+}
+
+export function BattleToolbar({ isBattleShown, onToggleBattleDisplay }: BattleToolbarProps) {
     const dispatch = useAppDispatch();
     const combatants = useAppSelector((state) => state.crawl.combatants);
     const templates = useAppSelector((state) => state.crawl.templates);
@@ -41,6 +46,17 @@ export function BattleToolbar() {
             )}
 
             <div className="ml-auto flex gap-2">
+                <button
+                    onClick={onToggleBattleDisplay}
+                    disabled={!hasCombatants}
+                    className={`rounded-md px-3 py-1 text-sm font-semibold transition-colors arcane-glow-hover border border-transparent disabled:opacity-40 disabled:cursor-not-allowed ${
+                        isBattleShown
+                            ? 'bg-wax-red text-parchment hover:bg-wax-red/80'
+                            : 'bg-arcane-purple text-parchment hover:bg-arcane-purple/80'
+                    }`}
+                >
+                    {isBattleShown ? 'Hide Battle' : 'Show Battle'}
+                </button>
                 <button
                     onClick={() => dispatch(nextTurn())}
                     disabled={!hasCombatants}

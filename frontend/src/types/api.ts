@@ -209,3 +209,10 @@ export interface Combatant {
     spellSlotUsage: SlotUsage[];
     rageSlotUsage: SlotUsage[];
 }
+
+export interface BattleDisplayPayload {
+    combatants: Combatant[];
+    templates: CharacterTemplate[];
+    activeTurnIndex: number;
+    round: number;
+}
